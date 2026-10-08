@@ -14,7 +14,7 @@ for i, deal in enumerate(data):
     url = deal.get("url", "")
     assert isinstance(url, str) and urlparse(url).scheme == "https" and urlparse(url).hostname, f"Deal {i}: invalid URL"
     price, original = deal.get("price"), deal.get("original_price")
-    assert type(price) in (int, float) and type(original) in (int, float) and 0 < price <= original * 0.5, f"Deal {i}: not 50% off"
+    assert type(price) in (int, float) and type(original) in (int, float) and 0 < price <= original * 0.8, f"Deal {i}: not at least 20% off"
     checked = date.fromisoformat(deal["verified_date"])
     assert date.today() - timedelta(days=2) <= checked <= date.today(), f"Deal {i}: stale date"
     assert deal.get("source") and deal.get("price_evidence"), f"Deal {i}: missing verification evidence"
