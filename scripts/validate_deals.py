@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
-ALLOWED = {"Amazon", "eBay", "Walmart", "Target", "Best Buy", "Home Depot", "Lowe's"}
+ALLOWED = {"Amazon", "eBay", "Walmart", "Target", "Best Buy", "Home Depot", "Lowe's", "Macy's"}
 
 def validate(data):
     if not isinstance(data, list):
