@@ -1,5 +1,11 @@
 name: Refresh verified deals
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/generate_deal_images.py'
+      - 'scripts/test_deal_images.py'
+      - '.github/workflows/refresh-deals.yml'
   workflow_dispatch:
   schedule:
     - cron: '23 */6 * * *'
