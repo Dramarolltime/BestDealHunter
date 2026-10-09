@@ -8,5 +8,15 @@
     "retailer_comparable_value": 1999.99,
     "discovered_date": "2026-10-10",
     "notes": "Retailer listing shows 52%+ difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish."
+  },
+  {
+    "status": "needs_verification",
+    "store": "Best Buy",
+    "title": "Energizer 3-in-1 Qi2 wireless charging stand",
+    "url": "https://www.bestbuy.com/product/energizer-3-in-1-magnetic-15w-charger-black/J36C4YXZVG",
+    "listed_price": 19.99,
+    "retailer_comparable_value": 49.99,
+    "discovered_date": "2026-10-10",
+    "notes": "Retailer listing shows 60% difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish."
   }
 ]
