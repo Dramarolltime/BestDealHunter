@@ -1,5 +1,9 @@
 name: Generate Demo Product Graphic
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/generate-demo-image.yml'
   workflow_dispatch:
 permissions:
   contents: write
