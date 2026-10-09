@@ -1,0 +1,28 @@
+name: Hourly deal checks
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate published offers
+        run: python scripts/validate_deals.py
+      - name: Validate pending queue structure
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          queue = json.loads(Path("pending_deals.json").read_text())
+          assert isinstance(queue, list), "Pending queue must be an array"
+          print(f"Pending review: {len(queue)}")
+          PY
+# This is a monitoring/validation job, NOT a retailer feed collector.
+# No public or Buffer publishing occurs in this workflow.
