@@ -1,0 +1,42 @@
+name: Publish-ready image hosting
+on:
+  workflow_dispatch:
+    inputs:
+      image_path:
+        description: 'Existing repository image (for example images/generated/deal.jpg)'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate image path
+        env:
+          IMAGE_PATH: ${{ inputs.image_path }}
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = process.env.IMAGE_PATH;
+          if (!/^images\/[a-zA-Z0-9_./-]+\.(png|jpg|jpeg|webp)$/i.test(path) || path.includes('..') || !fs.existsSync(path)) {
+            console.error('Image must exist under images/ with a supported extension');
+            process.exit(1);
+          }
+          NODE
+      - name: Upload image and verify Cloudinary URL
+        id: upload
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          IMAGE_PATH: ${{ inputs.image_path }}
+        run: |
+          set -euo pipefail
+          URL="$(node scripts/upload-deal-image.cjs "$IMAGE_PATH")"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Verified hosted image: $URL" >> "$GITHUB_STEP_SUMMARY"
