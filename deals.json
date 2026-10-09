@@ -2,14 +2,16 @@
   {
     "store": "Macy's",
     "title": "Delsey Paris Raspail 21\" Rolling Carry-On Duffel — Camo",
-    "category": "Other",
+    "category": "Fashion",
     "url": "https://www.macys.com/shop/product/delsey-raspail-21-rolling-carry-on-duffel?ID=13625201",
     "price": 89.99,
     "original_price": 199.99,
     "verified_date": "2026-10-09",
     "source": "Macy's current Delsey brand and luggage sale listings show clearance $89.99 (55% off)",
     "price_evidence": "Current listed clearance price $89.99; previous $62.99 with code BEST could not be verified. Final checkout/tax/shipping not independently tested.",
-    "promo_note": "No verified promo code required for listed $89.99 clearance price. Do not advertise unverified BEST code."
+    "promo_note": "No verified promo code required for listed $89.99 clearance price. Do not advertise unverified BEST code.",
+    "image": "images/generated/delsey-duffel-illustration-test.jpg",
+    "image_disclosure": "AI illustration; actual product may vary."
   },
   {
     "store": "Amazon",
