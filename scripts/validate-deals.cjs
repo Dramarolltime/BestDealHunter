@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const deals=JSON.parse(fs.readFileSync('deals.json','utf8'));
 if(!Array.isArray(deals)) throw Error('deals.json must be an array');
 const seen=new Set(),errors=[];
-const allowed=['macys.com','bestbuy.com','amazon.com','walmart.com','target.com','ebay.com','homedepot.com','lowes.com'];
+const allowed=['macys.com','bestbuy.com','amazon.com','link.amazon','walmart.com','target.com','ebay.com','homedepot.com','lowes.com'];
 for(const [i,d] of deals.entries()){
  const label='deal '+(i+1);
  const fail=s=>errors.push(label+': '+s);
