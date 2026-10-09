@@ -1,0 +1,24 @@
+name: BestDealHunter publication gate
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 * * * *'
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check verified deals and prepare approved images
+        run: node scripts/prepare-publication.cjs
+      - name: Summarize
+        run: |
+          if [ -f approved-deals.json ]; then
+            echo "Verified candidates staged; external publishing is NOT enabled." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No eligible verified deals. No posts made." >> "$GITHUB_STEP_SUMMARY"
+          fi
