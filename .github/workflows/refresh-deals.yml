@@ -25,7 +25,8 @@ jobs:
         run: python scripts/test_deal_images.py
       - name: Validate retailer-approved deals
         run: python scripts/refresh_deals.py
-      # Do not generate cartoon-like graphics or automatically post them.      - name: Upload approved existing photos to Cloudinary
+      # Do not generate cartoon-like graphics or automatically post them.
+      - name: Upload approved existing photos to Cloudinary
         env:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
