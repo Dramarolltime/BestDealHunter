@@ -13,6 +13,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Test discount and verification rules
+        run: python -m unittest discover -s scripts -p 'test_*.py'
       - name: Validate published offers
         run: python scripts/validate_deals.py
       - name: Validate pending queue structure
