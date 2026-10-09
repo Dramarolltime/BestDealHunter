@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "store": "Best Buy",
+    "title": "Lenovo IdeaPad Slim 3 Chromebook 14-inch 2K Touchscreen, Kompanio 540, 4GB RAM, 64GB eMMC — Cosmic Blue",
+    "category": "Computers",
+    "url": "https://www.bestbuy.com/product/lenovo-ideapad-slim-3-chromebook-14-2k-touchscreen-laptop-mediatek-kompanio-540-2026-4gb-memory-64gb-emmc-cosmic-blue/JJGH3QCJKR/sku/6673811",
+    "price": 189,
+    "original_price": 419,
+    "reference_price_type": "Best Buy comparable value (not necessarily a prior selling price)",
+    "listed_discount_percent": 55,
+    "observed_date": "2026-10-10",
+    "source": "Best Buy official product page, SKU 6673811; sold by Best Buy; page lists $189 and comparable value $419, Add to cart, pickup and shipping availability in selected store context",
+    "price_evidence": "Official Best Buy direct product page lists $189 Techtober Deal versus $419 comparable value; product-specific listing observed Oct 10, 2026. Price may vary by location.",
+    "promo_code": null,
+    "promo_note": "No code required for listed price; final checkout, tax, shipping, geographic availability and promotion end date not independently confirmed.",
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "blockers": [
+      "Final checkout price and taxes/shipping not verified",
+      "Promotion expiration date not verified",
+      "Professional branded image not generated and public image URL not verified"
+    ]
+  }
+]
