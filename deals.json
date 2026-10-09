@@ -14,18 +14,6 @@
   },
   {
     "store": "Best Buy",
-    "title": "Ring Battery Doorbell 2K (Speckled Grey)",
-    "category": "Electronics",
-    "url": "https://www.bestbuy.com/site/searchpage.jsp?st=Ring+Battery+Doorbell+2K",
-    "price": 39.99,
-    "original_price": 99.99,
-    "verified_date": "2026-10-08",
-    "expires_date": "2026-10-08",
-    "source": "Best Buy 50%+ deals listing",
-    "price_evidence": "Best Buy listing: $39.99; comparable value $99.99; deal ends Oct 8, 2026."
-  },
-  {
-    "store": "Best Buy",
     "title": "Amazon Echo Spot (2024) Smart Alarm Clock",
     "category": "Electronics",
     "url": "https://www.bestbuy.com/product/amazon-echo-spot-2024-release-smart-alarm-clock-with-vibrant-sound-and-alexa-black/J39HW66HS5",
@@ -35,17 +23,5 @@
     "expires_date": "2026-10-08",
     "source": "Best Buy 50%+ deals listing",
     "price_evidence": "Best Buy listing: $54.99; comparable value $109.99; deal ends Oct 8, 2026."
-  },
-  {
-    "store": "Best Buy",
-    "title": "Ring Pan-Tilt Indoor Security Cam (White)",
-    "category": "Electronics",
-    "url": "https://www.bestbuy.com/product/ring-pan-tilt-indoor-security-cam-with-360-horizontal-pan-coverage-live-view-two-way-talk-and-hd-video-white/6580176",
-    "price": 29.99,
-    "original_price": 59.99,
-    "verified_date": "2026-10-08",
-    "expires_date": "2026-10-08",
-    "source": "Best Buy 50%+ deals listing",
-    "price_evidence": "Best Buy listing: $29.99; comparable value $59.99; deal ends Oct 8, 2026."
   }
 ]
