@@ -11,17 +11,5 @@
     "source": "Best Buy product listing, Techtober promotion",
     "price_evidence": "$299.99, comparable value $699.99, sold by Best Buy, add to cart available. Specific deal expiry not confirmed; recheck regularly.",
     "image": "images/IMG_4236.jpeg"
-  },
-  {
-    "store": "Best Buy",
-    "title": "Amazon Echo Spot (2024) Smart Alarm Clock",
-    "category": "Electronics",
-    "url": "https://www.bestbuy.com/product/amazon-echo-spot-2024-release-smart-alarm-clock-with-vibrant-sound-and-alexa-black/J39HW66HS5",
-    "price": 54.99,
-    "original_price": 109.99,
-    "verified_date": "2026-10-08",
-    "expires_date": "2026-10-08",
-    "source": "Best Buy 50%+ deals listing",
-    "price_evidence": "Best Buy listing: $54.99; comparable value $109.99; deal ends Oct 8, 2026."
   }
 ]
