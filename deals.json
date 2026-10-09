@@ -1,5 +1,29 @@
 [
   {
+    "store": "Macy's",
+    "title": "Delsey Paris Raspail 21\" Rolling Carry-On Duffel — Camo",
+    "category": "Other",
+    "url": "https://www.macys.com/shop/product/delsey-raspail-21-rolling-carry-on-duffel?ID=13625201",
+    "price": 89.99,
+    "original_price": 199.99,
+    "verified_date": "2026-10-09",
+    "source": "Macy's current Delsey brand and luggage sale listings show clearance $89.99 (55% off)",
+    "price_evidence": "Current listed clearance price $89.99; previous $62.99 with code BEST could not be verified. Final checkout/tax/shipping not independently tested.",
+    "promo_note": "No verified promo code required for listed $89.99 clearance price. Do not advertise unverified BEST code."
+  },
+  {
+    "store": "Target",
+    "title": "Beats Studio Pro Bluetooth Wireless Noise Cancelling Headphones — Black",
+    "category": "Electronics",
+    "url": "https://www.target.com/p/beats-studio-pro-bluetooth-wireless-headphones-black/-/A-89401490",
+    "price": 149.99,
+    "original_price": 349.99,
+    "verified_date": "2026-10-09",
+    "source": "Target product catalog sale price; product listing shows in stock",
+    "price_evidence": "Product catalog sale $149.99 versus regular $349.99; final cart checkout/tax/shipping not independently tested. Recheck before purchase.",
+    "promo_note": "No promo code required. Price and availability may vary."
+  },
+  {
     "store": "Amazon",
     "title": "KitchenAid Ribbed Soft Silicone Oven Mitt 2-Pack — Gray, 7.5 x 13 in",
     "category": "Home & Kitchen",
