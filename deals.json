@@ -58,10 +58,10 @@
     "url": "https://www.bestbuy.com/product/insignia-55-class-f70-series-4k-uhd-qled-mini-led-smart-tv-with-fire-tv/J2FPJK9F77",
     "price": 299.99,
     "original_price": 699.99,
-    "verified_date": "2026-10-08",
-    "expires_date": "2026-10-11",
+    "verified_date": "2026-10-09",
     "source": "Best Buy product listing, Techtober promotion",
-    "price_evidence": "$299.99, comparable value $699.99, sold by Best Buy, add to cart available. Specific deal expiry not confirmed; recheck regularly.",
-    "image": "images/IMG_4236.jpeg"
+    "price_evidence": "Best Buy official product page checked Oct 9: $299.99, comparable value $699.99, sold by Best Buy, Add to cart available. Checkout total including tax and location-specific availability not verified. Comparable value is not necessarily a prior selling price.",
+    "image": "images/IMG_4236.jpeg",
+    "promo_note": "No promo code required. Retailer has not confirmed a specific expiration date; prior Oct 11 date removed."
   }
 ]
