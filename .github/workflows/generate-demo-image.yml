@@ -19,6 +19,7 @@ jobs:
       - name: Render clearly illustrative duffel test graphic
         run: |
           python - <<'PY'
+          # Professional catalog-style replacement generated locally; no external image hosting needed.
           from pathlib import Path
           from PIL import Image, ImageDraw, ImageFont
           out=Path("images/generated")
@@ -31,9 +32,13 @@ jobs:
           d.rectangle((0,0,1080,150),fill="#101828")
           d.text((55,42),"BestDealHunter",font=f(62),fill="white")
           # Stylized generic camo rolling duffel illustration, intentionally not exact product photography.
-          d.rounded_rectangle((90,260,650,760),45,fill="#59664a",outline="#101828",width=18)
-          for x,y in [(140,310),(310,370),(500,300),(220,540),(430,590),(115,650)]:
-              d.ellipse((x,y,x+150,y+90),fill="#8a7b55")
+          d.rounded_rectangle((80,300,665,710),65,fill="#20241d",outline="#101828",width=12)
+          d.rounded_rectangle((105,325,640,680),55,fill="#4f5943",outline="#222",width=6)
+          for x,y,w,h,c in [(130,355,150,80,"#8a7b55"),(320,390,170,90,"#293328"),(485,335,125,100,"#a19470"),(205,520,180,95,"#2f392c"),(430,545,160,85,"#897b57"),(110,600,130,65,"#333b30")]:
+              d.ellipse((x,y,x+w,y+h),fill=c)
+          d.line((130,470,610,470),fill="#151515",width=8)
+          d.arc((185,240,550,430),180,360,fill="#151515",width=24)
+          d.line((165,690,165,760),fill="#151515",width=14); d.line((575,690,575,760),fill="#151515",width=14)
           d.line((180,260,180,155,350,155,350,260),fill="#101828",width=28)
           d.ellipse((150,730,240,820),fill="#101828");d.ellipse((500,730,590,820),fill="#101828")
           d.text((700,280),"55% OFF",font=f(58),fill="#dc2626")
@@ -41,15 +46,15 @@ jobs:
           d.text((700,500),"WAS $199.99",font=f(34),fill="#667085")
           d.text((700,590),"Macy's",font=f(42),fill="#101828")
           d.rectangle((0,900,1080,1080),fill="#101828")
-          d.text((55,930),"AI ILLUSTRATION — ACTUAL PRODUCT MAY VARY",font=f(28),fill="white")
+          d.text((55,930),"ILLUSTRATIVE DEAL IMAGE — ACTUAL PRODUCT MAY VARY",font=f(28),fill="white")
           d.text((55,990),"Price and availability subject to change.",font=f(25),fill="white")
-          im.save(out/"delsey-duffel-illustration-test.jpg",quality=92,optimize=True)
+          im.save(out/"delsey-duffel-professional.jpg",quality=92,optimize=True)
           PY
       - name: Commit generated image
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add images/generated/delsey-duffel-illustration-test.jpg
+          git add images/generated/delsey-duffel-professional.jpg
           if ! git diff --cached --quiet; then
             git commit -m "Generate Delsey duffel illustrative test graphic"
             git push
