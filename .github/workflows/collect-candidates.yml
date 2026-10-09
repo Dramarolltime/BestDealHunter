@@ -1,0 +1,33 @@
+name: Collect retailer deal candidates
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 */6 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: deal-candidate-collection
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Import authorized feed into pending review
+        env:
+          DEAL_FEED_URL: ${{ secrets.DEAL_FEED_URL }}
+        run: python scripts/collect_candidates.py
+      - name: Commit pending candidates if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pending_deals.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Import unverified deal candidates"
+            git push
+          fi
