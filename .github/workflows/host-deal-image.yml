@@ -1,5 +1,9 @@
 name: Publish-ready image hosting
 on:
+  push:
+    paths:
+      - '.github/workflows/host-deal-image.yml'
+      - 'scripts/upload-deal-image.cjs'
   workflow_dispatch:
     inputs:
       image_path:
@@ -18,7 +22,7 @@ jobs:
           node-version: '24'
       - name: Validate image path
         env:
-          IMAGE_PATH: ${{ inputs.image_path }}
+          IMAGE_PATH: ${{ inputs.image_path || 'images/generated/delsey-duffel-professional.jpg' }}
         run: |
           node - <<'NODE'
           const fs = require('node:fs');
@@ -34,7 +38,7 @@ jobs:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-          IMAGE_PATH: ${{ inputs.image_path }}
+          IMAGE_PATH: ${{ inputs.image_path || 'images/generated/delsey-duffel-professional.jpg' }}
         run: |
           set -euo pipefail
           URL="$(node scripts/upload-deal-image.cjs "$IMAGE_PATH")"
