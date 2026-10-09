@@ -1,29 +1,15 @@
 [
   {
-    "store": "Best Buy",
-    "title": "Insignia 55\" Class F70 Series 4K UHD QLED Mini-LED Smart TV with Fire TV",
-    "category": "Electronics",
-    "url": "https://www.bestbuy.com/product/insignia-55-class-f70-series-4k-uhd-qled-mini-led-smart-tv-with-fire-tv/J2FPJK9F77",
-    "price": 299.99,
-    "original_price": 699.99,
-    "verified_date": "2026-10-08",
-    "expires_date": "2026-10-11",
-    "source": "Best Buy product listing, Techtober promotion",
-    "price_evidence": "$299.99, comparable value $699.99, sold by Best Buy, add to cart available. Specific deal expiry not confirmed; recheck regularly.",
-    "image": "images/IMG_4236.jpeg"
-  },
-  {
     "store": "Amazon",
-    "title": "Bose QuietComfort Wireless Noise Cancelling Headphones — White Smoke",
-    "category": "Electronics",
-    "url": "https://link.amazon/B0aOm7LYf",
-    "price": 169,
-    "original_price": 359,
+    "title": "KitchenAid Ribbed Soft Silicone Oven Mitt 2-Pack — Gray, 7.5 x 13 in",
+    "category": "Home & Kitchen",
+    "url": "https://link.amazon/B0iYV850b",
+    "price": 11.62,
+    "original_price": 34.99,
     "verified_date": "2026-10-09",
-    "source": "Amazon product listing screenshots provided by site owner",
-    "price_evidence": "Screenshots Oct 9 2026: White Smoke color, limited-time deal $169, Amazon list price $359, -53%, in stock. Price and stock may change.",
-    "affiliate_disclosure": "As an Amazon Associate, BestDealHunter earns from qualifying purchases.",
-    "image": "images/IMG_4261.jpeg"
+    "published_at": "2026-10-09T07:56:00Z",
+    "image": "images/IMG_4266.jpeg",
+    "source": "Amazon screenshots provided by site owner; gray variant only"
   },
   {
     "store": "Amazon",
@@ -40,14 +26,28 @@
   },
   {
     "store": "Amazon",
-    "title": "KitchenAid Ribbed Soft Silicone Oven Mitt 2-Pack — Gray, 7.5 x 13 in",
-    "category": "Home & Kitchen",
-    "url": "https://link.amazon/B0iYV850b",
-    "price": 11.62,
-    "original_price": 34.99,
+    "title": "Bose QuietComfort Wireless Noise Cancelling Headphones — White Smoke",
+    "category": "Electronics",
+    "url": "https://link.amazon/B0aOm7LYf",
+    "price": 169,
+    "original_price": 359,
     "verified_date": "2026-10-09",
-    "published_at": "2026-10-09T07:56:00Z",
-    "image": "images/IMG_4266.jpeg",
-    "source": "Amazon screenshots provided by site owner; gray variant only"
+    "source": "Amazon product listing screenshots provided by site owner",
+    "price_evidence": "Screenshots Oct 9 2026: White Smoke color, limited-time deal $169, Amazon list price $359, -53%, in stock. Price and stock may change.",
+    "affiliate_disclosure": "As an Amazon Associate, BestDealHunter earns from qualifying purchases.",
+    "image": "images/IMG_4261.jpeg"
+  },
+  {
+    "store": "Best Buy",
+    "title": "Insignia 55\" Class F70 Series 4K UHD QLED Mini-LED Smart TV with Fire TV",
+    "category": "Electronics",
+    "url": "https://www.bestbuy.com/product/insignia-55-class-f70-series-4k-uhd-qled-mini-led-smart-tv-with-fire-tv/J2FPJK9F77",
+    "price": 299.99,
+    "original_price": 699.99,
+    "verified_date": "2026-10-08",
+    "expires_date": "2026-10-11",
+    "source": "Best Buy product listing, Techtober promotion",
+    "price_evidence": "$299.99, comparable value $699.99, sold by Best Buy, add to cart available. Specific deal expiry not confirmed; recheck regularly.",
+    "image": "images/IMG_4236.jpeg"
   }
 ]
