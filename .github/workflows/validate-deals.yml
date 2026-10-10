@@ -3,17 +3,13 @@ on:
   pull_request:
     paths:
       - 'deals.json'
-      - 'scripts/validate_deals.py'
-      - 'scripts/deal_rules.json'
-      - 'scripts/test_*.py'
+      - 'scripts/**'
       - 'index.html'
       - '.github/workflows/validate-deals.yml'
   push:
     paths:
       - 'deals.json'
-      - 'scripts/validate_deals.py'
-      - 'scripts/deal_rules.json'
-      - 'scripts/test_*.py'
+      - 'scripts/**'
       - 'index.html'
       - '.github/workflows/validate-deals.yml'
 jobs:
