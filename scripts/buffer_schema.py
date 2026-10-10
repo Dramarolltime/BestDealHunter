@@ -35,7 +35,7 @@ TYPE = """query Type($name: String!) {
 WATCH_MUTATIONS = ("post", "draft", "idea", "queue", "schedule")
 MAX_TYPES = 60
 # Response types draft-check must recognise: post status values and createPost error members.
-PRIORITY = ["PostStatus", "PostActionPayload", "MutationError", "InvalidInputError", "LimitReachedError",
+PRIORITY = ["InstagramPostMetadataInput", "PostTypeInstagram", "InstagramPostType", "PostType", "PostStatus", "PostActionPayload", "MutationError", "InvalidInputError", "LimitReachedError",
             "RestProxyError", "UnexpectedError", "NotFoundError", "UnauthorizedError", "PostActionSuccess"]
 BUILTIN = {"String", "Int", "Float", "Boolean", "ID", "DateTime"}
 
