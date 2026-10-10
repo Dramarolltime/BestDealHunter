@@ -7,10 +7,10 @@ The system is rolled out in **gated phases**. Each phase after phase 1 needs exp
 | Phase | Scope | Status | Spends money? | Writes to `main`? |
 |---|---|---|---|---|
 | **1. Monitor and report** | Hourly checks, incident issues, status issue, daily digest | **This PR** | No | No |
-| 2. Claude investigation | Claude Code investigates a labeled incident and opens a **draft PR** with tests | Design only, needs approval | Yes (API usage) | No (PRs only, no auto-merge) |
+| 2. Claude investigation | Claude Code (Pro subscription) investigates an incident and opens a PR with tests | Interactive sessions in use; Action design only, needs approval | No (included in Claude Pro) | No (PRs only, no auto-merge) |
 | 3. Deal expiry | Hide or remove stale deals from publication | Design only, needs approval | No | Via PR or a guarded bot commit |
 | 4. Cloudinary upkeep | Re-upload missing or broken hosted images, single uploader | Design only, needs approval | Free tier | Via PR |
-| 5. Instagram via Buffer | Publish verified deals with dedupe and a kill switch | Design only, needs approval | Possibly (Buffer plan) | Post log via PR/commit |
+| 5. Instagram via Buffer | Publish verified deals with dedupe and a kill switch | Design only, needs approval | No (existing Buffer connection) | Post log via PR/commit |
 
 ---
 
@@ -58,27 +58,38 @@ The job also runs the full unit-test suite first, so a broken monitor or validat
 
 ## Phase 2: Claude Code investigation (design, needs approval)
 
-**Trigger:** a maintainer adds the `claude-investigate` label to a `maintenance` incident. The label is a deliberate human gate. It also works around a GitHub limitation: issues opened by the monitor's `GITHUB_TOKEN` cannot trigger other workflows, so investigation can never start on its own.
+**Decision (owner + Alpha, 2026-10-10): use the existing $20/month Claude Pro subscription only.** No Anthropic API key, no paid API usage and no new subscriptions. Every option below runs on the Pro plan's included Claude Code usage and adds no charges. When the plan's usage limit is reached, work pauses until the limit resets rather than billing more. Keep any optional pay-as-you-go "extra usage" setting in the Claude account **turned off**, so reaching the limit can never create a charge.
 
-**Flow:** the `anthropics/claude-code-action` workflow (`on: issues: [labeled]`, if label = `claude-investigate`) reads the incident, the linked run logs and the repo, then:
-1. reproduces the failure locally in the runner;
-2. makes the smallest fix;
-3. runs `python -m unittest discover -s scripts -p 'test_*.py'` and `python scripts/validate_deals.py`. **No PR is opened unless they pass**;
-4. opens a **draft PR** to a `claude/fix-*` branch that links the incident, and comments a summary on the incident.
+**Option A: interactive Claude Code sessions (in use now, recommended default).** The owner opens Claude Code (web, desktop or CLI) and points it at an open `maintenance` incident. Claude reproduces the failure, fixes it on a `claude/*` branch, runs the tests and opens a PR for Alpha. This needs no secrets in the repository.
+
+**Option B: Claude Code GitHub Action with the subscription token (optional, later).** The documented `anthropics/claude-code-action@v1` supports Pro subscriptions through `claude_code_oauth_token`. Its docs say that with an OAuth token, "runs use your Claude subscription instead of API billing." Setup is done **by the owner** and never by Claude:
+1. Run `claude setup-token` locally.
+2. Save the token as the repository secret `CLAUDE_CODE_OAUTH_TOKEN`.
+3. Confirm the Claude GitHub App is installed on the repo.
+
+Runs share the same Pro usage limits as interactive sessions, so each one is capped with `--max-turns` and only starts on a human-applied label.
+
+**Trigger (option B):** a maintainer adds the `claude-investigate` label to a `maintenance` incident. The label is a deliberate human gate. It also works around a GitHub limitation: issues opened by the monitor's `GITHUB_TOKEN` cannot trigger other workflows, so investigation can never start on its own.
+
+**Flow (both options):**
+1. Reproduce the failure.
+2. Make the smallest fix.
+3. Run `python -m unittest discover -s scripts -p 'test_*.py'` and `python scripts/validate_deals.py`. **No PR is opened unless they pass.**
+4. Open a PR (draft for option B) from a `claude/*` branch that links the incident, and comment a summary on the incident.
 
 **Guardrails:**
-- No auto-merge. A human approves and merges.
+- No auto-merge. Alpha or the owner approves and merges.
 - Branch protection on `main`: require PR plus passing checks.
-- `--max-turns` cap and a hard monthly spend limit set in the Anthropic Console.
-- Restricted tools: no secrets in the prompt, and no access to the Cloudinary, Buffer or Impact secrets in that job.
-- At most one concurrent investigation (`concurrency` group).
+- Never an `ANTHROPIC_API_KEY`.
+- `--max-turns` cap, a 30-minute job timeout, and one concurrent run.
+- The job gets no Cloudinary, Buffer or Impact secrets.
 
-**Draft workflow (not active; kept out of `.github/workflows/`).** Pin and verify the action's current inputs before enabling:
+**Draft workflow for option B (not active; kept out of `.github/workflows/`):**
 ```yaml
 on:
   issues:
     types: [labeled]
-permissions: { contents: write, pull-requests: write, issues: write, actions: read }
+permissions: { contents: write, pull-requests: write, issues: write, actions: read, id-token: write }
 concurrency: { group: claude-investigate, cancel-in-progress: false }
 jobs:
   investigate:
@@ -89,13 +100,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: anthropics/claude-code-action@v1   # pin to a commit SHA when enabling
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}   # Pro subscription, not API billing
           prompt: |
             Investigate maintenance incident #${{ github.event.issue.number }}.
             Reproduce, make the minimal fix, run the unit tests and validator,
-            and open a draft PR only if they pass. Never touch secrets, deals
-            prices, or publishing settings. Do not merge.
-          claude_args: --max-turns 30
+            and open a draft PR only if they pass. Never touch secrets, deal
+            prices, verification dates, or publishing settings. Do not merge.
+          claude_args: --max-turns 25
 ```
 
 ## Phase 3: deal expiry (design, needs approval)
@@ -127,14 +138,14 @@ Per Alpha: reuse the existing Buffer connection (Instagram channel `best_dealhun
 | GitHub Actions: existing workflows | hourly checks + publication gate + 6-hourly jobs (~2,300 short runs) | $0 public. Private: may exceed 2,000 free min → ~$0.008/min overage (verify current rates) |
 | GitHub Pages | Static site | $0 |
 | Cloudinary | A few dozen images, low bandwidth | $0 on the free plan (credit-based allowance) |
-| Claude Code investigations (phase 2) | ~20 incidents/month, ~0.5M input + 20K output tokens each | **~$15–25** with Claude Sonnet 5.5 ($2/$10 per M tokens). **~$30–50** with Claude Opus 5.5 ($4/$20). Prompt caching lowers this. Set a hard Console spend limit (e.g. $50). |
-| Buffer (phase 5) | 1 Instagram channel | $0 on the free plan if its scheduled-post limit suffices; otherwise a paid per-channel plan (verify current Buffer pricing) |
+| Claude Code (phase 2) | Existing Claude Pro subscription; interactive sessions, optionally the GitHub Action via `CLAUDE_CODE_OAUTH_TOKEN` | **$0 extra** (already paying $20/month). Work pauses at the plan's usage limit; no API billing. |
+| Buffer (phase 5) | Existing Buffer connection, 1 Instagram channel | $0 on the current plan. **No upgrade will be purchased**; if the free plan's queue limit is hit, posts wait. |
 | AI image provider | Not used. Deterministic templates per Alpha | $0 (future: capped budget) |
 | External uptime monitor (optional) | 1 HTTP check, 5-min interval | $0 (free tiers) |
 | **Total** | Phase 1 only | **$0** |
-| | Phases 1–5 with Sonnet 5.5 | roughly **$15–40** |
+| | Phases 1–5 | **$0 beyond the existing Claude Pro subscription** |
 
-Token prices are Anthropic list prices as of 2026-10. Re-check Buffer, Cloudinary and GitHub pricing pages before enabling a phase.
+Policy: no paid API services, no new subscriptions, no plan upgrades. Re-check Buffer, Cloudinary and GitHub free-tier limits before enabling a phase. If a limit would be exceeded, the system degrades (waits or skips) instead of buying capacity.
 
 ## Credentials (names only; values live in GitHub Actions secrets, never in code, logs or issues)
 
@@ -143,7 +154,7 @@ Token prices are Anthropic list prices as of 2026-10. Re-check Buffer, Cloudinar
 | `GITHUB_TOKEN` | automatic | monitor (phase 1) | built in, nothing to configure |
 | `SITE_URL` | variable (optional) | monitor | optional |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | secrets | uploaders (phase 4) | already configured |
-| `ANTHROPIC_API_KEY` (or the Claude GitHub App + `CLAUDE_CODE_OAUTH_TOKEN`) | secret | Claude investigation (phase 2) | **needs owner approval** |
+| `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`, Pro subscription) | secret | optional Claude Code Action (phase 2, option B) | **owner creates it only if option B is approved**; `ANTHROPIC_API_KEY` is not used |
 | Buffer access token (name TBD, e.g. `BUFFER_ACCESS_TOKEN`) | secret | publisher (phase 5) | **auth method to confirm** |
 | `INSTAGRAM_PUBLISH_ENABLED` | variable (kill switch) | publisher | create as `false` |
 | `IMPACT_ACCOUNT_SID`, `IMPACT_AUTH_TOKEN`, `DEAL_FEED_URL` | secrets | discovery | existing; retailer access not yet approved |
