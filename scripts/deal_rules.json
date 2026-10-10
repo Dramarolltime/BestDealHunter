@@ -1,0 +1,7 @@
+{
+  "stores": ["Amazon", "eBay", "Walmart", "Target", "Best Buy", "Home Depot", "Lowe's", "Macy's"],
+  "categories": ["Electronics", "Home", "Fashion", "Beauty", "Sports", "Other"],
+  "retailer_domains": ["macys.com", "bestbuy.com", "amazon.com", "link.amazon", "walmart.com", "target.com", "ebay.com", "homedepot.com", "lowes.com"],
+  "min_discount_percent": 50,
+  "max_verification_age_days": 2
+}
