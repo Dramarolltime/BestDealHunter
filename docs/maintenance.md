@@ -43,7 +43,7 @@ The job also runs the full unit-test suite first, so a broken monitor or validat
 ### Safety
 - Permissions: `contents: read`, `actions: read`, `issues: write`. The workflow cannot push code.
 - Uses only the built-in `GITHUB_TOKEN`. No secrets are read or printed.
-- Runs from branches and manual runs default to **dry-run**: the report goes to the job summary and no issues are written. Issues are written only by scheduled runs on `main`, or by a manual run on `main` with *dry_run* unchecked.
+- Runs from branches, pull requests and manual runs default to **dry-run**: the report goes to the job summary and no issues are written. Issues are written only by scheduled runs on `main`, or by a manual run on `main` with *dry_run* unchecked.
 - Limitation: if GitHub Actions itself is down, nothing runs. An optional free external uptime monitor (e.g. UptimeRobot) can cover that independently.
 
 ### Configuration
