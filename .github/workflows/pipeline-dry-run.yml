@@ -1,0 +1,37 @@
+name: Pipeline dry run
+# End-to-end dry run of discovery → validation → cards → Cloudinary plan → Buffer plan.
+# No network calls to retailers/Cloudinary/Buffer, no uploads, commits or posts.
+# Secrets are never passed in: only whether each discovery source is configured.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '29 7 * * *'   # daily
+  pull_request:
+    paths:
+      - 'scripts/**'
+      - 'deals.json'
+      - 'cloudinary-images.json'
+      - 'posts.json'
+      - 'images/generated/**'
+      - '.github/workflows/pipeline-dry-run.yml'
+permissions:
+  contents: read
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Run every pipeline stage (no side effects)
+        env:
+          DEAL_FEED_CONFIGURED: ${{ secrets.DEAL_FEED_URL != '' }}
+          EBAY_CONFIGURED: ${{ secrets.EBAY_CLIENT_ID != '' && secrets.EBAY_CLIENT_SECRET != '' }}
+          IMPACT_CONFIGURED: ${{ secrets.IMPACT_ACCOUNT_SID != '' && secrets.IMPACT_AUTH_TOKEN != '' }}
+          INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
+        run: python scripts/pipeline_dry_run.py
