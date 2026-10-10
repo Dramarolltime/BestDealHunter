@@ -16,27 +16,33 @@ def deal(verified, **extra):
 
 class FreshnessTests(unittest.TestCase):
     def test_fresh_deals_pass(self):
-        results = monitor.check_freshness([deal("2026-10-09")], TODAY)
-        self.assertTrue(results[0]["ok"])
-        self.assertEqual(len(results), 1)
+        results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-09")], TODAY)}
+        self.assertTrue(results["stale-deals"]["ok"])
+        self.assertIn("1 active, 0 archived", results["stale-deals"]["details"])
+        self.assertNotIn("expiring-deals", results)
 
-    def test_stale_deal_flagged_for_unpublishing(self):
-        result = monitor.check_freshness([deal("2026-10-07")], TODAY)[0]
-        self.assertFalse(result["ok"])
-        self.assertIn("Would unpublish", result["details"])
+    def test_stale_deal_is_archived_not_an_incident(self):
+        results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-07"), deal("2026-10-10")], TODAY)}
+        self.assertTrue(results["stale-deals"]["ok"])
+        self.assertIn("1 active, 1 archived", results["stale-deals"]["details"])
+        self.assertIn("never deleted", results["stale-deals"]["details"])
 
-    def test_past_expiry_flagged_even_if_recently_verified(self):
-        result = monitor.check_freshness([deal("2026-10-10", expires_date="2026-10-09")], TODAY)[0]
-        self.assertFalse(result["ok"])
-        self.assertIn("expired 2026-10-09", result["details"])
+    def test_past_expiry_is_archived(self):
+        details = monitor.check_freshness([deal("2026-10-10", expires_date="2026-10-09")], TODAY)[0]["details"]
+        self.assertIn("offer ended 2026-10-09", details)
 
-    def test_missing_date_is_stale(self):
-        self.assertFalse(monitor.check_freshness([{"title": "x"}], TODAY)[0]["ok"])
+    def test_warning_one_day_before_archive(self):
+        results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-08")], TODAY)}
+        self.assertEqual(results["expiring-deals"]["severity"], "warning")
 
-    def test_warning_one_day_before_stale(self):
-        results = monitor.check_freshness([deal("2026-10-08")], TODAY)
-        self.assertTrue(results[0]["ok"])
-        self.assertEqual((results[1]["key"], results[1]["severity"]), ("expiring-deals", "warning"))
+    def test_no_active_deals_warns(self):
+        results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-01")], TODAY)}
+        self.assertEqual((results["no-active-deals"]["ok"], results["no-active-deals"]["severity"]), (False, "warning"))
+
+    def test_invalid_feed_is_an_incident(self):
+        results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-09")], TODAY)}
+        self.assertFalse(results["feed-valid"]["ok"])  # test deal lacks url/prices/evidence
+        self.assertEqual(results["feed-valid"]["severity"], "error")
 
 
 class SiteAndImageTests(unittest.TestCase):

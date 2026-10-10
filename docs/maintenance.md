@@ -24,8 +24,10 @@ The system is rolled out in **gated phases**. Each phase after phase 1 needs exp
 |---|---|---|---|
 | Website | `site` | Site URL not HTTP 200 or page content missing (3 attempts) | Yes |
 | Published feed | `public-feed` | Live `deals.json` unreachable or not a JSON array | Yes |
-| Deal freshness | `stale-deals` | Any published deal is older than `max_verification_age_days` (`scripts/deal_rules.json`) or past `expires_date`. Lists what **would be unpublished**. | Yes |
-| Going stale soon | `expiring-deals` | A deal reaches the freshness limit within 24h | No (warning) |
+| Deal freshness | `stale-deals` | Never fails: reports active vs archived deals. Archived deals (stale, past `expires_date`, or `status: archived`) stay on the site under **Past Deals** labelled "Expired · price not verified" (archive policy, #1) | No |
+| Feed validity | `feed-valid` | Published `deals.json` fails `validate_feed` (structure, evidence, future dates) | Yes |
+| No active deals | `no-active-deals` | Every published deal is archived | No (warning) |
+| Archiving soon | `expiring-deals` | A deal moves to Past Deals within 24h | No (warning) |
 | Cloudinary | `cloudinary` | A URL in `cloudinary-images.json` isn't HTTP 200 `image/*` | Yes |
 | Unhosted images | `unhosted-images` | A deal's local image has no Cloudinary URL | No (warning) |
 | Pending queue | `pending-queue` | `pending_deals.json` isn't an array of objects | Yes |
@@ -51,7 +53,7 @@ The job also runs the full unit-test suite first, so a broken monitor or validat
 
 ### Expected first findings once merged
 - `Hourly deal checks` failing on main (Pillow), until PR #2 merges.
-- `stale-deals` from **2026-10-12**, when the 2026-10-09 verifications pass the 2-day limit.
+- From **2026-10-12** the 2026-10-09 deals move to Past Deals. That's reported in the status issue and is not an incident.
 - `unhosted-images` warning for the Delsey illustration. This is intentional: the uploader skips `images/generated/`.
 
 ---
@@ -109,10 +111,10 @@ jobs:
           claude_args: --max-turns 25
 ```
 
-## Phase 3: deal expiry (design, needs approval)
-- Simplest and safest: make `index.html` hide deals older than the freshness limit or past `expires_date` (client-side, no data deletion). The data stays for re-verification.
-- Alternative: a scheduled job moves stale deals from `deals.json` to `expired_deals.json` and opens a PR (or commits, once trusted).
-- Never deletes evidence. Re-verification needs approved retailer data access, which isn't established yet.
+## Phase 3: deal archive (implemented, owner policy in #1)
+- Published deals are **never deleted**. Once stale, past `expires_date`, or marked `status: "archived"`, a deal moves to the site's **Past Deals (expired)** tab. There it shows "Expired · price not verified" and "Price at time of posting", and it's excluded from the active tabs, filters and Instagram eligibility.
+- `validate_feed` accepts archived entries, so the hourly check doesn't fail because history is kept. The strict `validate` (approvals, refreshes, cards, posts) still requires active deals.
+- Verification dates are never refreshed automatically. Reactivating a deal requires real re-verification.
 
 ## Phase 4: Cloudinary and website upkeep (design, needs approval)
 - Consolidate the three uploaders into one: content-hash `public_id`, include `images/generated/`, and **merge** results into `cloudinary-images.json` instead of overwriting it.
