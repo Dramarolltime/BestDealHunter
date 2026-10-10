@@ -40,5 +40,25 @@
       "Publicly accessible branded image for this item not prepared or verified"
     ],
     "notes": "Review candidate only. Do not publish to website or Instagram until all blockers resolved."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Haven Round Embossed 32 Pc. Dinnerware Set, Service for 8",
+    "url": "https://www.macys.com/shop/product/haven-round-embossed-32-pc.-dinnerware-set-service-for-8?ID=22769453",
+    "listed_price": 46.93,
+    "retailer_previous_price": 140,
+    "listed_discount_percent": 66,
+    "discovered_date": "2026-10-10",
+    "promo_code": null,
+    "promo_note": "Coupons excluded; no code required for displayed clearance price. Last Act final sale.",
+    "source": "Official Macy's product page, refreshed Oct 10, 2026, Web ID 22769453. Add To Bag displayed.",
+    "blockers": [
+      "Final checkout total, shipping, taxes, ZIP-specific availability not confirmed",
+      "Historical reference price and expiration not independently verified",
+      "Public branded image not prepared or checked"
+    ],
+    "notes": "Do not publish until blockers cleared."
   }
 ]
