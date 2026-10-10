@@ -113,6 +113,22 @@ class SyncTests(unittest.TestCase):
     def test_generated_cards_are_included(self):
         self.assertEqual(cu.deal_images([{"image": "images/generated/card.jpg"}]), ["images/generated/card.jpg"])
 
+    def test_square_card_brings_its_feed_card(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            saved = cu.ROOT
+            cu.ROOT = Path(tmp)
+            try:
+                (cu.ROOT / "images" / "generated").mkdir(parents=True)
+                (cu.ROOT / "images" / "generated" / "deal-0123456789ab-feed.jpg").write_bytes(b"x")
+                square = "images/generated/deal-0123456789ab-square.jpg"
+                self.assertEqual(cu.deal_images([{"image": square}]),
+                                 [square, "images/generated/deal-0123456789ab-feed.jpg"])
+                self.assertEqual(cu.deal_images([{"image": "images/generated/deal-ffffffffffff-square.jpg"}]),
+                                 ["images/generated/deal-ffffffffffff-square.jpg"])  # no feed file: nothing extra
+            finally:
+                cu.ROOT = saved
+
     def test_repository_mapping_is_valid(self):
         for entry in cu.load_mapping():
             self.assertTrue(entry["cloudinary_url"].startswith("https://res.cloudinary.com/"))

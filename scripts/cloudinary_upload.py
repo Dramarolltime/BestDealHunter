@@ -108,12 +108,21 @@ def upload(path, creds, transport=http, now=time.time):
     return url, digest
 
 
+SQUARE_CARD = re.compile(r"(images/generated/deal-[0-9a-f]{12})-square\.jpg")
+
+
 def deal_images(deals):
+    """Each deal's site image, plus the 4:5 feed card next to a square card (used for Instagram)."""
     seen = []
     for deal in deals:
         image = deal.get("image") if isinstance(deal, dict) else None
-        if isinstance(image, str) and image.startswith("images/") and image not in seen:
-            seen.append(image)
+        if not (isinstance(image, str) and image.startswith("images/")):
+            continue
+        candidates = [image]
+        match = SQUARE_CARD.fullmatch(image)
+        if match and (ROOT / f"{match.group(1)}-feed.jpg").is_file():
+            candidates.append(f"{match.group(1)}-feed.jpg")
+        seen.extend(c for c in candidates if c not in seen)
     return seen
 
 
@@ -146,7 +155,11 @@ def needs_upload(mapping, image, digest):
 
 
 def sync(deals, mapping, creds, transport=http, dry_run=False, log=print):
-    titles = {d.get("image"): d.get("title") for d in deals if isinstance(d, dict)}
+    titles = {}
+    for d in deals:
+        if isinstance(d, dict) and isinstance(d.get("image"), str):
+            titles[d["image"]] = d.get("title")
+            titles[d["image"].replace("-square.jpg", "-feed.jpg")] = d.get("title")
     uploaded, failed = 0, 0
     for image in deal_images(deals):
         try:
