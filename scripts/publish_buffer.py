@@ -31,7 +31,7 @@ from validate_deals import validate
 ROOT = Path(__file__).resolve().parents[1]
 POSTS = ROOT / "posts.json"
 CHANNEL = "best_dealhunter"  # existing Buffer-connected Instagram channel (per Alpha)
-CARD = re.compile(r"images/generated/deal-[0-9a-f]{12}-feed\.jpg")
+CARD = re.compile(r"images/generated/deal-([0-9a-f]{12})-(?:feed|square)\.jpg")
 CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 30
 MAX_POSTS_PER_RUN = 1
 
@@ -45,6 +45,12 @@ def hosted_urls(mapping):
     return {m.get("image"): m.get("cloudinary_url") for m in mapping if isinstance(m, dict)}
 
 
+def feed_card(deal):
+    """The 4:5 Instagram card for a deal whose image is one of its branded cards (site shows the square)."""
+    match = CARD.fullmatch(str(deal.get("image") or ""))
+    return f"images/generated/deal-{match.group(1)}-feed.jpg" if match else None
+
+
 def eligibility(deal, hosted, posted_keys, today):
     """Return (eligible, reason). Every rule must pass; the first failure is reported."""
     try:
@@ -55,12 +61,12 @@ def eligibility(deal, hosted, posted_keys, today):
         return False, "not approved for posting (needs publication_approved: true from Alpha/owner)"
     if deal.get("store") == "Amazon":
         return False, "Amazon prices need approved Amazon data access before social posting"
-    image = deal.get("image", "")
-    if not CARD.fullmatch(image or ""):
-        return False, "image is not a generated branded card (images/generated/deal-<id>-feed.jpg)"
+    image = feed_card(deal)
+    if not image:
+        return False, "image is not a generated branded card (images/generated/deal-<id>-square/feed.jpg)"
     url = hosted.get(image) or ""
     if not (url.startswith("https://res.cloudinary.com/") and url.lower().endswith((".jpg", ".jpeg"))):
-        return False, "branded card is not hosted on Cloudinary as a JPEG"
+        return False, "4:5 feed card is not hosted on Cloudinary as a JPEG"
     if post_key(deal) in posted_keys:
         return False, "already queued or posted at this price"
     return True, "eligible"
@@ -100,7 +106,7 @@ def plan(deals, mapping, posts, today):
             continue
         try:
             post = {"key": post_key(deal), "channel": CHANNEL, "deal_url": deal["url"], "title": deal["title"],
-                    "price": deal["price"], "image_url": hosted[deal["image"]], "text": caption(deal)}
+                    "price": deal["price"], "image_url": hosted[feed_card(deal)], "text": caption(deal)}
         except CardError as exc:
             skipped.append((deal.get("title", "Untitled"), str(exc)))
             continue

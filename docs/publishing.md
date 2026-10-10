@@ -8,8 +8,9 @@ Status: **dry run only.** `scripts/publish_buffer.py` plans posts for the existi
    - passes `validate_deals.py` today (fresh, ≥50% off, evidence, allowed store);
    - `publication_approved: true` on the deal, set by Alpha or the owner in a reviewed PR;
    - **not Amazon**, until approved Amazon data access exists (#1);
-   - its `image` is a generated branded card (`images/generated/deal-<id>-feed.jpg`) from `deal_graphics.py`, so no baked-price composites or illustrations;
-   - that card is hosted on Cloudinary as a JPEG;
+   - its `image` is a generated branded card from `deal_graphics.py` (the site shows `deal-<id>-square.jpg`), so no baked-price composites or illustrations;
+   - the matching 4:5 `deal-<id>-feed.jpg` is hosted on Cloudinary as a JPEG (that's the one posted);
+   - it's **active**: archived/expired deals (Past Deals) are never posted, because strict validation rejects them;
    - it isn't already in `posts.json` at the same URL and price (**duplicate prevention**).
 3. Builds the caption from the same numbers as the card: % off, price, reference label and value, savings, verification date, "prices may change", `#ad`, the commission disclosure and "Link in bio".
 4. Plans **at most 1 post per run** and writes the plan to the job summary.

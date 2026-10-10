@@ -37,11 +37,18 @@ class EligibilityTests(unittest.TestCase):
             "Amazon": deal(store="Amazon", url="https://www.amazon.com/dp/X"),
             "not a generated branded card": deal(image="images/IMG_4236.jpeg"),
             "not hosted": deal(image="images/generated/deal-ffffffffffff-feed.jpg"),
+            "fails validation (": deal(verified_date="2026-10-07"),  # archived deals never post
         }
         for expected, d in cases.items():
             ok, reason = self.check(d)
             self.assertFalse(ok, expected)
             self.assertIn(expected, reason)
+
+    def test_square_site_image_posts_its_feed_card(self):
+        square = "images/generated/deal-0123456789ab-square.jpg"
+        self.assertEqual(self.check(deal(image=square)), (True, "eligible"))
+        ready, _ = pb.plan([deal(image=square)], HOSTED, [], TODAY)
+        self.assertEqual(ready[0]["image_url"], HOSTED[0]["cloudinary_url"])
 
     def test_png_or_foreign_host_is_refused(self):
         for url in ("https://res.cloudinary.com/x/a.png", "https://evil.example/a.jpg"):
