@@ -111,13 +111,93 @@ class KillSwitchTests(unittest.TestCase):
             with mock.patch("sys.stdout"):
                 self.assertEqual(pb.main(["--live"]), 2)
 
-    def test_client_cannot_post_until_implemented(self):
-        with self.assertRaises(NotImplementedError):
-            self.run_main({"INSTAGRAM_PUBLISH_ENABLED": "true", "BUFFER_API_KEY": "x"}, ["--live"])
+    def test_live_refused_without_channel(self):
+        self.assertEqual(self.run_main({"INSTAGRAM_PUBLISH_ENABLED": "true", "BUFFER_API_KEY": "x"}, ["--live"]), 2)
+
+    def test_dry_run_approval_cannot_be_combined_with_live(self):
+        self.assertEqual(self.run_main({}, ["--live", "--approve-for-dry-run", "abc"]), 2)
+        self.assertEqual(self.run_main({}, ["--draft-check", "--approve-for-dry-run", "abc"]), 2)
 
     def test_post_log_starts_empty(self):
         import json
         self.assertEqual(json.loads(pb.POSTS.read_text()), [])
+
+
+class FakeBuffer:
+    """Stands in for Buffer's GraphQL endpoint; records every request."""
+
+    def __init__(self, fail=None, status="sent"):
+        self.requests, self.fail, self.status = [], fail, status
+
+    def __call__(self, payload):
+        self.requests.append(payload)
+        if self.fail == "transport":
+            raise TimeoutError("network timeout")
+        if "createPost" in payload["query"]:
+            if self.fail == "mutation":
+                return {"data": {"createPost": {"message": "image URL not reachable"}}}
+            return {"data": {"createPost": {"post": {"id": f"p{len(self.requests)}", "status": "buffer"}}}}
+        return {"data": {"post": {"id": payload["variables"]["input"]["id"], "status": self.status}}}
+
+
+class PublishLedgerTests(unittest.TestCase):
+    def ready(self):
+        return pb.plan([deal()], HOSTED, [], TODAY)[0]
+
+    def test_post_is_sent_with_image_url_and_caption(self):
+        fake, posts = FakeBuffer(), []
+        rows = pb.publish(self.ready(), posts, pb.BufferClient("k", fake), "chan1", "now", log=lambda *_: None)
+        sent = fake.requests[0]["variables"]["input"]
+        self.assertEqual((sent["channelId"], sent["assets"][0]["image"]["url"]), ("chan1", HOSTED[0]["cloudinary_url"]))
+        self.assertIn("#ad", sent["text"])
+        self.assertEqual((rows[0]["status"], rows[0]["buffer_post_id"]), ("queued", "p1"))
+
+    def test_same_deal_can_never_be_queued_twice(self):
+        fake, posts = FakeBuffer(), []
+        client = pb.BufferClient("k", fake)
+        pb.publish(self.ready(), posts, client, "c", "t1", log=lambda *_: None)
+        # 1) re-planning from the ledger skips it
+        ready, skipped = pb.plan([deal()], HOSTED, posts, TODAY)
+        self.assertEqual(ready, [])
+        self.assertIn("already queued or posted", skipped[0][1])
+        # 2) even a stale plan replayed against the ledger is blocked before any API call
+        stale_plan = pb.plan([deal()], HOSTED, [], TODAY)[0]
+        pb.publish(stale_plan, posts, client, "c", "t2", log=lambda *_: None)
+        self.assertEqual(len([r for r in fake.requests if "createPost" in r["query"]]), 1)
+        self.assertEqual(len(posts), 1)
+
+    def test_reservation_survives_errors_and_blocks_retry(self):
+        for failure in ("transport", "mutation"):
+            posts = []
+            pb.publish(self.ready(), posts, pb.BufferClient("k", FakeBuffer(fail=failure)), "c", "t", log=lambda *_: None)
+            self.assertEqual(posts[0]["status"], "error")
+            self.assertEqual(pb.plan([deal()], HOSTED, posts, TODAY)[0], [])  # no automatic retry
+
+    def test_draft_check_marks_draft(self):
+        fake, posts = FakeBuffer(), []
+        pb.publish(self.ready(), posts, pb.BufferClient("k", fake), "c", "t", draft=True, log=lambda *_: None)
+        self.assertTrue(fake.requests[0]["variables"]["input"]["saveToDraft"])
+        self.assertEqual(posts[0]["status"], "draft")
+
+    def test_sent_only_when_buffer_reports_it(self):
+        posts = [{"key": "k1", "status": "queued", "buffer_post_id": "p9"}]
+        pb.refresh_statuses(posts, pb.BufferClient("k", FakeBuffer(status="buffer")))
+        self.assertEqual(posts[0]["status"], "queued")
+        pb.refresh_statuses(posts, pb.BufferClient("k", FakeBuffer(status="sent")))
+        self.assertEqual(posts[0]["status"], "sent")
+
+    def test_graphql_errors_raise(self):
+        client = pb.BufferClient("k", lambda payload: {"errors": [{"message": "Unauthorized"}]})
+        with self.assertRaises(pb.BufferError):
+            client.create_post("c", "t", "https://res.cloudinary.com/x.jpg")
+
+    def test_dry_run_approval_keeps_other_gates(self):
+        amazon = deal(store="Amazon", url="https://www.amazon.com/dp/X", publication_approved=False)
+        from deal_graphics import card_id
+        approved = pb.apply_dry_run_approval([amazon], {card_id(amazon)})
+        self.assertTrue(approved[0]["publication_approved"])
+        self.assertFalse(amazon["publication_approved"])  # original data untouched
+        self.assertIn("Amazon", pb.plan(approved, HOSTED, [], TODAY)[1][0][1])
 
 
 if __name__ == "__main__":

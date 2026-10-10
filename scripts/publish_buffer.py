@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
-"""Buffer -> Instagram publisher. DRY-RUN ONLY in this version.
+"""Buffer -> Instagram publisher. Dry run by default; live posting stays locked.
 
-What it does now:
-  * decides which published deals are eligible to post and explains every skip;
-  * builds the exact post (Cloudinary JPEG URL + caption with disclosures);
-  * de-duplicates against posts.json so a deal/price is never queued twice;
-  * writes the plan to stdout and the GitHub job summary.
+A dry run decides which published deals are eligible, explains every skip, and builds the
+exact post (Cloudinary 4:5 JPEG URL + caption with disclosures) without contacting Buffer.
 
-What it cannot do yet: talk to Buffer. `BufferClient` is deliberately not implemented
-until Alpha confirms the Buffer API schema and how GitHub Actions authenticates (#1).
-Even then, a live run needs ALL of: repo variable INSTAGRAM_PUBLISH_ENABLED == "true",
-the --live flag, a BUFFER_API_KEY secret, and a deal with `publication_approved: true`.
-A post only counts as published when Buffer later reports it as `sent`.
+Duplicate protection: posts.json is a ledger keyed by deal URL + price. A row is written
+BEFORE Buffer is called (Buffer's createPost has no idempotency key), and any existing row
+blocks that key, so the same deal at the same price can never be queued twice, even if a
+run crashes mid-call.
+
+Live (--live) needs ALL of: repo variable INSTAGRAM_PUBLISH_ENABLED == "true", the
+BUFFER_API_KEY secret, the BUFFER_CHANNEL_ID variable, and a deal with
+`publication_approved: true`. --draft-check creates a Buffer DRAFT (never published) to
+verify key, channel and image URL. A post is recorded as `sent` only when Buffer says so.
 
 Usage:
-  python scripts/publish_buffer.py            # dry run (default)
+  python scripts/publish_buffer.py                                  # dry run
+  python scripts/publish_buffer.py --approve-for-dry-run <card id>  # dry run one deal as if approved
 """
 import argparse
 import hashlib
@@ -118,16 +120,110 @@ def plan(deals, mapping, posts, today):
     return ready, skipped
 
 
-class BufferClient:
-    """Placeholder. Implement only after the Buffer API schema and auth are confirmed (#1).
+BUFFER_API = "https://api.buffer.com"
+CREATE_POST = """
+mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    ... on PostActionSuccess { post { id status dueAt } }
+    ... on MutationError { message }
+  }
+}"""
+POST_STATUS = """
+query PostStatus($input: PostInput!) { post(input: $input) { id status sentAt error { message } } }"""
 
-    Expected shape: create a queued Instagram post on channel `best_dealhunter` with one
-    image URL and caption, returning Buffer's post id; and read a post's status so the
-    log is updated to `sent` or `error` only from Buffer's own answer.
+
+class BufferError(Exception):
+    pass
+
+
+class BufferClient:
+    """Buffer GraphQL client (api.buffer.com, personal API key as Bearer token).
+
+    Shapes follow Buffer's published examples: createPost(input: {text, channelId,
+    schedulingType, mode, assets: [{image: {url}}]}) returning PostActionSuccess or
+    MutationError (errors arrive as HTTP 200, so the body is always checked). The exact
+    enum values and the post(...) status query must be confirmed against the account's
+    API docs with the draft check before any live post (docs/publishing.md).
     """
 
-    def __init__(self, api_key):
-        raise NotImplementedError("Buffer client not enabled: API schema/auth not yet confirmed by Alpha")
+    def __init__(self, api_key, transport=None):
+        if not api_key:
+            raise BufferError("BUFFER_API_KEY is not configured")
+        self.api_key, self.transport = api_key, transport or self._http
+
+    def _http(self, payload):
+        from urllib import request
+        req = request.Request(BUFFER_API, data=json.dumps(payload).encode(), method="POST", headers={
+            "Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json",
+            "User-Agent": "BestDealHunter/1.0"})
+        with request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read())
+
+    def _call(self, query, variables):
+        data = self.transport({"query": query, "variables": variables})
+        if data.get("errors"):
+            raise BufferError("; ".join(str(e.get("message", e)) for e in data["errors"]))
+        return data.get("data") or {}
+
+    def create_post(self, channel_id, text, image_url, draft=False):
+        payload = {"text": text, "channelId": channel_id, "schedulingType": "automatic", "mode": "addToQueue",
+                   "assets": [{"image": {"url": image_url}}]}
+        if draft:
+            payload["saveToDraft"] = True
+        result = self._call(CREATE_POST, {"input": payload}).get("createPost") or {}
+        if "message" in result and "post" not in result:
+            raise BufferError(f"Buffer rejected the post: {result['message']}")
+        post = result.get("post") or {}
+        if not post.get("id"):
+            raise BufferError("Buffer response had no post id")
+        return post
+
+    def post_status(self, post_id):
+        return (self._call(POST_STATUS, {"input": {"id": post_id}}).get("post") or {}).get("status")
+
+
+def publish(ready, posts, client, channel_id, now, draft=False, log=print):
+    """Send planned posts with reserve-before-send duplicate protection.
+
+    A ledger row is written to `posts` BEFORE calling Buffer, because createPost has no
+    idempotency key: if the run dies mid-call, the row (status "reserved") still blocks
+    any retry until a person checks Buffer and clears it. Every existing row blocks its key.
+    """
+    taken = {p.get("key") for p in posts if isinstance(p, dict)}
+    results = []
+    for post in ready:
+        if post["key"] in taken:
+            log(f"Duplicate blocked: {post['title']} ({post['key']})")
+            continue
+        row = {"key": post["key"], "deal_url": post["deal_url"], "title": post["title"], "price": post["price"],
+               "image_url": post["image_url"], "status": "reserved", "reserved_at": now, "draft": draft}
+        posts.append(row)
+        taken.add(post["key"])
+        try:
+            created = client.create_post(channel_id, post["text"], post["image_url"], draft=draft)
+        except Exception as exc:  # keep the reservation: a timeout may still have created the post
+            row.update(status="error", error=str(exc)[:300])
+            log(f"Buffer error for {post['title']}: {exc}. Reservation kept; check Buffer before retrying.")
+            results.append(row)
+            continue
+        row.update(status="draft" if draft else "queued", buffer_post_id=created["id"])
+        log(f"{'Draft created' if draft else 'Queued'} in Buffer: {post['title']} (id {created['id']})")
+        results.append(row)
+    return results
+
+
+def refresh_statuses(posts, client):
+    """Record `sent` only when Buffer itself reports it."""
+    changed = 0
+    for row in posts:
+        if row.get("status") == "queued" and row.get("buffer_post_id"):
+            status = client.post_status(row["buffer_post_id"])
+            if status and status != row.get("buffer_status"):
+                row["buffer_status"] = status
+                if str(status).lower() == "sent":
+                    row["status"] = "sent"
+                changed += 1
+    return changed
 
 
 def render_report(ready, skipped, live):
@@ -148,12 +244,32 @@ def load(path, default):
         return default
 
 
+def apply_dry_run_approval(deals, card_ids):
+    """Dry-run only: treat the named deals (by card id) as approved without changing data."""
+    from deal_graphics import card_id
+    out = []
+    for deal in deals:
+        if isinstance(deal, dict) and card_id(deal) in card_ids:
+            deal = dict(deal, publication_approved=True)
+        out.append(deal)
+    return out
+
+
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Plan (and later publish) Instagram posts via Buffer")
-    parser.add_argument("--live", action="store_true", help="attempt real posting (refused unless every gate passes)")
+    parser = argparse.ArgumentParser(description="Plan (and, behind every gate, publish) Instagram posts via Buffer")
+    parser.add_argument("--live", action="store_true", help="queue real posts (refused unless every gate passes)")
+    parser.add_argument("--draft-check", action="store_true",
+                        help="create a Buffer DRAFT (never published) to verify key, channel and image URL")
+    parser.add_argument("--approve-for-dry-run", action="append", default=[], metavar="CARD_ID",
+                        help="dry run only: treat this deal as approved without editing deals.json")
     args = parser.parse_args(argv)
+    if args.approve_for_dry_run and (args.live or args.draft_check):
+        print("--approve-for-dry-run is only allowed in dry runs.")
+        return 2
 
     deals = load(ROOT / "deals.json", [])
+    if args.approve_for_dry_run:
+        deals = apply_dry_run_approval(deals, set(args.approve_for_dry_run))
     mapping = load(ROOT / "cloudinary-images.json", [])
     posts = load(POSTS, [])
     ready, skipped = plan(deals, mapping, posts, date.today())
@@ -164,16 +280,23 @@ def main(argv=None):
         with open(summary, "a", encoding="utf-8") as fh:
             fh.write(report + "\n")
 
-    if not args.live:
+    if not (args.live or args.draft_check):
         return 0
-    if os.environ.get("INSTAGRAM_PUBLISH_ENABLED") != "true":
+    if args.live and os.environ.get("INSTAGRAM_PUBLISH_ENABLED") != "true":
         print("Live posting refused: INSTAGRAM_PUBLISH_ENABLED is not 'true' (kill switch is on).")
         return 2
-    if not os.environ.get("BUFFER_API_KEY"):
-        print("Live posting refused: BUFFER_API_KEY secret is not configured.")
+    channel = os.environ.get("BUFFER_CHANNEL_ID", "")
+    if not os.environ.get("BUFFER_API_KEY") or not channel:
+        print("Refused: BUFFER_API_KEY secret and BUFFER_CHANNEL_ID variable must both be configured.")
         return 2
-    BufferClient(os.environ["BUFFER_API_KEY"])  # raises NotImplementedError until approved
-    return 2
+    client = BufferClient(os.environ["BUFFER_API_KEY"])
+    from datetime import datetime, timezone
+    publish(ready, posts, client, channel, datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            draft=args.draft_check)
+    if args.live:
+        refresh_statuses(posts, client)
+    POSTS.write_text(json.dumps(posts, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return 0
 
 
 if __name__ == "__main__":
