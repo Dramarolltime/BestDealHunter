@@ -1,7 +1,8 @@
 """Validate the public feed. Fails closed; rules live in deal_rules.json.
 
-Main-section deals must be at least 50% off; the affiliate section
-(`section: "affiliate"` or `affiliate_section: true`) only needs a real discount.
+Main-section deals must be at least 50% off. Affiliate-section deals
+(`section: "affiliate"` or `affiliate_section: true`) may be 20-49% off, but
+still need an `affiliate_disclosure` and the same evidence and freshness.
 """
 import json
 import re
@@ -50,8 +51,11 @@ def validate(data, today=None):
         price, original = deal.get("price"), deal.get("original_price")
         if type(price) not in (int, float) or type(original) not in (int, float) or not (0 < price < original):
             raise ValueError(f"Deal {i}: invalid prices")
-        if not is_affiliate(deal) and price > original * (1 - RULES["min_discount_percent"] / 100):
-            raise ValueError(f"Deal {i}: discount must be at least {RULES['min_discount_percent']}%")
+        minimum = RULES["min_affiliate_discount_percent"] if is_affiliate(deal) else RULES["min_discount_percent"]
+        if price > original * (1 - minimum / 100):
+            raise ValueError(f"Deal {i}: discount must be at least {minimum}%")
+        if is_affiliate(deal) and not (isinstance(deal.get("affiliate_disclosure"), str) and deal["affiliate_disclosure"].strip()):
+            raise ValueError(f"Deal {i}: affiliate-section deal requires affiliate_disclosure")
         try:
             checked = date.fromisoformat(deal["verified_date"])
         except (KeyError, TypeError, ValueError) as exc:

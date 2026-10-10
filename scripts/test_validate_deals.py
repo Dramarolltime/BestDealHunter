@@ -73,16 +73,37 @@ class DealValidationTests(unittest.TestCase):
         d["store"], d["url"] = "Macy's", "https://www.macys.com/shop/product/x?ID=1"
         self.assertEqual(validate([d]), 1)
 
-    def test_affiliate_section_allows_smaller_discount(self):
+    def affiliate(self, **changes):
         d = sample()
-        d["price"], d["section"] = 80, "affiliate"
-        self.assertEqual(validate([d]), 1)
+        d.update({"price": 80, "section": "affiliate", "affiliate_disclosure": "We may earn a commission."})
+        d.update(changes)
+        return d
 
-    def test_affiliate_section_still_needs_a_discount(self):
-        d = sample()
-        d["price"], d["section"] = 100, "affiliate"
-        with self.assertRaises(ValueError):
-            validate([d])
+    def test_affiliate_section_allows_twenty_percent(self):
+        self.assertEqual(validate([self.affiliate()]), 1)
+        self.assertEqual(validate([self.affiliate(section=None, affiliate_section=True)]), 1)
+
+    def test_affiliate_section_rejects_token_discounts(self):
+        for price in (100, 99, 80.01):
+            with self.assertRaises(ValueError):
+                validate([self.affiliate(price=price)])
+
+    def test_affiliate_section_requires_disclosure(self):
+        for disclosure in (None, "", "   "):
+            with self.assertRaises(ValueError):
+                validate([self.affiliate(affiliate_disclosure=disclosure)])
+
+    def test_affiliate_section_keeps_evidence_and_freshness_rules(self):
+        stale = (date.today() - timedelta(days=3)).isoformat()
+        for change in ({"price_evidence": ""}, {"source": ""}, {"verified_date": stale}, {"store": "Unknown"}):
+            with self.assertRaises(ValueError):
+                validate([self.affiliate(**change)])
+
+    def test_affiliate_flag_must_be_exact(self):
+        # Only section == "affiliate" or affiliate_section is True relax the 50% rule.
+        for change in ({"section": "Affiliate"}, {"section": None, "affiliate_section": "true"}):
+            with self.assertRaises(ValueError):
+                validate([self.affiliate(**change)])
 
     def test_unknown_domain_needs_disclosure(self):
         d = sample()
@@ -159,6 +180,26 @@ class RefreshTests(unittest.TestCase):
         bad["url"], bad["category"] = "https://www.ebay.com/itm/other", "Gadgets"
         merged, updates = merge(existing, [bad])
         self.assertEqual((merged, updates), (existing, 0))
+
+    def test_refresh_keeps_existing_deals_that_became_stale(self):
+        # Known policy gap (#1): refresh never removes published deals, even stale ones.
+        # The hourly validator and the maintenance monitor flag them instead.
+        old = sample()
+        old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
+        fresh = sample()
+        fresh["url"] = "https://www.ebay.com/itm/other"
+        merged, updates = merge([old], [fresh])
+        self.assertEqual((len(merged), updates), (2, 1))
+        self.assertEqual(merged[0]["verified_date"], old["verified_date"])
+        with self.assertRaises(ValueError):
+            validate(merged)
+
+    def test_refresh_ignores_stale_update_for_existing_deal(self):
+        old = sample()
+        old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
+        stale_update = dict(old, price=40)
+        merged, updates = merge([old], [stale_update])
+        self.assertEqual((merged, updates), ([old], 0))
 
     def test_refresh_updates_matching_url_and_keeps_image(self):
         old = sample()
