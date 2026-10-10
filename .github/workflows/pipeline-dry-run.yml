@@ -35,3 +35,7 @@ jobs:
           IMPACT_CONFIGURED: ${{ secrets.IMPACT_ACCOUNT_SID != '' && secrets.IMPACT_AUTH_TOKEN != '' }}
           INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
         run: python scripts/pipeline_dry_run.py
+      - name: One deal end-to-end (validate → card → Cloudinary → website → Buffer dry run)
+        env:
+          INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
+        run: python scripts/e2e_one_deal.py --verify-urls

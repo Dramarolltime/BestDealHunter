@@ -1,0 +1,45 @@
+name: Buffer publish (manual, gated)
+# Manual only. "draft-check" creates a Buffer DRAFT (never published) to verify the API
+# key, channel and image URL. "live" queues approved posts and is refused unless the
+# INSTAGRAM_PUBLISH_ENABLED variable is "true". Both refuse without BUFFER_API_KEY and
+# BUFFER_CHANNEL_ID. The ledger (posts.json) is committed so a deal can't be queued twice.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'draft-check (safe) or live'
+        type: choice
+        options: [draft-check, live]
+        default: draft-check
+permissions:
+  contents: write
+concurrency:
+  group: buffer-publisher
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: instagram
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Publish via Buffer (${{ inputs.mode }})
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_CHANNEL_ID: ${{ vars.BUFFER_CHANNEL_ID }}
+          INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
+        run: python scripts/publish_buffer.py --${{ inputs.mode }}
+      - name: Commit ledger
+        if: ${{ !cancelled() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add posts.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Record Buffer ${{ inputs.mode }} results in posts.json"
+            git push
+          fi
