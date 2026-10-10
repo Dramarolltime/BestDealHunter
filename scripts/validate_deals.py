@@ -3,6 +3,17 @@
 Main-section deals must be at least 50% off. Affiliate-section deals
 (`section: "affiliate"` or `affiliate_section: true`) may be 20-49% off, but
 still need an `affiliate_disclosure` and the same evidence and freshness.
+
+Archive policy (#1): published deals are never deleted. A deal is *archived* once its
+verification is older than `max_verification_age_days`, its `expires_date` has passed,
+or it has `status: "archived"`. The site keeps archived deals in "Past Deals" labelled
+"Expired · price not verified", with the price shown as the price at time of posting.
+
+* `validate(deals)` is strict: every deal must be active. Use it for anything new or
+  outgoing (approvals, refreshes, card generation, social posts).
+* `validate_feed(deals)` checks the published feed: active and archived deals need the
+  same structure and evidence, but archived deals may be stale. Verification dates are
+  never refreshed to make a deal look active.
 """
 import json
 import re
@@ -23,7 +34,30 @@ def known_domain(host):
     host = host.lower().removeprefix("www.")
     return any(host == d or host.endswith("." + d) for d in DOMAINS)
 
-def validate(data, today=None):
+def deal_status(deal, today=None):
+    """'active' or 'archived'. Unparseable dates count as archived (validation reports them)."""
+    today = today or date.today()
+    if deal.get("status") == "archived":
+        return "archived"
+    expires = deal.get("expires_date")
+    if isinstance(expires, str) and expires < today.isoformat():
+        return "archived"
+    try:
+        checked = date.fromisoformat(deal["verified_date"])
+    except (KeyError, TypeError, ValueError):
+        return "archived"
+    return "archived" if checked < today - timedelta(days=RULES["max_verification_age_days"]) else "active"
+
+def validate_feed(data, today=None):
+    """Validate the published feed, allowing archived (stale/expired) deals. Returns (active, archived)."""
+    today = today or date.today()
+    if not isinstance(data, list):
+        raise ValueError("Feed must be an array")
+    validate(data, today, allow_archived=True)
+    archived = sum(1 for d in data if deal_status(d, today) == "archived")
+    return len(data) - archived, archived
+
+def validate(data, today=None, allow_archived=False):
     if not isinstance(data, list):
         raise ValueError("Feed must be an array")
     today = today or date.today()
@@ -60,8 +94,18 @@ def validate(data, today=None):
             checked = date.fromisoformat(deal["verified_date"])
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError(f"Deal {i}: invalid verified_date") from exc
-        if not today - timedelta(days=RULES["max_verification_age_days"]) <= checked <= today:
-            raise ValueError(f"Deal {i}: verification is stale")
+        if checked > today:
+            raise ValueError(f"Deal {i}: verified_date is in the future")
+        expires = deal.get("expires_date")
+        if expires is not None:
+            try:
+                date.fromisoformat(expires)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"Deal {i}: invalid expires_date") from exc
+        if deal.get("status") not in (None, "active", "archived"):
+            raise ValueError(f"Deal {i}: status must be 'active' or 'archived'")
+        if not allow_archived and deal_status(deal, today) == "archived":
+            raise ValueError(f"Deal {i}: verification is stale or the deal is archived")
         if deal.get("promo_code") and not deal.get("promo_note"):
             raise ValueError(f"Deal {i}: promo_code requires promo_note with terms")
         image = deal.get("image")
@@ -70,5 +114,5 @@ def validate(data, today=None):
     return len(data)
 
 if __name__ == "__main__":
-    count = validate(json.loads(Path("deals.json").read_text(encoding="utf-8")))
-    print(f"Validated {count} public deal(s).")
+    active, archived = validate_feed(json.loads(Path("deals.json").read_text(encoding="utf-8")))
+    print(f"Validated {active + archived} public deal(s): {active} active, {archived} archived (shown as expired).")

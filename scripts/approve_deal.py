@@ -2,7 +2,7 @@
 import json
 import sys
 from pathlib import Path
-from validate_deals import validate
+from validate_deals import validate, validate_feed
 
 PENDING = Path("pending_deals.json")
 PUBLIC = Path("deals.json")
@@ -20,7 +20,7 @@ def approve(deal_id):
     validate([candidate])
     if any(d.get("url") == candidate["url"] for d in public):
         raise ValueError("Deal URL already published")
-    validate(public + [candidate])
+    validate_feed(public + [candidate])  # existing entries may be archived
     PUBLIC.write_text(json.dumps(public + [candidate], indent=2) + "\n", encoding="utf-8")
     PENDING.write_text(json.dumps([d for d in pending if d.get("id") != deal_id], indent=2) + "\n", encoding="utf-8")
     print("Approved deal; commit both updated files to publish. Buffer is not updated automatically.")
