@@ -18,5 +18,27 @@
     "retailer_comparable_value": 49.99,
     "discovered_date": "2026-10-10",
     "notes": "Retailer listing shows 60% difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Lock n Lock Easy Essentials Color Mates 20-Pc. Food Storage Container Set",
+    "url": "https://www.macys.com/shop/product/lock-n-lock-easy-essentials-color-mates-20-pc.-food-storage-container-set?ID=12916948",
+    "listed_price": 21.96,
+    "retailer_previous_price": 63,
+    "listed_discount_percent": 65,
+    "reference_price_type": "Macy's displayed previous price; independent historical price not verified",
+    "discovered_date": "2026-10-10",
+    "promo_code": null,
+    "promo_note": "Coupon excluded by Macy's; no code applies. Last Act final sale; may not ship to Minnesota. California/Minnesota shipping conditions require retailer confirmation.",
+    "source": "Macy's official product page, Web ID 12916948, checked Oct 10, 2026; Add to Bag and Buy Now displayed",
+    "blockers": [
+      "Final checkout price, shipping, taxes and ZIP-specific availability not independently confirmed",
+      "Historical reference-price legitimacy not independently verified",
+      "Promotion expiration not specified",
+      "Publicly accessible branded image for this item not prepared or verified"
+    ],
+    "notes": "Review candidate only. Do not publish to website or Instagram until all blockers resolved."
   }
 ]
