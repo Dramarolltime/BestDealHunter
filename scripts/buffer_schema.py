@@ -33,7 +33,10 @@ TYPE = """query Type($name: String!) {
 }
 """ + TYPE_REF
 WATCH_MUTATIONS = ("post", "draft", "idea", "queue", "schedule")
-MAX_TYPES = 40
+MAX_TYPES = 60
+# Response types draft-check must recognise: post status values and createPost error members.
+PRIORITY = ["PostStatus", "PostActionPayload", "MutationError", "InvalidInputError", "LimitReachedError",
+            "RestProxyError", "UnexpectedError", "NotFoundError", "UnauthorizedError", "PostActionSuccess"]
 BUILTIN = {"String", "Int", "Float", "Boolean", "ID", "DateTime"}
 
 
@@ -61,7 +64,7 @@ def explore(transport):
     todo = []
     for field in relevant + [q for q in queries if q["name"] in ("post", "posts")]:
         todo += [named(a["type"]) for a in field.get("args") or []] + [named(field["type"])]
-    todo += ["Post"]
+    todo = PRIORITY + todo + ["Post"]
     seen, types = set(), []
     while todo and len(types) < MAX_TYPES:
         name = todo.pop(0)
@@ -72,7 +75,7 @@ def explore(transport):
         if not t:
             continue
         types.append(t)
-        if t["kind"] in ("INPUT_OBJECT", "UNION") or name in ("Post",) or name.endswith("Success") or name.endswith("Error"):
+        if t["kind"] in ("INPUT_OBJECT", "UNION", "INTERFACE") or name in ("Post",) or name.endswith("Success") or name.endswith("Error"):
             for f in (t.get("inputFields") or []) + (t.get("fields") or []):
                 todo.append(named(f["type"]))
             todo += [p["name"] for p in t.get("possibleTypes") or []]
