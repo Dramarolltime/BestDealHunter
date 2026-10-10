@@ -184,6 +184,7 @@ class PublishLedgerTests(unittest.TestCase):
         sent = fake.requests[0]["variables"]["input"]
         self.assertNotIn("saveToDraft", sent)
         self.assertEqual((sent["schedulingType"], sent["mode"]), ("automatic", "addToQueue"))
+        self.assertEqual(sent["metadata"], {"instagram": {"type": "post", "shouldShareToFeed": True}})
 
     def test_sent_only_when_buffer_reports_it(self):
         posts = [{"key": "k1", "status": "queued", "buffer_post_id": "p9"}]
