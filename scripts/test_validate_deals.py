@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from validate_deals import validate, RULES
+from validate_deals import validate, validate_feed, deal_status, RULES
 from refresh_deals import merge
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -147,7 +147,54 @@ class DealValidationTests(unittest.TestCase):
             validate([d])
 
 
+class ArchiveTests(unittest.TestCase):
+    """Archive policy (#1): expired deals stay published as Past Deals; never deleted or refreshed."""
+
+    def stale(self, **changes):
+        d = sample()
+        d["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
+        d.update(changes)
+        return d
+
+    def test_status_rules(self):
+        today = date(2026, 10, 12)
+        self.assertEqual(deal_status({"verified_date": "2026-10-10"}, today), "active")
+        self.assertEqual(deal_status({"verified_date": "2026-10-09"}, today), "archived")
+        self.assertEqual(deal_status({"verified_date": "2026-10-12", "expires_date": "2026-10-11"}, today), "archived")
+        self.assertEqual(deal_status({"verified_date": "2026-10-12", "status": "archived"}, today), "archived")
+        self.assertEqual(deal_status({}, today), "archived")
+
+    def test_feed_keeps_archived_deals(self):
+        fresh = sample()
+        old = self.stale(url="https://www.ebay.com/itm/old")
+        self.assertEqual(validate_feed([fresh, old]), (1, 1))
+        with self.assertRaises(ValueError):
+            validate([fresh, old])  # strict check (approvals, cards, posts) still rejects it
+
+    def test_archived_deals_still_need_structure_and_evidence(self):
+        for change in ({"price_evidence": ""}, {"price": 99}, {"store": "Unknown"}, {"url": "http://x.com"},
+                       {"category": "Gadgets"}, {"verified_date": "not-a-date"}, {"expires_date": "soon"},
+                       {"status": "hidden"}):
+            with self.assertRaises(ValueError):
+                validate_feed([self.stale(**change)])
+
+    def test_future_verification_never_allowed(self):
+        with self.assertRaises(ValueError):
+            validate_feed([dict(sample(), verified_date=(date.today() + timedelta(days=1)).isoformat())])
+
+    def test_live_feed_passes_after_it_goes_stale(self):
+        deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
+        later = date.today() + timedelta(days=30)
+        if all(date.fromisoformat(d["verified_date"]) <= later for d in deals):
+            active, archived = validate_feed(deals, today=later)
+            self.assertEqual((active, archived), (0, len(deals)))
+
+
 class ConsistencyTests(unittest.TestCase):
+    def test_site_freshness_matches_rules(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn(f"const maxVerificationAgeDays={RULES['max_verification_age_days']};", html)
+
     def test_site_filters_match_rules(self):
         html = (ROOT / "index.html").read_text(encoding="utf-8")
         stores = json.loads(re.search(r"const allowedStores=(\[[^\]]*\])", html).group(1))

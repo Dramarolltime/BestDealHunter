@@ -21,7 +21,7 @@ from urllib import error, parse, request
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from validate_deals import RULES  # noqa: E402
+from validate_deals import RULES, deal_status, validate_feed  # noqa: E402
 
 MARKER = "<!-- bdh-maintenance:{key} -->"
 INCIDENT_LABEL = "maintenance"
@@ -112,25 +112,37 @@ def deal_age_days(deal, today):
 
 
 def check_freshness(deals, today, max_age=RULES["max_verification_age_days"]):
-    """Stale = older than the validator allows (should be unpublished or re-verified)."""
-    stale, expiring = [], []
+    """Archive policy (#1): stale or expired deals stay on the site as "Past Deals".
+
+    They are reported, not treated as incidents. Warnings: deals that archive within
+    24h, and a site with no active deals left. An invalid feed is an incident.
+    """
+    archived, expiring = [], []
     for deal in deals:
         if not isinstance(deal, dict):
             continue
-        age = deal_age_days(deal, today)
-        expires = deal.get("expires_date")
-        past_expiry = isinstance(expires, str) and expires < today.isoformat()
         label = f"{deal.get('store', '?')}: {deal.get('title', 'Untitled')} (verified {deal.get('verified_date', 'unknown')})"
-        if age is None or age > max_age or past_expiry:
-            stale.append(label + (f", expired {expires}" if past_expiry else ""))
-        elif age == max_age:
+        if deal_status(deal, today) == "archived":
+            expires = deal.get("expires_date")
+            archived.append(label + (f", offer ended {expires}" if isinstance(expires, str) and expires < today.isoformat() else ""))
+        elif deal_age_days(deal, today) == max_age:
             expiring.append(label)
-    results = [check("stale-deals", "Published deals are stale or expired", not stale,
-                     "Would unpublish (re-verify or remove):\n" + "\n".join(f"- {s}" for s in stale) if stale
-                     else f"All {len(deals)} published deals verified within {max_age} days.")]
+    active = len(deals) - len(archived)
+    summary = f"{active} active, {len(archived)} archived (shown in Past Deals as expired; never deleted)."
+    if archived:
+        summary += "\nRe-verify to reactivate, or leave archived:\n" + "\n".join(f"- {s}" for s in archived)
+    results = [check("stale-deals", "Published deals are stale or expired", True, summary)]
+    try:
+        validate_feed(deals, today)
+        results.append(check("feed-valid", "Published deals.json fails validation", True, "Feed passes validate_feed."))
+    except ValueError as exc:
+        results.append(check("feed-valid", "Published deals.json fails validation", False, str(exc)))
     if expiring:
-        results.append(check("expiring-deals", "Deals go stale within 24h", False,
+        results.append(check("expiring-deals", "Deals move to Past Deals within 24h", False,
                              "\n".join(f"- {s}" for s in expiring), severity="warning"))
+    if deals and not active:
+        results.append(check("no-active-deals", "No active deals on the site", False,
+                             "Every published deal is archived. Add or re-verify deals.", severity="warning"))
     return results
 
 
