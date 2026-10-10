@@ -66,6 +66,9 @@ class DraftRequestTests(unittest.TestCase):
         self.assertNotIn("dueAt", sent)
         self.assertEqual(sent["channelId"], CHANNEL)
         self.assertEqual(sent["assets"], [{"image": {"url": URL}}])
+        # Buffer requires Instagram metadata; a feed post, never a story or reel
+        self.assertEqual(sent["metadata"], {"instagram": {"type": "post", "shouldShareToFeed": True}})
+        self.assertEqual(set(sent), {"text", "channelId", "saveToDraft", "schedulingType", "mode", "assets", "metadata"})
         self.assertEqual((row["status"], row["buffer_post_id"]), ("draft", "d1"))
 
     def test_only_create_post_mutation_is_sent(self):

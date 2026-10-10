@@ -133,6 +133,9 @@ BUFFER_API = "https://api.buffer.com"
 # CreatePostInput requires mode: ShareMode! and schedulingType: SchedulingType!; createPost
 # returns the PostActionPayload union; every error member implements MutationError { message };
 # PostStatus is draft | error | needs_approval | scheduled | sending | sent.
+# Instagram channels also require metadata.instagram {type: PostType!, shouldShareToFeed:
+# Boolean!} (Buffer rejected a draft without it: "Instagram posts require a type").
+INSTAGRAM_METADATA = {"instagram": {"type": "post", "shouldShareToFeed": True}}
 RESULT_FIELDS = """
     __typename
     ... on PostActionSuccess { post { id status channelId schedulingType shareMode sharedNow sentAt dueAt } }
@@ -160,7 +163,7 @@ def draft_input(channel_id, text, image_url):
     Buffer's workers never auto-publish it (a person would have to post by hand), on top of
     saveToDraft, which keeps it out of the queue entirely."""
     return {"text": text, "channelId": channel_id, "saveToDraft": True, "schedulingType": "notification",
-            "mode": "addToQueue", "assets": [{"image": {"url": image_url}}]}
+            "mode": "addToQueue", "assets": [{"image": {"url": image_url}}], "metadata": INSTAGRAM_METADATA}
 
 
 def verify_draft(result, channel_id):
@@ -214,7 +217,7 @@ class BufferClient:
     def create_post(self, channel_id, text, image_url):
         """Live queue post (only reached from publish(), behind every live gate)."""
         payload = {"text": text, "channelId": channel_id, "schedulingType": "automatic", "mode": "addToQueue",
-                   "assets": [{"image": {"url": image_url}}]}
+                   "assets": [{"image": {"url": image_url}}], "metadata": INSTAGRAM_METADATA}
         result = self._call(CREATE_POST, {"input": payload}).get("createPost") or {}
         if result.get("__typename") != "PostActionSuccess":
             raise BufferError(f"Buffer rejected the post ({result.get('__typename')}): {result.get('message', 'no message')}")
