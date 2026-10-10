@@ -10,8 +10,7 @@
     "source": "Macy's current Delsey brand and luggage sale listings show clearance $89.99 (55% off)",
     "price_evidence": "Current listed clearance price $89.99; previous $62.99 with code BEST could not be verified. Final checkout/tax/shipping not independently tested.",
     "promo_note": "No verified promo code required for listed $89.99 clearance price. Do not advertise unverified BEST code.",
-    "image": "images/generated/delsey-duffel-professional.jpg",
-    "image_disclosure": "Illustrative deal image; actual product may vary."
+    "image": "images/generated/deal-280ed3c48aff-square.jpg"
   },
   {
     "store": "Amazon",
@@ -22,7 +21,7 @@
     "original_price": 34.99,
     "verified_date": "2026-10-09",
     "published_at": "2026-10-09T07:56:00Z",
-    "image": "images/IMG_4266.jpeg",
+    "image": "images/generated/deal-36c348b01279-square.jpg",
     "source": "Amazon screenshots provided by site owner; gray variant only",
     "price_evidence": "Historical screenshot evidence supplied by site owner; live checkout, current inventory and final total have not been independently verified."
   },
@@ -37,7 +36,7 @@
     "source": "Amazon product listing screenshots supplied by site owner",
     "price_evidence": "Screenshot shows Light Steel, size M, $10.14, list $27, -62%, in stock. Other colors and sizes have different prices.",
     "affiliate_disclosure": "As an Amazon Associate, BestDealHunter earns from qualifying purchases.",
-    "image": "images/IMG_4262.jpeg"
+    "image": "images/generated/deal-bdf3f37f2699-square.jpg"
   },
   {
     "store": "Amazon",
@@ -50,7 +49,7 @@
     "source": "Amazon product listing screenshots provided by site owner",
     "price_evidence": "Screenshots Oct 9 2026: White Smoke color, limited-time deal $169, Amazon list price $359, -53%, in stock. Price and stock may change.",
     "affiliate_disclosure": "As an Amazon Associate, BestDealHunter earns from qualifying purchases.",
-    "image": "images/IMG_4261.jpeg"
+    "image": "images/generated/deal-7e41a0098913-square.jpg"
   },
   {
     "store": "Best Buy",
@@ -62,7 +61,7 @@
     "verified_date": "2026-10-09",
     "source": "Best Buy product listing, Techtober promotion",
     "price_evidence": "Best Buy official product page checked Oct 9: $299.99, comparable value $699.99, sold by Best Buy, Add to cart available. Checkout total including tax and location-specific availability not verified. Comparable value is not necessarily a prior selling price.",
-    "image": "images/IMG_4236.jpeg",
+    "image": "images/generated/deal-9ace7211bab6-square.jpg",
     "promo_note": "No promo code required. Retailer has not confirmed a specific expiration date; prior Oct 11 date removed."
   }
 ]

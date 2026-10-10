@@ -111,10 +111,25 @@ class GeneratorTests(unittest.TestCase):
                      sample(url="https://www.bestbuy.com/site/bad", price=600)]
             made = generate_missing(deals, out=out, log=lambda *_: None)
             self.assertEqual(made, 1)
-            self.assertTrue(deals[0]["image"].endswith("-feed.jpg"))
+            self.assertTrue(deals[0]["image"].endswith("-square.jpg"))  # site shows 1:1
             self.assertEqual(deals[1]["image"], "images/existing.jpg")
             self.assertNotIn("image", deals[2])  # fails the 50% rule: no card
             self.assertEqual(len(list(out.glob("*.jpg"))), 2)
+
+    def test_replace_legacy_only_for_active_deals(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            card = "images/generated/deal-0123456789ab-feed.jpg"
+            deals = [sample(image="images/IMG_4236.jpeg", image_disclosure="Illustrative"),
+                     sample(url="https://www.bestbuy.com/site/old", image="images/IMG_1.jpeg", verified_date="2020-01-01"),
+                     sample(url="https://www.bestbuy.com/site/card", image=card)]
+            self.assertEqual(generate_missing(deals, out=out, log=lambda *_: None), 0)  # default: never replace
+            made = generate_missing(deals, out=out, log=lambda *_: None, replace_legacy=True)
+            self.assertEqual(made, 1)
+            self.assertTrue(deals[0]["image"].endswith("-square.jpg"))
+            self.assertNotIn("image_disclosure", deals[0])
+            self.assertEqual(deals[1]["image"], "images/IMG_1.jpeg")  # expired: keeps its image
+            self.assertEqual(deals[2]["image"], card)                 # already a card: untouched
 
 
 if __name__ == "__main__":
