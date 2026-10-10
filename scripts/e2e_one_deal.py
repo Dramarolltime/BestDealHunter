@@ -132,8 +132,9 @@ class _FakeBuffer:
     def __call__(self, payload):
         if "createPost" in payload["query"]:
             self.creates += 1
-            return {"data": {"createPost": {"post": {"id": f"simulated-{self.creates}", "status": "buffer"}}}}
-        return {"data": {"post": {"status": "buffer"}}}
+            return {"data": {"createPost": {"__typename": "PostActionSuccess",
+                                            "post": {"id": f"simulated-{self.creates}", "status": "scheduled"}}}}
+        return {"data": {"post": {"status": "scheduled"}}}
 
 
 def step_buffer(deal, deals, mapping, posts, today):

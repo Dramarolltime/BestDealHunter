@@ -29,19 +29,26 @@ Run it with `python scripts/e2e_one_deal.py --deal <card id>`. It also runs in t
 | `publication_approved: true` | per deal, set in a reviewed PR |
 | strict validation + not Amazon + hosted 4:5 card + not already in the ledger | automatic |
 
-`--draft-check` creates a Buffer **draft**, which is never published. It verifies the key, the channel, the image URL and the mutation schema before the first real post. It needs the key and channel, but not the kill switch.
+### Draft check (`--draft-check <card id>`): separate and fail-closed
+- **One call:** `createPost` with `saveToDraft: true`, `schedulingType: "notification"` and `mode: "addToQueue"`. Buffer's schema *requires* `mode` and `schedulingType`, so they get the least risky values. `notification` means Buffer's workers never auto-send; a person would have to post by hand, and a draft isn't queued at all.
+- **The response must prove it's a draft:** `__typename` must be `PostActionSuccess`, with `status: "draft"`, the expected `channelId`, `schedulingType: "notification"`, `sharedNow: false` and `sentAt: null`. Anything else (an error type, another status, missing fields, a GraphQL or network error) stops the run with exit 1. The record is marked `error`, and the message names the post id to delete by hand.
+- **Kept apart from live posting:**
+  - the test approval is in memory, for that one card id only, and `publication_approved` is neither needed nor changed;
+  - records go only to `buffer-draft-checks.json`;
+  - `posts.json`, the kill switch, `publish()` and `create_post()` are never touched (`scripts/test_buffer_draft_check.py` booby-traps them);
+  - `--live` and `--draft-check` are mutually exclusive;
+  - a draft row (done or failed) blocks a repeat for that deal.
+- **Gates that still apply:** validation, not Amazon, a hosted 4:5 card. It needs the key and channel, but not the kill switch.
 
 ## Is Buffer the blocker? Exact technical status
 **No code blocker remains on our side.** What's missing is account access, plus one confirmation that I couldn't do from the build sandbox:
 
-1. **No `BUFFER_API_KEY`** exists in the repo, so nothing can authenticate.
-2. **No channel id** for `best_dealhunter` has been recorded.
-3. **Schema confirmation:** `developers.buffer.com` is unreachable from my sandbox. The client follows Buffer's published examples, seen via search:
-   - GraphQL at `https://api.buffer.com` with a Bearer personal API key;
-   - `createPost(input: {text, channelId, schedulingType, mode: addToQueue, assets: [{image: {url}}]})`;
-   - a `PostActionSuccess` / `MutationError` union, with errors returned as HTTP 200.
-   
-   The exact enum values (e.g. `schedulingType`), the post-status query and any required Instagram `metadata` still need to be confirmed. The `--draft-check` run does that safely.
+1. **`BUFFER_API_KEY`:** added by the owner.
+2. **Channel id** for `best_dealhunter` (Instagram): `6ac834646a5c39ccb65a1157`, found by the read-only lookup. Save it as the variable `BUFFER_CHANNEL_ID`.
+3. **Schema: confirmed** by read-only introspection (`scripts/buffer_schema.py`, PR #15):
+   - `CreatePostInput` requires `channelId`, `mode: ShareMode!` (`addToQueue | customScheduled | shareNext | shareNow`) and `schedulingType: SchedulingType!` (`automatic | notification`); `saveToDraft` is optional;
+   - `createPost` returns the `PostActionPayload` union. Errors implement `MutationError { message }`;
+   - `PostStatus` is `draft | error | needs_approval | scheduled | sending | sent`.
 
 Buffer's help pages say the GraphQL API is available on **all plans including Free**. One 2026 third-party guide calls it a public beta with personal keys only, which is fine here because we post to our own account.
 
@@ -59,7 +66,7 @@ Buffer's help pages say the GraphQL API is available on **all plans including Fr
 ## Owner steps to go live later (none needed for the dry run)
 1. In Buffer, create a personal API key and save it as the GitHub secret `BUFFER_API_KEY`.
 2. Find the `best_dealhunter` channel id and save it as the variable `BUFFER_CHANNEL_ID`.
-3. Run the publisher with `--draft-check`. A draft appears in Buffer and nothing is posted. Delete the draft afterwards.
+3. After approval, run *Buffer publish* with mode `draft-check` and a test card id. One verified draft appears in Buffer and nothing is queued. Delete the draft afterwards.
 4. Approve one deal (`publication_approved: true`) in a PR, then set `INSTAGRAM_PUBLISH_ENABLED=true` for a single supervised run.
 
 Sources: [Buffer: Create Image Post](https://developers.buffer.com/examples/create-image-post.html), [Buffer: Posts & Scheduling](https://developers.buffer.com/guides/posts-and-scheduling.html), [Buffer: Create Draft Post](https://developers.buffer.com/examples/create-draft-post.html), [Buffer Help: API](https://support.buffer.com/article/859-does-buffer-have-an-api), [Zernio: Buffer API 2026](https://zernio.com/blog/buffer-api), [Meta: Instagram Platform](https://developers.facebook.com/documentation/instagram-platform/overview), [bundle.social: Instagram Graph API](https://bundle.social/blog/instagram-graph-api)
