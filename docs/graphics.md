@@ -15,25 +15,27 @@ and the same deal data always gives the same image.
 
 ## Usage
 ```bash
-python scripts/deal_graphics.py --preview        # review cards for every deals.json deal → docs/graphics-previews/
-python scripts/generate_deal_images.py           # give deals with no `image` a card in images/generated/
+python scripts/deal_graphics.py --preview              # review cards for every deals.json deal → docs/graphics-previews/ (not committed)
+python scripts/generate_deal_images.py                 # give deals with no `image` a card in images/generated/
+python scripts/generate_deal_images.py --replace-legacy  # also replace legacy images of deals verified and active today
 ```
 `generate_deal_images.py` (and its workflow on `main`) only fills in deals that have **no** `image`. It never replaces existing images and skips any deal that fails `validate_deals.py`.
 
-## Previews of the current live deals (for review only; not used by the site)
+## Cards for the current live deals (now used by the site)
 | Deal | Feed (4:5) | Square |
 |---|---|---|
-| Macy's: Delsey Raspail duffel | [feed](graphics-previews/280ed3c48aff-feed.jpg) | [square](graphics-previews/280ed3c48aff-square.jpg) |
-| Amazon: KitchenAid oven mitts | [feed](graphics-previews/36c348b01279-feed.jpg) | [square](graphics-previews/36c348b01279-square.jpg) |
-| Amazon: Hanes EcoSmart hoodie | [feed](graphics-previews/bdf3f37f2699-feed.jpg) | [square](graphics-previews/bdf3f37f2699-square.jpg) |
-| Amazon: Bose QuietComfort | [feed](graphics-previews/7e41a0098913-feed.jpg) | [square](graphics-previews/7e41a0098913-square.jpg) |
-| Best Buy: Insignia 55" F70 TV | [feed](graphics-previews/9ace7211bab6-feed.jpg) | [square](graphics-previews/9ace7211bab6-square.jpg) |
+| Macy's: Delsey Raspail duffel | [feed](../images/generated/deal-280ed3c48aff-feed.jpg) | [square](../images/generated/deal-280ed3c48aff-square.jpg) |
+| Amazon: KitchenAid oven mitts | [feed](../images/generated/deal-36c348b01279-feed.jpg) | [square](../images/generated/deal-36c348b01279-square.jpg) |
+| Amazon: Hanes EcoSmart hoodie | [feed](../images/generated/deal-bdf3f37f2699-feed.jpg) | [square](../images/generated/deal-bdf3f37f2699-square.jpg) |
+| Amazon: Bose QuietComfort | [feed](../images/generated/deal-7e41a0098913-feed.jpg) | [square](../images/generated/deal-7e41a0098913-square.jpg) |
+| Best Buy: Insignia 55" F70 TV | [feed](../images/generated/deal-9ace7211bab6-feed.jpg) | [square](../images/generated/deal-9ace7211bab6-square.jpg) |
 
-## Findings on the current live images (needs a decision; not changed here)
-The four `images/IMG_*.jpeg` files used by live deals are finished AI-style promo composites, not product photos:
-- **Prices and discounts are baked into the image**, so they go wrong as soon as a price changes.
-- **`IMG_4236.jpeg` (Insignia TV) still says "Best Buy Techtober Event (thru Oct 11)" and "SAVE $400".** The deal record says the Oct 11 date was removed because it couldn't be confirmed.
-- They show **retailer and brand logos** (Best Buy, Bose, Hanes) and **AI-rendered product imagery**, which doesn't meet the "authentic authorized imagery" rule.
-- `IMG_4104.jpeg` (Ring doorbell) isn't referenced by any deal.
+## Legacy images (replaced)
+The owner approved the cards **for verified, active deals only** (#1). `--replace-legacy` switched the 5 live deals, all verified 2026-10-09 and active on 2026-10-10, from their legacy images to their cards. No prices, dates or evidence were changed.
 
-**Recommendation:** after review, point each live deal's `image` at its generated card, or at a card built from an authorized photo once one is supplied. This is a content change, so it's left for approval. **Amazon deals:** don't post Amazon prices to Instagram unless they come from approved Amazon data access, per #1. Cards make price changes visible but don't make the price itself compliant.
+Why the legacy images were replaced:
+- The four `images/IMG_*.jpeg` files were AI-style composites with **baked-in prices**, **AI-rendered products** and **retailer/brand logos**.
+- `IMG_4236.jpeg` advertised "Techtober Event (thru Oct 11)", a date the deal record says was removed as unverified.
+- The Delsey image was an illustrative drawing.
+
+The old files stay in the repository for history but aren't referenced by any deal. Deals that are no longer active are never switched automatically. **Amazon deals:** don't post Amazon prices to Instagram without approved Amazon data access (#1).
