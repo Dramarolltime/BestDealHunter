@@ -2,6 +2,31 @@
 
 Audit date: 2026-10-10 · Audited commit: `b733b23` (main)
 
+## Current status (updated 2026-10-10 06:40 UTC, `main` at `ad56888`)
+The findings below the line are the **original audit**, kept for history. This table shows where each stage stands now. Open PRs are green but not merged; nothing has been published, and spend is $0.
+
+| Stage | Original state | Now | Where |
+|---|---|---|---|
+| CI health | 🔴 Hourly check failing (no Pillow) | 🟢 Fixed. Hourly checks pass on `main`; monitor incident #7 opened and **auto-closed** | #2 (merged), #3 (merged) |
+| Validation | 🟠 Two divergent validators, store/category drift | 🟢 One rules file + validator. Archived (stale/expired) deals kept as **Past Deals**; strict validation for anything new or outgoing | #2, #9 (merged) |
+| Monitoring | none | 🟢 Hourly monitor + status issue #8 + incident issues | #3 (merged) |
+| Find deals | 🔴 No source | 🟠 **eBay** Browse adapter built, dormant until eBay approves Buy API access; **Impact** auth now works but 0 catalogs shared; `DEAL_FEED_URL` unset | #10 (open), Impact diagnostics PR (open) |
+| Verify deals | 🟠 Manual only | 🟠 Still a human step by design: discovered deals land in the review queue (`needs_review`), and posting needs `publication_approved` | #10, #6 |
+| Generate graphic | 🟠 Never triggered | 🟢 Deterministic branded cards (square for site, 4:5 for Instagram); live deals switched with owner approval | #5 (open) |
+| Upload to Cloudinary | 🟡 Skipped generated cards; 3 uploaders | 🟢 One uploader; content-hash ids; merges mapping; hosts square + feed cards incl. Delsey | #4 (open) |
+| Update website | 🟡 Category drift | 🟢 Categories aligned; Past Deals tab; discount badges round down | #2, #9 (merged) |
+| Publish to Instagram | 🔴 Missing | 🟠 Buffer **dry run** with gates, dedupe and kill switch; no API client until the Buffer API/plan is confirmed | #6 (open) |
+| End-to-end | none | 🟠 Orchestrated dry run in progress | upcoming PR |
+
+**Remaining external blockers (owner, all free):**
+1. eBay Buy API approval and keys.
+2. Impact brand partnerships with catalogs.
+3. Buffer API confirmation and the `BUFFER_API_KEY` secret.
+
+---
+
+*Original audit (2026-10-10, `b733b23`) follows.*
+
 Target pipeline:
 
 ```
