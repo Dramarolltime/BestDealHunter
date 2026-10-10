@@ -6,12 +6,17 @@ name: Buffer draft-check (one-off, label-gated)
 # to this PR: pushes, opening, or editing the PR never trigger it. It cannot post live:
 # --draft-check never reads INSTAGRAM_PUBLISH_ENABLED (not even passed here) and never
 # calls publish(); the request is saveToDraft + schedulingType "notification", and any
-# response other than a confirmed draft fails the job. Read-only token; nothing is committed.
+# response other than a confirmed draft fails the job.
+# ONE-TIME across runs: before Buffer is contacted, scripts/buffer_draft_once.py creates the
+# tag refs/tags/buffer-draft-check/9ace7211bab6 on GitHub (never force-pushed). If the tag
+# already exists (label re-added, re-run, or a racing run), the job refuses without any
+# Buffer request. The tag is kept even if the draft fails; only deleting it allows a retry.
+# contents: write is needed solely to push that tag; nothing else is committed or pushed.
 on:
   pull_request:
     types: [labeled]
 permissions:
-  contents: read
+  contents: write  # only to create the one-time lock tag
 concurrency:
   group: buffer-publisher
   cancel-in-progress: false
@@ -27,12 +32,12 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install 'Pillow>=10,<13'
       - name: Safety tests first (no network)
-        run: python -m unittest scripts/test_buffer_draft_check.py scripts/test_publish_buffer.py -v
-      - name: Create ONE verified Buffer draft (Insignia test deal)
+        run: python -m unittest scripts/test_buffer_draft_check.py scripts/test_publish_buffer.py scripts/test_buffer_draft_once.py -v
+      - name: Take the one-time lock, then create ONE verified Buffer draft (Insignia test deal)
         env:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           BUFFER_CHANNEL_ID: ${{ vars.BUFFER_CHANNEL_ID }}
-        run: python scripts/publish_buffer.py --draft-check 9ace7211bab6
+        run: python scripts/buffer_draft_once.py 9ace7211bab6
       - name: Show draft record
         if: ${{ !cancelled() }}
         run: cat buffer-draft-checks.json
