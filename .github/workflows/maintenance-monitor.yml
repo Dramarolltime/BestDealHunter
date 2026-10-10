@@ -1,0 +1,52 @@
+name: Maintenance monitor
+# Phase 1: monitoring and reporting only. Reads the site, Cloudinary URLs and
+# Actions history, then opens/closes `maintenance` issues and updates the
+# `maintenance-status` issue. It never edits deals, publishes posts, merges,
+# or calls paid APIs. Only the built-in GITHUB_TOKEN is used.
+on:
+  schedule:
+    - cron: '7 * * * *'    # hourly health check
+    - cron: '3 13 * * *'   # daily digest comment (13:03 UTC)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report only (no GitHub issues written)'
+        type: boolean
+        default: true
+      digest:
+        description: 'Also post the daily digest comment'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+  issues: write
+concurrency:
+  group: maintenance-monitor
+  cancel-in-progress: false
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Self-test monitor and deal rules
+        run: python -m unittest discover -s scripts -p 'test_*.py'
+      - name: Run checks and sync GitHub issues
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          # Issues are only written by scheduled runs on main, or a manual run with dry_run unchecked.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || github.ref != 'refs/heads/main' }}
+          DIGEST: ${{ github.event.schedule == '3 13 * * *' || inputs.digest == true }}
+        run: |
+          args=()
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          if [ "$DIGEST" = "true" ]; then args+=(--digest); fi
+          python scripts/maintenance/monitor.py "${args[@]}"
