@@ -1,8 +1,9 @@
 name: Buffer publish (manual, gated)
-# Manual only. "draft-check" creates a Buffer DRAFT (never published) to verify the API
-# key, channel and image URL. "live" queues approved posts and is refused unless the
-# INSTAGRAM_PUBLISH_ENABLED variable is "true". Both refuse without BUFFER_API_KEY and
-# BUFFER_CHANNEL_ID. The ledger (posts.json) is committed so a deal can't be queued twice.
+# Manual only. "draft-check" creates ONE Buffer DRAFT for the given card id (saveToDraft +
+# notification scheduling) and fails unless Buffer confirms status "draft"; it records only
+# buffer-draft-checks.json and never reads the kill switch or posts.json. "live" queues
+# approved posts and is refused unless INSTAGRAM_PUBLISH_ENABLED is "true"; its ledger
+# (posts.json) is committed so a deal can't be queued twice.
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +12,10 @@ on:
         type: choice
         options: [draft-check, live]
         default: draft-check
+      card_id:
+        description: 'draft-check only: card id of the test deal (12 hex chars)'
+        type: string
+        default: ''
 permissions:
   contents: write
 concurrency:
@@ -31,15 +36,24 @@ jobs:
         env:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           BUFFER_CHANNEL_ID: ${{ vars.BUFFER_CHANNEL_ID }}
-          INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
-        run: python scripts/publish_buffer.py --${{ inputs.mode }}
-      - name: Commit ledger
+          INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}  # read by --live only
+          MODE: ${{ inputs.mode }}
+          CARD_ID: ${{ inputs.card_id }}
+        run: |
+          if [ "$MODE" = "draft-check" ]; then
+            python scripts/publish_buffer.py --draft-check "$CARD_ID"
+          else
+            python scripts/publish_buffer.py --live
+          fi
+      - name: Commit ledgers
         if: ${{ !cancelled() }}
+        env:
+          MODE: ${{ inputs.mode }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add posts.json
+          git add posts.json buffer-draft-checks.json
           if ! git diff --cached --quiet; then
-            git commit -m "Record Buffer ${{ inputs.mode }} results in posts.json"
+            git commit -m "Record Buffer $MODE results"
             git push
           fi

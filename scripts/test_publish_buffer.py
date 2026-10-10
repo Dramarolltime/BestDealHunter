@@ -116,7 +116,11 @@ class KillSwitchTests(unittest.TestCase):
 
     def test_dry_run_approval_cannot_be_combined_with_live(self):
         self.assertEqual(self.run_main({}, ["--live", "--approve-for-dry-run", "abc"]), 2)
-        self.assertEqual(self.run_main({}, ["--draft-check", "--approve-for-dry-run", "abc"]), 2)
+        self.assertEqual(self.run_main({}, ["--draft-check", "0123456789ab", "--approve-for-dry-run", "abc"]), 2)
+
+    def test_live_and_draft_check_are_mutually_exclusive(self):
+        with mock.patch("sys.stderr"):
+            self.assertEqual(self.run_main({}, ["--live", "--draft-check", "0123456789ab"]), 2)
 
     def test_post_log_starts_empty(self):
         import json
@@ -135,8 +139,9 @@ class FakeBuffer:
             raise TimeoutError("network timeout")
         if "createPost" in payload["query"]:
             if self.fail == "mutation":
-                return {"data": {"createPost": {"message": "image URL not reachable"}}}
-            return {"data": {"createPost": {"post": {"id": f"p{len(self.requests)}", "status": "buffer"}}}}
+                return {"data": {"createPost": {"__typename": "InvalidInputError", "message": "image URL not reachable"}}}
+            return {"data": {"createPost": {"__typename": "PostActionSuccess",
+                                            "post": {"id": f"p{len(self.requests)}", "status": "scheduled"}}}}
         return {"data": {"post": {"id": payload["variables"]["input"]["id"], "status": self.status}}}
 
 
@@ -173,15 +178,16 @@ class PublishLedgerTests(unittest.TestCase):
             self.assertEqual(posts[0]["status"], "error")
             self.assertEqual(pb.plan([deal()], HOSTED, posts, TODAY)[0], [])  # no automatic retry
 
-    def test_draft_check_marks_draft(self):
-        fake, posts = FakeBuffer(), []
-        pb.publish(self.ready(), posts, pb.BufferClient("k", fake), "c", "t", draft=True, log=lambda *_: None)
-        self.assertTrue(fake.requests[0]["variables"]["input"]["saveToDraft"])
-        self.assertEqual(posts[0]["status"], "draft")
+    def test_live_post_uses_automatic_queue_without_draft_flag(self):
+        fake = FakeBuffer()
+        pb.publish(self.ready(), [], pb.BufferClient("k", fake), "c", "t", log=lambda *_: None)
+        sent = fake.requests[0]["variables"]["input"]
+        self.assertNotIn("saveToDraft", sent)
+        self.assertEqual((sent["schedulingType"], sent["mode"]), ("automatic", "addToQueue"))
 
     def test_sent_only_when_buffer_reports_it(self):
         posts = [{"key": "k1", "status": "queued", "buffer_post_id": "p9"}]
-        pb.refresh_statuses(posts, pb.BufferClient("k", FakeBuffer(status="buffer")))
+        pb.refresh_statuses(posts, pb.BufferClient("k", FakeBuffer(status="scheduled")))
         self.assertEqual(posts[0]["status"], "queued")
         pb.refresh_statuses(posts, pb.BufferClient("k", FakeBuffer(status="sent")))
         self.assertEqual(posts[0]["status"], "sent")
