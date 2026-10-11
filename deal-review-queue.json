@@ -132,5 +132,51 @@
       "No GitHub-hosted branded image prepared and public image URL verified"
     ],
     "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Macy's Juniper Reversible Comforter Set — Taupe Multi, Twin (2 pieces)",
+    "url": "https://www.macys.com/shop/product/sunham-juniper-reversible-3-pc.-comforter-sets?ID=23951941",
+    "listed_price": 23.93,
+    "retailer_previous_price": 80,
+    "listed_discount_percent": 70,
+    "variant": "Taupe Multi, Twin (twin contains one comforter and one sham, not 3 pieces)",
+    "reference_price_type": "Macy's displayed previous price; independent historical selling price not validated",
+    "discovered_date": "2026-10-11",
+    "promo_code": null,
+    "promo_note": "Macy's states coupon excluded; no promo code needed for displayed Last Act price. Final sale. Free shipping only with qualifying minimum purchase; California/Minnesota conditions may vary.",
+    "source": "Macy's official product page Web ID 23951941, accessed October 11, 2026; $23.93, previous $80, Twin selected, Add To Bag/Buy Now displayed.",
+    "expiration_date": null,
+    "blockers": [
+      "Final checkout total, shipping, tax and ZIP-specific inventory not confirmed",
+      "Historical reference price and promotion expiration not independently verified",
+      "No product-specific GitHub-hosted branded image URL verified"
+    ],
+    "notes": "Research only. Twin is a 2-piece set despite 3-piece family title; do not advertise 3 pieces for Twin. Do not publish until blockers cleared."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Anchor Hocking 20-Piece Bake, Store & Mix Set",
+    "url": "https://www.macys.com/shop/product/anchor-hocking-20-piece-bake-store-mix-set?ID=19093223",
+    "listed_price": 38.93,
+    "retailer_previous_price": 163,
+    "listed_discount_percent": 76,
+    "reference_price_type": "Macy's displayed previous price; independent historical selling price not validated",
+    "discovered_date": "2026-10-11",
+    "promo_code": null,
+    "promo_note": "Macy's says coupon excluded; no promo code required. Last Act final sale (no returns, exchanges, price adjustments). Free shipping only with minimum purchase; CA/MN shipping exceptions.",
+    "source": "Macy's official product page Web ID 19093223 accessed October 11, 2026; $38.93, previous $163, Add To Bag/Buy Now displayed.",
+    "expiration_date": null,
+    "blockers": [
+      "Final checkout total, shipping, tax and ZIP-specific availability not verified",
+      "Historical reference selling price and expiration unverified",
+      "No GitHub-hosted product-specific branded image URL verified",
+      "Product has approximately 3.0/5 customer rating and reports of breakage; editorial quality review recommended"
+    ],
+    "notes": "Research only. Mixed quality reviews, especially damaged pieces; not recommended for publication without editorial review and verification."
   }
 ]
