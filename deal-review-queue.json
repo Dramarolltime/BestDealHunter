@@ -60,5 +60,77 @@
       "Public branded image not prepared or checked"
     ],
     "notes": "Do not publish until blockers cleared."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Club Room Men's Short-Sleeve Linen and Cotton Button Sweater Polo Shirt — Navy Blue, S",
+    "url": "https://www.macys.com/shop/product/club-room-mens-short-sleeve-linen-cotton-button-sweater-polo-shirt-macys-exclusive?ID=24483913",
+    "listed_price": 18.66,
+    "retailer_previous_price": 75,
+    "listed_discount_percent": 75,
+    "variant": "Navy Blue, S",
+    "source": "Official Macy's product page, Web ID 24483913, page crawled October 10, 2026; Add To Bag shown",
+    "reference_price_type": "Retailer displayed previous price, independent historical selling price unverified",
+    "discovered_date": "2026-10-10",
+    "promo_code": null,
+    "promo_note": "Coupon excluded; no promo code applies. Last Act final sale. Shipping free only with qualifying minimum purchase; location-specific conditions may apply.",
+    "expiration_date": null,
+    "blockers": [
+      "Final checkout price, taxes, shipping and ZIP-specific inventory not independently confirmed",
+      "Legitimate historical reference selling price not independently validated",
+      "Promotion expiration not specified",
+      "No GitHub-hosted branded image prepared and public image URL verified"
+    ],
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Club Room Men's Short-Sleeve Linen Shirt — Journal Floral Print Bright White",
+    "url": "https://www.macys.com/shop/product/club-room-mens-short-sleeve-linen-shirt-macys-exclusive?ID=24526995",
+    "listed_price": 17.36,
+    "retailer_previous_price": 69.5,
+    "listed_discount_percent": 75,
+    "variant": "Journal Floral Print - Bright White; size must be selected",
+    "source": "Official Macy's product page, Web ID 24526995, page crawled October 6, 2026; Add To Bag shown",
+    "reference_price_type": "Retailer displayed previous price, independent historical selling price unverified",
+    "discovered_date": "2026-10-10",
+    "promo_code": null,
+    "promo_note": "Coupon excluded; no promo code applies. Last Act final sale. Shipping free only with qualifying minimum purchase; location-specific conditions may apply.",
+    "expiration_date": null,
+    "blockers": [
+      "Final checkout price, taxes, shipping and ZIP-specific inventory not independently confirmed",
+      "Legitimate historical reference selling price not independently validated",
+      "Promotion expiration not specified",
+      "No GitHub-hosted branded image prepared and public image URL verified"
+    ],
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Club Room Men's Thermal Long Sleeve Henley — New Olive, S",
+    "url": "https://www.macys.com/shop/product/club-room-mens-thermal-long-sleeve-henley-created-for-macys?ID=17914954",
+    "listed_price": 9.96,
+    "retailer_previous_price": 40,
+    "listed_discount_percent": 75,
+    "variant": "New Olive Opd, S",
+    "source": "Official Macy's product page, Web ID 17914954, page crawled October 6, 2026; Add To Bag shown",
+    "reference_price_type": "Retailer displayed previous price, independent historical selling price unverified",
+    "discovered_date": "2026-10-10",
+    "promo_code": null,
+    "promo_note": "Coupon excluded; no promo code applies. Last Act final sale. Shipping free only with qualifying minimum purchase; location-specific conditions may apply.",
+    "expiration_date": null,
+    "blockers": [
+      "Final checkout price, taxes, shipping and ZIP-specific inventory not independently confirmed",
+      "Legitimate historical reference selling price not independently validated",
+      "Promotion expiration not specified",
+      "No GitHub-hosted branded image prepared and public image URL verified"
+    ],
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
   }
 ]
