@@ -6,6 +6,7 @@ on:
     paths:
       - deals.json
       - scripts/generate_deal_images.py
+      - scripts/deal_graphics.py
 permissions:
   contents: write
 concurrency:
@@ -21,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install Pillow==11.3.0
+      - run: python -m pip install 'Pillow>=10,<13'
       - run: python scripts/generate_deal_images.py
       - name: Commit images and feed
         run: |
