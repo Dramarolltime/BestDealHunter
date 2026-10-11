@@ -1,0 +1,29 @@
+name: Buffer channel lookup (read-only)
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/buffer_channels.py'
+      - 'scripts/buffer_schema.py'
+      - '.github/workflows/buffer-channels.yml'
+permissions:
+  contents: read
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test lookup (no network)
+        run: python -m unittest scripts/test_buffer_channels.py scripts/test_buffer_schema.py -v
+      - name: List Buffer channels (queries only, nothing is posted)
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+        run: python scripts/buffer_channels.py
+      - name: Read Buffer schema for createPost (introspection queries only)
+        if: ${{ !cancelled() }}
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+        run: python scripts/buffer_schema.py
