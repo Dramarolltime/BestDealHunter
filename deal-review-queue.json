@@ -178,5 +178,28 @@
       "Product has approximately 3.0/5 customer rating and reports of breakage; editorial quality review recommended"
     ],
     "notes": "Research only. Mixed quality reviews, especially damaged pieces; not recommended for publication without editorial review and verification."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Best Buy",
+    "title": "It Takes Two — PlayStation 5 / PlayStation 4 (physical edition)",
+    "url": "https://www.bestbuy.com/product/it-takes-two-playstation-5-playstation-4/J7CYF9YKJ5/sku/6444455",
+    "listed_price": 19.99,
+    "retailer_comparable_value": 39.99,
+    "listed_discount_percent": 50,
+    "reference_price_type": "Best Buy comparable value; not independently confirmed as recent historical selling price. Product page separately says 'Our 365-day lowest price'.",
+    "discovered_date": "2026-10-11",
+    "promo_code": null,
+    "promo_note": "No promo code required for retailer's advertised $19.99. Physical PS4/PS5 compatible game; requires two players. Best Buy page on Oct 11 says 'Deal ends tomorrow' (interpreted Oct 12, 2026; timezone unconfirmed).",
+    "expiration_date": "2026-10-12",
+    "source": "Best Buy official product page SKU 6444455 accessed October 11, 2026; $19.99, comparable value $39.99, 'Our 365-day lowest price', Add to cart, sold by Best Buy.",
+    "blockers": [
+      "Final checkout total including taxes, delivery fees and location-specific availability not verified",
+      "Historical legitimacy of $39.99 comparable value not independently established",
+      "Exact promotion end time and timezone unverified",
+      "No product-specific branded GitHub-hosted graphic and publicly accessible URL verified"
+    ],
+    "notes": "Research candidate only; do not publish to website or Instagram until checkout and image checks pass."
   }
 ]
