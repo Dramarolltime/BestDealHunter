@@ -13,7 +13,8 @@
       "result": "not_verified",
       "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies bestbuy.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed.",
       "finding": "Search snapshots of the same Best Buy product page show $848.99 and $997.99, not the queued $949.99: price has moved since discovery; re-check before any use."
-    }
+    },
+    "model_number": "65S7SG"
   },
   {
     "status": "needs_verification",
