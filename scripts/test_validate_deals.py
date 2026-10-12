@@ -214,12 +214,21 @@ class ConsistencyTests(unittest.TestCase):
             self.assertIn(d.get("category"), RULES["categories"])
 
 
+PHOTO = "images/IMG_4236.jpeg"  # an existing repository image
+
+
 class RefreshTests(unittest.TestCase):
     def test_refresh_accepts_macys(self):
         d = sample()
-        d["store"], d["url"] = "Macy's", "https://www.macys.com/shop/product/x?ID=1"
+        d["store"], d["url"], d["image"] = "Macy's", "https://www.macys.com/shop/product/x?ID=1", PHOTO
         merged, updates = merge([], [d])
         self.assertEqual((len(merged), updates), (1, 1))
+
+    def test_refresh_never_lists_a_new_deal_without_an_image(self):
+        for image in (None, "images/does-not-exist.jpg", "https://example.com/a.jpg"):
+            with self.subTest(image=image):
+                d = dict(sample(), image=image) if image else sample()
+                self.assertEqual(merge([], [d]), ([], 0))
 
     def test_refresh_rejects_invalid_and_keeps_existing(self):
         existing = [sample()]
@@ -234,7 +243,7 @@ class RefreshTests(unittest.TestCase):
         old = sample()
         old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
         fresh = sample()
-        fresh["url"] = "https://www.ebay.com/itm/other"
+        fresh["url"], fresh["image"] = "https://www.ebay.com/itm/other", PHOTO
         merged, updates = merge([old], [fresh])
         self.assertEqual((len(merged), updates), (2, 1))
         self.assertEqual(merged[0]["verified_date"], old["verified_date"])
@@ -248,13 +257,18 @@ class RefreshTests(unittest.TestCase):
         merged, updates = merge([old], [stale_update])
         self.assertEqual((merged, updates), ([old], 0))
 
-    def test_refresh_updates_matching_url_and_keeps_image(self):
-        old = sample()
-        old["image"] = "images/generated/card.jpg"
-        new = sample()
-        new["price"] = 40
-        merged, updates = merge([old], [new])
-        self.assertEqual((merged[0]["price"], merged[0]["image"], updates), (40, "images/generated/card.jpg", 1))
+    def test_refresh_reverifies_same_price_and_keeps_image(self):
+        old = dict(sample(), image=PHOTO, verified_date=(date.today() - timedelta(days=1)).isoformat())
+        merged, updates = merge([old], [sample()])
+        self.assertEqual((merged[0]["image"], merged[0]["verified_date"], updates), (PHOTO, date.today().isoformat(), 1))
+
+    def test_refresh_refuses_a_price_change_that_would_leave_a_stale_card(self):
+        # The existing image prints the old price; a price update must bring its own new image.
+        old = dict(sample(), image=PHOTO)
+        merged, updates = merge([old], [dict(sample(), price=40)])
+        self.assertEqual((merged[0]["price"], updates), (50, 0))
+        merged, updates = merge([old], [dict(sample(), price=40, image="images/IMG_4266.jpeg")])
+        self.assertEqual((merged[0]["price"], merged[0]["image"], updates), (40, "images/IMG_4266.jpeg", 1))
 
 class RefreshNeverFakesVerificationTests(unittest.TestCase):
     def test_empty_source_leaves_verification_dates_unchanged(self):

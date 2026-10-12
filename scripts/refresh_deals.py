@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 from validate_deals import validate
+from publication_gate import publication_problems
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "deals-source.json"
@@ -35,8 +36,15 @@ def merge(existing, incoming):
             old = merged[idx]
             if item["verified_date"] < str(old.get("verified_date", "")):
                 continue
-            merged[idx] = {**old, **item}
+            new = {**old, **item}
+            if any(new.get(f) != old.get(f) for f in ("price", "original_price")) and "image" not in item:
+                continue  # the existing image shows the old price; the source must supply a new card
+            if publication_problems(new):
+                continue
+            merged[idx] = new
         else:
+            if publication_problems(item):
+                continue  # e.g. no image yet: never list a deal without one
             positions[ident] = len(merged)
             merged.append(dict(item))
         updates += 1
