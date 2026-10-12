@@ -1,0 +1,40 @@
+name: Brand logo cross-post checks (one-off)
+# Owner-approved BestDealHunter logo test (2026-10-12). Runs ONLY when a label is added to a PR.
+# This workflow contains NO publishing step:
+#   `logo-prepare`: read-only Buffer schema checks + upload the committed logo to Cloudinary
+#                   and prove the hosted bytes are identical (sha256).
+#   `logo-status`:  read-only report of the recorded post, if any.
+# The live post (scripts/logo_crosspost.py publish) is wired in separately, only with explicit
+# permission. Never receives INSTAGRAM_PUBLISH_ENABLED and never touches deals.
+on:
+  pull_request:
+    types: [labeled]
+permissions:
+  contents: read
+concurrency:
+  group: buffer-publisher
+  cancel-in-progress: false
+jobs:
+  logo:
+    if: github.event.label.name == 'logo-prepare' || github.event.label.name == 'logo-status'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Tests (no network)
+        run: python -m unittest scripts/test_logo_crosspost.py -v
+      - name: Run ${{ github.event.label.name }}
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          LABEL: ${{ github.event.label.name }}
+        run: |
+          if [ "$LABEL" = "logo-prepare" ]; then python scripts/logo_crosspost.py prepare; else python scripts/logo_crosspost.py status; fi
