@@ -256,5 +256,19 @@ class RefreshTests(unittest.TestCase):
         merged, updates = merge([old], [new])
         self.assertEqual((merged[0]["price"], merged[0]["image"], updates), (40, "images/generated/card.jpg", 1))
 
+class RefreshNeverFakesVerificationTests(unittest.TestCase):
+    def test_empty_source_leaves_verification_dates_unchanged(self):
+        old = dict(sample(), verified_date=(date.today() - timedelta(days=5)).isoformat())
+        merged, updates = merge([old], [])
+        self.assertEqual((merged, updates), ([old], 0))
+
+    def test_stale_or_invalid_source_entry_cannot_bump_date(self):
+        old = dict(sample(), verified_date=(date.today() - timedelta(days=5)).isoformat())
+        no_evidence = dict(old, verified_date=date.today().isoformat(), price_evidence="")
+        merged, updates = merge([old], [no_evidence])
+        self.assertEqual(merged[0]["verified_date"], old["verified_date"])
+        self.assertEqual(updates, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
