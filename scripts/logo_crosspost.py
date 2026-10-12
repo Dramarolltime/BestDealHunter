@@ -101,6 +101,27 @@ def verify_hosted(url, digest):
     return {"http": status, "content_type": ctype, "sha256": digest, "bytes": len(body)}
 
 
+def compare_og_image(html, logo):
+    """Instagram re-encodes uploads, so bytes can't match; compare the public og:image visually."""
+    import html as htmlmod
+    import io
+    import re
+    match = re.search(rb'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', html or b"")
+    if not match:
+        return {"og_image": None, "note": "no og:image in the public page (login wall?)"}
+    url = htmlmod.unescape(match.group(1).decode())
+    status, ctype, body, _ = fetch(url)
+    if status != 200 or not body:
+        return {"og_image": url[:120], "http": status}
+    from PIL import Image, ImageChops, ImageStat
+    a = Image.open(io.BytesIO(logo)).convert("RGB").resize((64, 64))
+    b = Image.open(io.BytesIO(body)).convert("RGB")
+    size = b.size
+    b = b.resize((64, 64))
+    diff = sum(ImageStat.Stat(ImageChops.difference(a, b)).mean) / 3
+    return {"og_image_http": status, "og_image_size": size, "mean_abs_diff_0_255": round(diff, 2), "visual_match": diff < 12}
+
+
 # ---------------------------------------------------------------- Buffer
 
 class Buffer:
@@ -219,6 +240,7 @@ def run(mode, env, log=print):
         if link:
             status, ctype, body, final = fetch(link)
             log(f"Instagram link {link}: HTTP {status}, final URL {final}, {len(body)} bytes")
+            log("Instagram image check: " + json.dumps(compare_og_image(body, data)))
         return 0 if post.get("status") == "sent" else 1
     if mode != "publish":
         raise Stop(f"unknown mode {mode}")
