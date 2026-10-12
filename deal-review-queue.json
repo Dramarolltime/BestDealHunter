@@ -201,5 +201,28 @@
       "No product-specific branded GitHub-hosted graphic and publicly accessible URL verified"
     ],
     "notes": "Research candidate only; do not publish to website or Instagram until checkout and image checks pass."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Sedona Kitchen 6-Pc. Stainless Steel Kitchen Tool Set — Silver",
+    "url": "https://www.macys.com/shop/product/sedona-kitchen-6-pc.-stainless-steel-kitchen-tool-set?ID=26124504",
+    "listed_price": 19.93,
+    "retailer_previous_price": 58,
+    "listed_discount_percent": 66,
+    "reference_price_type": "Macy's displayed previous price; independently verified historical selling price unavailable",
+    "discovered_date": "2026-10-11",
+    "promo_code": null,
+    "promo_note": "No promo code required or applicable; Macy's labels the Last Act clearance item 'Coupon excluded'. Final sale; returns/exchanges/price adjustments restricted. Shipping/taxes extra and destination-dependent.",
+    "source": "Official Macy's product page Web ID 26124504, opened October 11, 2026 PDT; page shows $19.93 vs $58, Add To Bag and Buy Now.",
+    "expiration_date": null,
+    "blockers": [
+      "Final checkout total, shipping and taxes not verified",
+      "ZIP-specific inventory/fulfillment not verified; Add To Bag is not checkout confirmation",
+      "Historical reference price legitimacy and expiration date unverified",
+      "No product-specific branded GitHub-hosted image URL verified"
+    ],
+    "notes": "Research only. Six-piece set includes ladle, skimmer, slotted turner, slotted spoon, basting spoon and holder. Do not publish until all blockers cleared."
   }
 ]
