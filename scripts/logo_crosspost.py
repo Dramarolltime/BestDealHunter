@@ -119,7 +119,12 @@ def compare_og_image(html, logo):
     size = b.size
     b = b.resize((64, 64))
     diff = sum(ImageStat.Stat(ImageChops.difference(a, b)).mean) / 3
-    return {"og_image_http": status, "og_image_size": size, "mean_abs_diff_0_255": round(diff, 2), "visual_match": diff < 12}
+    import base64
+    thumb = io.BytesIO()
+    Image.open(io.BytesIO(body)).convert("RGB").resize((160, 160)).save(thumb, "JPEG", quality=80)
+    host = url.split("/")[2] if "//" in url else url[:40]
+    return {"og_image_host": host, "og_image_http": status, "og_image_size": size, "mean_abs_diff_0_255": round(diff, 2),
+            "visual_match": diff < 12, "thumbnail_jpeg_b64": base64.b64encode(thumb.getvalue()).decode()}
 
 
 # ---------------------------------------------------------------- Buffer
