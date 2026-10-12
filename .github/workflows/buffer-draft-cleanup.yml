@@ -1,0 +1,66 @@
+name: Buffer draft cleanup
+# Verifies (read-only) or deletes Buffer TEST drafts listed in buffer-test-drafts.json.
+# Never creates, queues or publishes posts, and never receives INSTAGRAM_PUBLISH_ENABLED.
+# A post is deleted only when Buffer confirms it is a draft on BUFFER_CHANNEL_ID with no sentAt;
+# anything else is refused for a person to check (see scripts/buffer_ops.py).
+# Triggers (both need a person with write access):
+#   * label `buffer-draft-verify` on a PR           -> read-only verify
+#   * label `buffer-draft-cleanup-approved` on a PR -> verify, then delete confirmed drafts
+#   * manual run (after merge) with mode verify|delete
+# Results: job log + summary + artifact (updated ledger). Nothing is committed; a person records
+# `status: deleted` in buffer-test-drafts.json through a reviewed PR.
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'verify (read-only) or delete'
+        type: choice
+        options: [verify, delete]
+        default: verify
+permissions:
+  contents: read
+concurrency:
+  group: buffer-publisher
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'buffer-draft-verify' ||
+      github.event.label.name == 'buffer-draft-cleanup-approved'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Safety tests first (no network)
+        run: python -m unittest scripts/test_buffer_ops.py -v
+      - name: Verify or delete listed test drafts
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_CHANNEL_ID: ${{ vars.BUFFER_CHANNEL_ID }}
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || (github.event.label.name == 'buffer-draft-cleanup-approved' && 'delete' || 'verify') }}
+        run: |
+          echo "Mode: $MODE"
+          python scripts/buffer_ops.py "$MODE"
+      - name: Summarize
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -f buffer-cleanup-result.json ]; then
+            { echo '## Buffer draft cleanup'; echo; echo '```json'; cat buffer-cleanup-result.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            cat buffer-cleanup-result.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: buffer-draft-cleanup
+          path: |
+            buffer-cleanup-result.json
+            buffer-test-drafts.json
+          if-no-files-found: ignore
