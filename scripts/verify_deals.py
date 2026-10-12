@@ -32,6 +32,15 @@ from urllib import error, parse, request
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from validate_deals import RULES, deal_status, validate, validate_feed  # noqa: E402
+from publication_gate import card_id, publication_problems  # noqa: E402
+
+try:  # branded-card renderer from PR #5; until it is merged, deals needing a new card are held
+    from deal_graphics import CardError, render_card, save as save_card  # noqa: E402
+except ImportError:  # pragma: no cover - depends on which PRs are merged
+    render_card = save_card = None
+
+    class CardError(ValueError):
+        pass
 
 ROOT = Path(__file__).resolve().parents[1]
 FEED = ROOT / "deals.json"
@@ -118,6 +127,8 @@ class BestBuy:
                                f"orderable {orderable!r}, priceUpdateDate {product.get('priceUpdateDate')}. "
                                "Taxes, shipping and local pickup availability not included."),
             "source": f"{self.name} (official Best Buy product data)",
+            # Cards default to "Comparable value" for Best Buy; this reference is the regular price.
+            "reference_price_label": "Best Buy regular price",
         }
         if not available:
             return False, facts, f"not available online (onlineAvailability={product.get('onlineAvailability')!r}, orderable={orderable!r})"
@@ -138,25 +149,60 @@ def sources_from_env(env):
 
 # ---------------------------------------------------------------- planning (pure)
 
+CARD_DIR = "images/generated"
+PRICE_FIELDS = ("price", "original_price")
+
+
 def key(url):
     p = parse.urlparse(str(url))
     return (p.hostname or "").lower().removeprefix("www.") + p.path.rstrip("/").lower()
+
+
+def card_path(deal):
+    return f"{CARD_DIR}/deal-{card_id(deal['url'])}-square.jpg"
+
+
+class Renderer:
+    """Renders a deal's branded cards (square for the site, 4:5 feed for Instagram) into `root`.
+    available is False until PR #5's deal_graphics is merged; then new or changed deals get cards."""
+
+    def __init__(self, root=ROOT, render=None, save=None):
+        self.root = root
+        self.render, self.save = render or render_card, save or save_card
+        self.available = bool(self.render and self.save)
+
+    def write(self, deal):
+        for kind in ("square", "feed"):
+            path = self.root / CARD_DIR / f"deal-{card_id(deal['url'])}-{kind}.jpg"
+            self.save(self.render(deal, kind), path)
+        return card_path(deal)
 
 
 def collect(feed, queues):
     """Everything to check: published deals first (re-verification), then queue candidates."""
     items = [("feed", None, i, d) for i, d in enumerate(feed) if isinstance(d, dict)]
     published = {key(d.get("url")) for d in feed if isinstance(d, dict)}
+    published_skus = {str(d["sku"]) for d in feed if isinstance(d, dict) and d.get("sku")}
     for name, queue in queues.items():
         for i, c in enumerate(queue):
-            if isinstance(c, dict) and c.get("status") not in ("rejected", "published") \
-                    and key(c.get("url")) not in published:
-                items.append(("queue", name, i, c))
+            if not isinstance(c, dict) or c.get("status") in ("rejected", "published"):
+                continue
+            if key(c.get("url")) in published or (c.get("sku") and str(c["sku"]) in published_skus):
+                continue
+            items.append(("queue", name, i, c))
     return items
 
 
-def plan(feed, queues, sources, today, fetched_at):
-    """Decide every change without touching files. Returns (actions, report_rows)."""
+def plan(feed, queues, sources, today, fetched_at, renderer=None, root=ROOT):
+    """Decide every change without touching files. Returns (actions, report_rows).
+
+    Publication safety (publication_gate.py) is enforced here AND again in apply():
+    a candidate with unresolved blockers, an explicit hold, or no image is never published,
+    even when the retailer confirms the price. A deal whose price changed is re-published
+    only with a freshly rendered card; otherwise it is archived, because its card would
+    show a price that is no longer true.
+    """
+    renderer = renderer or Renderer(root)
     items = collect(feed, queues)
     by_source = {}
     rows = []
@@ -201,57 +247,104 @@ def plan(feed, queues, sources, today, fetched_at):
             ok, facts, reason = source.evaluate(product, fetched_at)
             row["reason"] = reason
             if origin == "feed":
-                hand_archived = data.get("status") == "archived" and data.get("archived_by") != ARCHIVED_BY
-                if ok and not hand_archived:
-                    updated = {**data, **{k: facts[k] for k in ("price", "original_price", "price_evidence", "source")},
-                               "verified_date": today.isoformat(), "sku": facts["sku"]}
-                    if data.get("archived_by") == ARCHIVED_BY:
-                        updated["status"] = "active"
-                        updated.pop("archived_reason", None)
-                        updated.pop("archived_by", None)
-                    try:
-                        validate([updated], today=today)
-                    except ValueError as exc:
-                        row.update(outcome="not_verified", reason=f"{reason}, but fails validation: {exc}")
-                        rows.append(row)
-                        continue
-                    actions.append(("update", index, updated))
-                    row["outcome"] = "reverified"
-                elif not ok and deal_status(data, today) == "active":
-                    actions.append(("archive", index, f"retailer re-check {today}: {reason}"))
-                    row["outcome"] = "archive"
-                else:
-                    row["outcome"] = "unchanged" if hand_archived else "not_verified"
+                rows.append(plan_published(data, index, ok, facts, reason, row, actions, today, renderer, root))
+                continue
+            if not ok:
+                actions.append(("queue-review", (qname, index), "rejected" if facts else "not_verified", reason))
+                row["outcome"] = "rejected"
+                rows.append(row)
+                continue
+            deal = new_deal(data, facts, today, by_model=ident[0] == "modelNumber")
+            try:
+                validate([deal], today=today)
+            except ValueError as exc:
+                actions.append(("queue-review", (qname, index), "not_verified", f"fails validation: {exc}"))
+                row.update(outcome="not_verified", reason=f"fails validation: {exc}")
+                rows.append(row)
+                continue
+            if renderer.available:
+                deal["image"] = card_path(deal)
+            problems = publication_problems(deal, data, root, card_pending=renderer.available)
+            if problems:
+                # Retailer data checked out, but a person still owes a decision (or an image is missing).
+                actions.append(("queue-review", (qname, index), "verified_but_held",
+                                f"{reason}; held: " + "; ".join(problems), facts))
+                row.update(outcome="held", reason=f"{reason}; held: " + "; ".join(problems))
+            elif new_count >= MAX_NEW_PER_RUN:
+                row.update(outcome="deferred", reason=f"{reason}; run limit of {MAX_NEW_PER_RUN} new deals")
             else:
-                if not ok:
-                    actions.append(("queue-review", (qname, index), "rejected" if facts else "not_verified", reason))
-                    row["outcome"] = "rejected"
-                elif new_count >= MAX_NEW_PER_RUN:
-                    row.update(outcome="deferred", reason=f"{reason}; run limit of {MAX_NEW_PER_RUN} new deals")
-                else:
-                    deal = new_deal(data, facts, today)
-                    try:
-                        validate([deal], today=today)
-                    except ValueError as exc:
-                        actions.append(("queue-review", (qname, index), "not_verified", f"fails validation: {exc}"))
-                        row.update(outcome="not_verified", reason=f"fails validation: {exc}")
-                        rows.append(row)
-                        continue
-                    actions.append(("publish", (qname, index), deal))
-                    row["outcome"] = "publish"
-                    new_count += 1
+                actions.append(("publish", (qname, index), deal, renderer.available))
+                row["outcome"] = "publish"
+                new_count += 1
             rows.append(row)
     return actions, rows
 
 
-def new_deal(candidate, facts, today):
+def plan_published(data, index, ok, facts, reason, row, actions, today, renderer, root):
+    hand_archived = data.get("status") == "archived" and data.get("archived_by") != ARCHIVED_BY
+    if hand_archived:
+        row["outcome"] = "unchanged"
+        return row
+    if not ok:
+        if deal_status(data, today) == "active":
+            actions.append(("archive", index, f"retailer re-check {today}: {reason}"))
+            row["outcome"] = "archive"
+        else:
+            row["outcome"] = "not_verified"
+        return row
+    updated = {**data, **{k: facts[k] for k in ("price", "original_price", "price_evidence", "source", "reference_price_label")},
+               "verified_date": today.isoformat(), "sku": facts["sku"]}
+    if data.get("archived_by") == ARCHIVED_BY:
+        updated["status"] = "active"
+        updated.pop("archived_reason", None)
+        updated.pop("archived_by", None)
+    price_changed = any(round(float(data.get(f) or 0), 2) != updated[f] for f in PRICE_FIELDS)
+    rerender = renderer.available
+    if rerender:
+        updated["image"] = card_path(updated)  # cards print price and verified date: always refresh
+    elif price_changed:
+        # The current image shows the old price and no card can be rendered: stop showing it as active.
+        if deal_status(data, today) == "active":
+            actions.append(("archive", index, f"retailer re-check {today}: price changed to ${updated['price']:.2f} "
+                                              f"(was ${float(data['price']):.2f}); a new card is needed before re-publishing"))
+            row.update(outcome="archive", reason=f"{reason}, but the price changed and no card renderer is available")
+        else:
+            row.update(outcome="held", reason=f"{reason}, but the price changed and no card renderer is available")
+        return row
+    try:
+        validate([updated], today=today)
+    except ValueError as exc:
+        row.update(outcome="not_verified", reason=f"{reason}, but fails validation: {exc}")
+        return row
+    problems = publication_problems(updated, None, root, card_pending=rerender)
+    if problems:
+        if deal_status(data, today) == "active":
+            actions.append(("archive", index, f"retailer re-check {today}: " + "; ".join(problems)))
+            row.update(outcome="archive", reason=f"{reason}, but " + "; ".join(problems))
+        else:
+            row.update(outcome="held", reason=f"{reason}, but " + "; ".join(problems))
+        return row
+    actions.append(("update", index, updated, rerender))
+    row["outcome"] = "reverified"
+    return row
+
+
+def canonical_url(store, sku):
+    return f"https://www.bestbuy.com/site/{sku}.p?skuId={sku}" if store == "Best Buy" else None
+
+
+def new_deal(candidate, facts, today, by_model=False):
+    # A model-number lookup may resolve to a different listing than the researched URL, so the
+    # link must point at exactly the SKU whose price was verified.
+    url = canonical_url(candidate["store"], facts["sku"]) if by_model else candidate["url"]
     deal = {
         "store": candidate["store"],
         "title": candidate.get("title") or facts.get("retailer_title"),
         "category": candidate.get("category") if candidate.get("category") in RULES["categories"] else "Electronics",
-        "url": candidate["url"],
+        "url": url,
         "price": facts["price"],
         "original_price": facts["original_price"],
+        "reference_price_label": facts["reference_price_label"],
         "verified_date": today.isoformat(),
         "source": facts["source"],
         "price_evidence": facts["price_evidence"],
@@ -263,25 +356,51 @@ def new_deal(candidate, facts, today):
     return deal
 
 
-def apply(actions, feed, queues, today):
-    """Apply planned actions to in-memory copies; validate_feed must still pass."""
+def apply(actions, feed, queues, today, renderer=None, root=ROOT):
+    """Apply planned actions to copies, rendering cards where planned. The publication gate runs
+    again on the final records (files now exist), and validate_feed must still pass."""
+    renderer = renderer or Renderer(root)
     feed = [dict(d) for d in feed]
     queues = {n: [dict(c) for c in q] for n, q in queues.items()}
     stamp = today.isoformat()
     for action in actions:
         kind = action[0]
         if kind == "update":
-            feed[action[1]] = action[2]
+            _, index, updated, rerender = action
+            if rerender:
+                try:
+                    renderer.write(updated)
+                except (CardError, OSError) as exc:
+                    feed[index].setdefault("verification_note", f"{stamp}: card render failed ({exc}); not re-verified")
+                    continue
+            if publication_problems(updated, None, root):
+                continue
+            feed[index] = updated
         elif kind == "archive":
             feed[action[1]].update(status="archived", archived_by=ARCHIVED_BY, archived_reason=action[2])
         elif kind == "publish":
-            (qname, index), deal = action[1], action[2]
+            (qname, index), deal, rerender = action[1], action[2], action[3]
+            candidate = queues[qname][index]
+            if rerender:
+                try:
+                    deal = dict(deal, image=renderer.write(deal))
+                except (CardError, OSError) as exc:
+                    candidate["last_review"] = {"date": stamp, "result": "verified_but_held",
+                                                "reason": f"card render failed: {exc}"}
+                    continue
+            problems = publication_problems(deal, candidate, root)
+            if problems:  # defence in depth: never publish past the gate
+                candidate["last_review"] = {"date": stamp, "result": "verified_but_held", "reason": "; ".join(problems)}
+                continue
             feed.append(dict(deal, published_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")))
-            queues[qname][index].update(status="published", last_review={"date": stamp, "result": "verified_published",
-                                                                       "reason": deal["price_evidence"]})
+            candidate.update(status="published", last_review={"date": stamp, "result": "verified_published",
+                                                               "reason": deal["price_evidence"]})
         elif kind == "queue-review" and action[1]:
             qname, index = action[1]
-            queues[qname][index]["last_review"] = {"date": stamp, "result": action[2], "reason": action[3]}
+            review = {"date": stamp, "result": action[2], "reason": action[3]}
+            if len(action) > 4:  # verified price facts for a held candidate, so a reviewer sees them
+                review["retailer_check"] = {k: action[4][k] for k in ("price", "original_price", "price_evidence")}
+            queues[qname][index]["last_review"] = review
             if action[2] == "rejected":
                 queues[qname][index]["status"] = "rejected"
     validate_feed(feed, today)
@@ -321,10 +440,13 @@ def main(argv=None, env=None, sources=None, today=None):
         sources, missing = sources_from_env(env)
     feed = load(FEED, [])
     queues = {name: load(ROOT / name, []) for name in QUEUES}
-    actions, rows = plan(feed, queues, sources, today, fetched_at)
+    renderer = Renderer(ROOT)
+    if not renderer.available:
+        missing.append("card renderer (deal_graphics from PR #5): new or re-priced deals are held")
+    actions, rows = plan(feed, queues, sources, today, fetched_at, renderer)
     applied = False
     if args.apply and actions:
-        new_feed, new_queues = apply(actions, feed, queues, today)
+        new_feed, new_queues = apply(actions, feed, queues, today, renderer)
         FEED.write_text(json.dumps(new_feed, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         for name, queue in new_queues.items():
             (ROOT / name).write_text(json.dumps(queue, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

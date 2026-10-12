@@ -19,6 +19,28 @@ Discovery and research fill `pending_deals.json` and `deal-review-queue.json`, b
 
 Best Buy's "comparable value" is **not** treated as a reference price. The verifier uses Best Buy's own `regularPrice`, so some Techtober "50% vs comparable value" listings will correctly fail.
 
+## Publication gate (`scripts/publication_gate.py`)
+A verified price is necessary but not sufficient. Every route onto the site runs the same gate: the verifier, `approve_deal.py` (manual) and `refresh_deals.py` (feed merge). A deal is held while **any** of these is true:
+
+| Rule | Why |
+|---|---|
+| The queue candidate's `publication_eligible` is not exactly `true` (a missing value counts as "not yet") | Research candidates are opt-in. Hisense and Energizer had no flag, only a "Do not publish" note, and a perfect retailer answer would have published them |
+| Its notes say "do not publish" or "not recommended for publication" | Belt and braces for free-text warnings |
+| Any entry in `blockers` has no human resolution | e.g. Anchor Hocking's quality concern, or checkout totals the retailer API can't confirm |
+| No image, an image outside `images/`, a file that doesn't exist, or a card generated for a different deal URL | The site and Instagram need a correct image |
+| (re-verification) The price changed but no new card can be rendered | Cards print the price, so the deal is archived instead of showing a wrong price |
+
+**Resolving a blocker (reviewer, in a PR):**
+```json
+"publication_eligible": true,
+"resolved_blockers": {
+  "<exact blocker text>": {"by": "Alpha", "note": "Checked cart to ZIP 10001 on 2026-10-13: $46.93, free shipping"}
+}
+```
+Resolutions by automation (`verify_deals`, `github-actions[bot]`, `claude`, `bot`) don't count.
+
+When the retailer confirms a price but the gate holds the deal, the candidate gets `last_review.result = "verified_but_held"` with the retailer facts, so the reviewer sees exactly what was confirmed. Cards are rendered only for deals that pass the gate.
+
 ## What `verify_deals.py` does (runs every 3 hours in Actions)
 1. **Collects** every published deal (for re-verification) and every queue candidate that hasn't been rejected or published.
 2. **Looks up** each one with its retailer's adapter, batched up to 100 per call. Best Buy items need a SKU (taken from the URL, or `sku`) or a `model_number`.
@@ -52,6 +74,8 @@ The API key never appears in logs or reports (tested). Verification dates move *
    2. Merge this PR, then run *Verify deals with retailer data* manually. It's a dry run, so check the report.
    3. If the report looks right, set the variable `AUTO_PUBLISH_VERIFIED_DEALS=true`.
 
-   This covers the 5 Best Buy candidates. 3 can be looked up today: It Takes Two (SKU 6444455), Chromebook (SKU 6673811) and Hisense (model 65S7SG). The Insignia TV and Energizer charger need their SKU added.
-2. **Macy's (8 candidates):** apply to Macy's on Rakuten for a feed. Until then, a person checks the page and records the evidence in a reviewed PR. A Claude Code session on the owner's own computer with Claude in Chrome can read the page with the owner present.
+   This covers the 5 Best Buy candidates. 3 can be looked up today: It Takes Two (SKU 6444455), Chromebook (SKU 6673811) and Hisense (model 65S7SG). The Insignia TV and Energizer charger need their SKU added. **All current candidates are held by the gate** until a reviewer marks them eligible and resolves their blockers. Branded cards need PR #5 merged; until then new deals are held for lack of an image.
+2. **Macy's (8 candidates):**
+   - **Automated:** apply to Macy's affiliate program on Rakuten Advertising. After approval, the Rakuten Developer Portal's **Product Search API** returns the advertiser's price and sale price. A `Macys` adapter plugs into `verify_deals.py` the same way the Best Buy one does, using the secret `RAKUTEN_TOKEN`. Macy's has no public product API, and scraping is not allowed.
+   - **Manual, today:** a person opens the product page and cart, then records the evidence in a reviewed PR. That means `price_evidence` (what was seen, when, and to which ZIP), a `resolved_blockers` entry for each blocker, `publication_eligible: true` and an image. `approve_deal.py` then publishes through the same gate. A Claude Code session on the owner's own computer, with Claude in Chrome, can read the page while the owner watches. Manual deals expire after 2 days unless checked again.
 3. **More retailers:** apply to brand campaigns in Impact. Catalogs then appear for the existing credentials, and an Impact adapter plugs into `verify_deals.py` the same way.
