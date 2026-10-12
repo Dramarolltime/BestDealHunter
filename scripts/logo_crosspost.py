@@ -101,6 +101,26 @@ def verify_hosted(url, digest):
     return {"http": status, "content_type": ctype, "sha256": digest, "bytes": len(body)}
 
 
+def visual_diff(logo, body):
+    import io
+    from PIL import Image, ImageChops, ImageStat
+    a = Image.open(io.BytesIO(logo)).convert("RGB").resize((64, 64))
+    img = Image.open(io.BytesIO(body)).convert("RGB")
+    diff = sum(ImageStat.Stat(ImageChops.difference(a, img.resize((64, 64)))).mean) / 3
+    return img.size, round(diff, 2)
+
+
+def compare_full_image(post_url, logo):
+    """The post's full-size image via Instagram's public /media/?size=l redirect, compared visually."""
+    url = post_url.rstrip("/") + "/media/?size=l"
+    status, ctype, body, final = fetch(url)
+    if status != 200 or not ctype.startswith("image/"):
+        return {"url": url, "http": status, "content_type": ctype}
+    size, diff = visual_diff(logo, body)
+    return {"http": status, "content_type": ctype, "size": size, "host": final.split("/")[2],
+            "mean_abs_diff_0_255": diff, "visual_match": diff < 12}
+
+
 def compare_og_image(html, logo):
     """Instagram re-encodes uploads, so bytes can't match; compare the public og:image visually."""
     import html as htmlmod
@@ -245,7 +265,10 @@ def run(mode, env, log=print):
         if link:
             status, ctype, body, final = fetch(link)
             log(f"Instagram link {link}: HTTP {status}, final URL {final}, {len(body)} bytes")
-            log("Instagram image check: " + json.dumps(compare_og_image(body, data)))
+            og = compare_og_image(body, data)
+            og.pop("thumbnail_jpeg_b64", None)
+            log("Instagram link-preview (og:image, may be cropped): " + json.dumps(og))
+            log("Instagram full post image: " + json.dumps(compare_full_image(link, data)))
         return 0 if post.get("status") == "sent" else 1
     if mode != "publish":
         raise Stop(f"unknown mode {mode}")
