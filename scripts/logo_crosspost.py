@@ -31,6 +31,8 @@ POST_TAG = "brand-logo-post/post-"
 CAPTION = ("Meet BestDealHunter: big discounts, less searching. 🔎🏷️\n\n"
            "We hunt down verified deals from trusted US retailers and only share them once the price checks out.\n\n"
            "Follow along for deals worth your time. Link in bio.\n\n#bestdealhunter #deals #savings")
+# The exact image hosted by the `prepare` run (38295148828); its bytes are re-verified before posting.
+HOSTED_LOGO = "https://res.cloudinary.com/j9g6uest/image/upload/v1791831850/bestdealhunter/brand/logo-9af788d4a735.jpg"
 LINK_FIELDS = ("externalLink", "serviceLink", "link", "permalink", "url", "postUrl", "externalUrl")
 
 
@@ -211,8 +213,13 @@ def run(mode, env, log=print):
         if not post_id:
             log(f"No recorded post. Lock tags: {remote_tags('brand-logo-post/')}")
             return 1
-        log("Post: " + json.dumps(buf.post(post_id, links)))
-        return 0
+        post = buf.post(post_id, links) or {}
+        log("Post: " + json.dumps(post))
+        link = post.get("externalLink")
+        if link:
+            status, ctype, body, final = fetch(link)
+            log(f"Instagram link {link}: HTTP {status}, final URL {final}, {len(body)} bytes")
+        return 0 if post.get("status") == "sent" else 1
     if mode != "publish":
         raise Stop(f"unknown mode {mode}")
     channel = env.get("BUFFER_CHANNEL_ID", "")
@@ -225,7 +232,9 @@ def run(mode, env, log=print):
         if post_id:
             log("Post: " + json.dumps(buf.post(post_id, links)))
         return 3
-    hosted = cloudinary_upload(data, digest, env)  # idempotent: same public_id, overwrite=false
+    hosted = {"url": HOSTED_LOGO}  # the existing Cloudinary image; no new upload
+    if digest[:12] not in HOSTED_LOGO:
+        raise Stop("committed logo no longer matches the hosted image; run prepare again first")
     log("Hosted bytes verified: " + json.dumps(verify_hosted(hosted["url"], digest)))
     push_tag(LOCK, f"One-time BestDealHunter logo post; image {hosted['url']} sha256 {digest}; "
                    f"run {env.get('GITHUB_RUN_ID', 'local')}. Never delete unless Buffer shows no post was created.")

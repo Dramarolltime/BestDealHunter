@@ -1,11 +1,16 @@
-name: Brand logo cross-post checks (one-off)
-# Owner-approved BestDealHunter logo test (2026-10-12). Runs ONLY when a label is added to a PR.
-# This workflow contains NO publishing step:
-#   `logo-prepare`: read-only Buffer schema checks + upload the committed logo to Cloudinary
-#                   and prove the hosted bytes are identical (sha256).
-#   `logo-status`:  read-only report of the recorded post, if any.
-# The live post (scripts/logo_crosspost.py publish) is wired in separately, only with explicit
-# permission. Never receives INSTAGRAM_PUBLISH_ENABLED and never touches deals.
+name: Brand logo cross-post (one-off, owner-approved)
+# The single owner-approved BestDealHunter logo post (2026-10-12). Runs ONLY when a label is
+# added to this PR; never on push, schedule or merge.
+#   `logo-prepare`:           read-only Buffer checks + Cloudinary upload with byte check.
+#   `logo-status`:            read-only report of the recorded post and its Instagram link.
+#   `logo-publish-approved`:  added BY THE OWNER ONLY. Creates at most ONE live Instagram post via
+#                             Buffer using the existing Cloudinary logo. Duplicate protection:
+#     1. refuses if any tag refs/tags/brand-logo-post/* exists (lock or recorded post);
+#     2. re-verifies the hosted image bytes == the committed logo before anything else;
+#     3. creates the lock tag on GitHub (never --force) BEFORE contacting Buffer, so a re-run,
+#        a re-added label or a racing run is refused; the lock is never removed automatically;
+#     4. one shared concurrency group with every other Buffer job, never cancelled mid-run.
+# Never receives INSTAGRAM_PUBLISH_ENABLED and never touches deals or the deal publisher.
 on:
   pull_request:
     types: [labeled]
@@ -15,7 +20,7 @@ concurrency:
   group: buffer-publisher
   cancel-in-progress: false
 jobs:
-  logo:
+  checks:
     if: github.event.label.name == 'logo-prepare' || github.event.label.name == 'logo-status'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -38,3 +43,23 @@ jobs:
           LABEL: ${{ github.event.label.name }}
         run: |
           if [ "$LABEL" = "logo-prepare" ]; then python scripts/logo_crosspost.py prepare; else python scripts/logo_crosspost.py status; fi
+
+  publish-once:
+    if: github.event.label.name == 'logo-publish-approved' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: write  # only to create refs/tags/brand-logo-post/* (lock + post record)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Safety tests first (no network)
+        run: python -m unittest scripts/test_logo_crosspost.py -v
+      - name: Publish the logo ONCE (refused if already locked or posted)
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_CHANNEL_ID: ${{ vars.BUFFER_CHANNEL_ID }}
+        run: python scripts/logo_crosspost.py publish
