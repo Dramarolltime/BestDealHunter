@@ -12,7 +12,16 @@ Status (2026-10-12): **prepared, not live.** Instagram live publishing stays dis
 | Dramarolltime/BestDealHunter#13, Dramarolltime/BestDealHunter#14 | Pipeline dry run and one-deal end-to-end proof |
 | Dramarolltime/BestDealHunter#16 | Separate fail-closed `--draft-check`, required Instagram metadata, manual `buffer-publish.yml` in the `instagram` environment |
 
-Merge order, if approved: #4 → #5 → #6 → #13 → #14 → #16. Each PR is based on the one before it. Dramarolltime/BestDealHunter#17 is a temporary one-off and is never merged.
+Recommended sequence, if approved (each step keeps Instagram publishing off):
+
+1. **#18** (this PR). It's based on `main` and merges cleanly with all ten open PR branches. With #16's stack merged in, the full suite passes (178 tests).
+2. **#11** (Impact diagnostics) and **#12** (audit docs). Both are independent.
+3. **#4** (Cloudinary uploader) and **#5** (branded cards), in either order. Verified deals get cards and hosted images automatically from here on.
+4. **#6** (Buffer dry run) → **#13** (pipeline dry run) → **#14** (one-deal end-to-end) → **#16** (draft-check hardening plus the manual, gated `buffer-publish.yml`). Each is based on the previous one.
+5. **#10** (eBay). It stays dormant until eBay grants production access.
+6. Close **#17** without merging, after the test draft is deleted.
+
+After step 4, add a test that calls `verify_hosted_image()` in `publish()`.
 
 ## What this PR adds
 
@@ -42,6 +51,10 @@ Merge order, if approved: #4 → #5 → #6 → #13 → #14 → #16. Each PR is b
 | ≤1 post per run, single `buffer-publisher` concurrency group | workflow | enforced |
 | `sent` recorded only from Buffer's own status | `refresh_statuses()` | enforced |
 | Stuck/error rows open an incident | maintenance monitor | this PR |
+
+## Test draft status and cleanup procedure
+- **2026-10-12 read-only check** ([run 38270799888](https://github.com/Dramarolltime/BestDealHunter/actions/runs/38270799888)): Buffer reports `6acadf46ed92ed8fa5e85a01` as `status: draft` on channel `6ac834646a5c39ccb65a1157` with `sentAt: null`. It is **unpublished**, and nothing was deleted.
+- **To delete it** (needs owner approval): add the label `buffer-draft-cleanup-approved` to #18. The job re-reads the post, refuses anything that is not an unsent draft on that channel, introspects `deletePost`, deletes it, then re-reads to prove it's gone. Then set the ledger row to `"status": "deleted"` (the job's artifact has the updated file) and close #17.
 
 ## Owner steps (none are taken by Claude)
 1. Delete test draft `6acadf46ed92ed8fa5e85a01` in Buffer. Either use the Buffer UI, or add the label `buffer-draft-cleanup-approved` to this PR to run the cleanup workflow. To check without deleting first, use the label `buffer-draft-verify`.
