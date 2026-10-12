@@ -26,11 +26,15 @@ The system is rolled out in **gated phases**. Each phase after phase 1 needs exp
 | Published feed | `public-feed` | Live `deals.json` unreachable or not a JSON array | Yes |
 | Deal freshness | `stale-deals` | Never fails: reports active vs archived deals. Archived deals (stale, past `expires_date`, or `status: archived`) stay on the site under **Past Deals** labelled "Expired · price not verified" (archive policy, #1) | No |
 | Feed validity | `feed-valid` | Published `deals.json` fails `validate_feed` (structure, evidence, future dates) | Yes |
-| No active deals | `no-active-deals` | Every published deal is archived | No (warning) |
+| No active deals | `no-active-deals` | Every published deal is archived, or the feed is empty. Hourly workflows can all be green while the site shows nothing, because nothing re-checks retailer prices | **Yes** (closes when a re-verified deal is active) |
+| Re-verification source | `reverification-source` | `deals-source.json` is empty, so no workflow can advance `verified_date`; only manual re-verification can | No (warning) |
 | Archiving soon | `expiring-deals` | A deal moves to Past Deals within 24h | No (warning) |
 | Cloudinary | `cloudinary` | A URL in `cloudinary-images.json` isn't HTTP 200 `image/*` | Yes |
 | Unhosted images | `unhosted-images` | A deal's local image has no Cloudinary URL | No (warning) |
-| Pending queue | `pending-queue` | `pending_deals.json` isn't an array of objects | Yes |
+| Review queues | `pending-queue`, `review-queue` | `pending_deals.json` or `deal-review-queue.json` isn't an array of objects | Yes |
+| Review backlog | `review-backlog` | Never fails: counts candidates in **both** queues, by status, eligible and past their end date | No |
+| Buffer ledger | `buffer-ledger` | A `posts.json` row is stuck `reserved`/`error`, or Buffer reports `error` | Yes |
+| Buffer test drafts | `buffer-test-drafts` | A row in `buffer-test-drafts.json` isn't marked `deleted` | No (warning) |
 | Workflows | `workflow:<file>` | The **latest completed** run on `main` (last 7 days) is `failure`, `timed_out` or `startup_failure`. `cancelled` is ignored. | Yes, one per workflow |
 
 The job also runs the full unit-test suite first, so a broken monitor or validator fails loudly in the Actions tab.
@@ -115,6 +119,7 @@ jobs:
 - Published deals are **never deleted**. Once stale, past `expires_date`, or marked `status: "archived"`, a deal moves to the site's **Past Deals (expired)** tab. There it shows "Expired · price not verified" and "Price at time of posting", and it's excluded from the active tabs, filters and Instagram eligibility.
 - `validate_feed` accepts archived entries, so the hourly check doesn't fail because history is kept. The strict `validate` (approvals, refreshes, cards, posts) still requires active deals.
 - Verification dates are never refreshed automatically. Reactivating a deal requires real re-verification.
+- Why hourly runs stay green with zero active deals (investigated 2026-10-12): `Hourly deal checks` validates structure with `validate_feed`, which accepts archived deals by design; `Refresh verified deals` merges `deals-source.json`, which is `[]`; `Collect retailer deal candidates` exits early because `DEAL_FEED_URL` is unset; and the publication gate only stages already-verified deals. **No job contacts a retailer**, so nothing can or should move `verified_date`. The hourly job now reports the active count and warns at zero, the refresh job says when it changed nothing, and the monitor opens a `no-active-deals` incident.
 
 ## Phase 4: Cloudinary and website upkeep (design, needs approval)
 - Consolidate the three uploaders into one: content-hash `public_id`, include `images/generated/`, and **merge** results into `cloudinary-images.json` instead of overwriting it.

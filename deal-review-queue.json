@@ -7,7 +7,14 @@
     "listed_price": 949.99,
     "retailer_comparable_value": 1999.99,
     "discovered_date": "2026-10-10",
-    "notes": "Retailer listing shows 52%+ difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish."
+    "notes": "Retailer listing shows 52%+ difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies bestbuy.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed.",
+      "finding": "Search snapshots of the same Best Buy product page show $848.99 and $997.99, not the queued $949.99: price has moved since discovery; re-check before any use."
+    },
+    "model_number": "65S7SG"
   },
   {
     "status": "needs_verification",
@@ -17,7 +24,12 @@
     "listed_price": 19.99,
     "retailer_comparable_value": 49.99,
     "discovered_date": "2026-10-10",
-    "notes": "Retailer listing shows 60% difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish."
+    "notes": "Retailer listing shows 60% difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies bestbuy.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -39,7 +51,12 @@
       "Promotion expiration not specified",
       "Publicly accessible branded image for this item not prepared or verified"
     ],
-    "notes": "Review candidate only. Do not publish to website or Instagram until all blockers resolved."
+    "notes": "Review candidate only. Do not publish to website or Instagram until all blockers resolved.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -59,7 +76,12 @@
       "Historical reference price and expiration not independently verified",
       "Public branded image not prepared or checked"
     ],
-    "notes": "Do not publish until blockers cleared."
+    "notes": "Do not publish until blockers cleared.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -83,7 +105,12 @@
       "Promotion expiration not specified",
       "No GitHub-hosted branded image prepared and public image URL verified"
     ],
-    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -107,7 +134,12 @@
       "Promotion expiration not specified",
       "No GitHub-hosted branded image prepared and public image URL verified"
     ],
-    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -131,7 +163,12 @@
       "Promotion expiration not specified",
       "No GitHub-hosted branded image prepared and public image URL verified"
     ],
-    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -154,7 +191,12 @@
       "Historical reference price and promotion expiration not independently verified",
       "No product-specific GitHub-hosted branded image URL verified"
     ],
-    "notes": "Research only. Twin is a 2-piece set despite 3-piece family title; do not advertise 3 pieces for Twin. Do not publish until blockers cleared."
+    "notes": "Research only. Twin is a 2-piece set despite 3-piece family title; do not advertise 3 pieces for Twin. Do not publish until blockers cleared.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -177,7 +219,13 @@
       "No GitHub-hosted product-specific branded image URL verified",
       "Product has approximately 3.0/5 customer rating and reports of breakage; editorial quality review recommended"
     ],
-    "notes": "Research only. Mixed quality reviews, especially damaged pieces; not recommended for publication without editorial review and verification."
+    "notes": "Research only. Mixed quality reviews, especially damaged pieces; not recommended for publication without editorial review and verification.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed.",
+      "finding": "Still carries the editorial quality concern (about 3.0/5, breakage reports); recommend rejecting even if price verifies."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -200,7 +248,13 @@
       "Exact promotion end time and timezone unverified",
       "No product-specific branded GitHub-hosted graphic and publicly accessible URL verified"
     ],
-    "notes": "Research candidate only; do not publish to website or Instagram until checkout and image checks pass."
+    "notes": "Research candidate only; do not publish to website or Instagram until checkout and image checks pass.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies bestbuy.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed.",
+      "finding": "Best Buy page on Oct 11 said 'Deal ends tomorrow' (expiration_date 2026-10-12). Treat as ended unless the retailer shows the price again; search snapshots show $19.99-$27.99 at different dates."
+    }
   },
   {
     "status": "needs_checkout_verification",
@@ -223,6 +277,11 @@
       "Historical reference price legitimacy and expiration date unverified",
       "No product-specific branded GitHub-hosted image URL verified"
     ],
-    "notes": "Research only. Six-piece set includes ladle, skimmer, slotted turner, slotted spoon, basting spoon and holder. Do not publish until all blockers cleared."
+    "notes": "Research only. Six-piece set includes ladle, skimmer, slotted turner, slotted spoon, basting spoon and holder. Do not publish until all blockers cleared.",
+    "last_review": {
+      "date": "2026-10-12",
+      "result": "not_verified",
+      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
+    }
   }
 ]

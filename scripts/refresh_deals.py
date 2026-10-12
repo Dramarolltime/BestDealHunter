@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 from validate_deals import validate
+from publication_gate import publication_problems
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "deals-source.json"
@@ -35,8 +36,15 @@ def merge(existing, incoming):
             old = merged[idx]
             if item["verified_date"] < str(old.get("verified_date", "")):
                 continue
-            merged[idx] = {**old, **item}
+            new = {**old, **item}
+            if any(new.get(f) != old.get(f) for f in ("price", "original_price")) and "image" not in item:
+                continue  # the existing image shows the old price; the source must supply a new card
+            if publication_problems(new):
+                continue
+            merged[idx] = new
         else:
+            if publication_problems(item):
+                continue  # e.g. no image yet: never list a deal without one
             positions[ident] = len(merged)
             merged.append(dict(item))
         updates += 1
@@ -52,6 +60,11 @@ def main():
     if merged != existing:
         DESTINATION.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Accepted {updates} verified source entries; retained {len(merged)} total published deals.")
+    if not updates:
+        # Say so plainly: a green run here is not a re-verification. verified_date only moves when
+        # deals-source.json carries a new, validated retailer check for that URL.
+        print("No retailer-verified updates: verification dates left unchanged "
+              f"({'deals-source.json is empty' if not incoming else 'no source entry passed validation'}).")
 
 if __name__ == "__main__":
     main()

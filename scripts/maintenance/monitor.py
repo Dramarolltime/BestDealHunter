@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """BestDealHunter hourly maintenance monitor (phase 1: monitoring and reporting only).
 
-Checks the public website, hosted Cloudinary images, deal freshness, the pending
-queue and recent GitHub Actions runs on main. It then:
+Checks the public website, hosted Cloudinary images, deal freshness, both review
+queues (pending_deals.json and deal-review-queue.json), the Buffer ledgers and recent
+GitHub Actions runs on main. It then:
   * opens one GitHub issue per new problem (label `maintenance`), closes it with a
     comment when the problem clears, and never duplicates an open incident;
   * rewrites the body of a single status issue (label `maintenance-status`);
@@ -28,6 +29,9 @@ INCIDENT_LABEL = "maintenance"
 STATUS_LABEL = "maintenance-status"
 FAILED = {"failure", "timed_out", "startup_failure"}
 USER_AGENT = "BestDealHunter-maintenance/1.0"
+# Every file that holds deal candidates awaiting human verification, with its check key.
+# pending_deals.json is filled by collect_candidates.py; deal-review-queue.json by research sessions.
+REVIEW_QUEUES = {"pending_deals.json": "pending-queue", "deal-review-queue.json": "review-queue"}
 
 
 def check(key, title, ok, details, severity="error"):
@@ -140,9 +144,14 @@ def check_freshness(deals, today, max_age=RULES["max_verification_age_days"]):
     if expiring:
         results.append(check("expiring-deals", "Deals move to Past Deals within 24h", False,
                              "\n".join(f"- {s}" for s in expiring), severity="warning"))
-    if deals and not active:
+    if not active:
+        # An incident, not a warning: every hourly workflow can pass while the site shows nothing.
+        # Nothing in CI re-checks retailer prices, so only a person re-verifying a deal clears this.
         results.append(check("no-active-deals", "No active deals on the site", False,
-                             "Every published deal is archived. Add or re-verify deals.", severity="warning"))
+                             (f"All {len(deals)} published deal(s) are archived." if deals else "The feed is empty.")
+                             + " Hourly workflows stay green because no workflow re-checks retailer prices;"
+                             " `verified_date` only advances when a person confirms the retailer's current price"
+                             " and availability (reviewed PR or `approve_deal.py`)."))
     return results
 
 
@@ -170,10 +179,69 @@ def check_unhosted(deals, hosted):
                  severity="warning")
 
 
-def check_pending(queue):
-    ok = isinstance(queue, list) and all(isinstance(d, dict) for d in queue)
-    return check("pending-queue", "pending_deals.json is malformed", ok,
-                 f"{len(queue)} deal(s) awaiting review." if ok else "Expected a JSON array of objects.")
+def check_queues(queues, today):
+    """`queues` maps file name -> parsed JSON (None if missing). One validity check per file plus
+    a backlog summary that counts candidates across ALL review queues, not just pending_deals.json."""
+    results, lines, statuses = [], [], {}
+    total = eligible = expired = 0
+    for name, key in REVIEW_QUEUES.items():
+        queue = queues.get(name)
+        ok = isinstance(queue, list) and all(isinstance(d, dict) for d in queue)
+        results.append(check(key, f"{name} is malformed", ok,
+                             f"{len(queue)} candidate(s) in `{name}`." if ok else "Expected a JSON array of objects."))
+        if not ok:
+            continue
+        total += len(queue)
+        lines.append(f"- `{name}`: {len(queue)}")
+        for item in queue:
+            status = str(item.get("status") or item.get("review_status") or "unknown")
+            statuses[status] = statuses.get(status, 0) + 1
+            eligible += item.get("publication_eligible") is True
+            ends = item.get("expiration_date") or item.get("expires_date")
+            expired += isinstance(ends, str) and ends < today.isoformat()
+    by_status = ", ".join(f"{k}: {v}" for k, v in sorted(statuses.items())) or "none"
+    details = "\n".join([f"**{total} candidate(s) awaiting review** across all queues:", *lines, "",
+                         f"By status: {by_status}.", f"Marked publication-eligible: {eligible}.",
+                         f"Past their offer end date: {expired}."])
+    results.append(check("review-backlog", "Review queue backlog", True, details))
+    return results
+
+
+def check_reverification_source(source):
+    """deals-source.json is the only automated input that can advance verified_date. Empty = manual only."""
+    ok = isinstance(source, list) and len(source) > 0
+    return check("reverification-source", "No automated retailer re-verification source", ok,
+                 f"`deals-source.json` has {len(source)} retailer-verified source entries." if ok else
+                 "`deals-source.json` is empty and no authorized retailer feed is connected, so the 6-hourly "
+                 "refresh accepts nothing and published deals age out after "
+                 f"{RULES['max_verification_age_days']} days. Re-verify deals by hand (retailer price, stock "
+                 "and end date) or connect an approved retailer API.", severity="warning")
+
+
+def check_buffer_ledgers(posts, test_drafts):
+    """Buffer error monitoring. `posts` = posts.json (live ledger), `test_drafts` = buffer-test-drafts.json.
+
+    A live row stuck in `reserved` or `error` blocks that deal and may mean a post exists in Buffer
+    that we did not record: an incident. Test drafts not yet deleted from Buffer are a warning.
+    """
+    stuck = [f"- {p.get('title', p.get('key'))}: status `{p.get('status')}`"
+             + (f" ({p.get('error')})" if p.get("error") else "")
+             for p in posts or [] if isinstance(p, dict) and p.get("status") in ("reserved", "error")]
+    failed = [f"- {p.get('title', p.get('key'))}: Buffer reports `{p.get('buffer_status')}`"
+              for p in posts or [] if isinstance(p, dict) and str(p.get("buffer_status", "")).lower() == "error"]
+    problems = stuck + failed
+    if not isinstance(posts, list):  # load_json gives [] for a missing file, None for a corrupt one
+        problems.append("- `posts.json` is unreadable: the duplicate-protection ledger cannot be trusted")
+    results = [check("buffer-ledger", "Buffer posts need attention", not problems,
+                     "\n".join(problems) + "\nCheck Buffer by hand before clearing a row; never retry blindly."
+                     if problems else f"{len(posts or [])} ledger row(s); none stuck or failed.")]
+    leftover = [f"- Buffer post `{d.get('buffer_post_id')}` ({d.get('title', 'test draft')}), created {d.get('created_at', '?')}"
+                for d in test_drafts or [] if isinstance(d, dict) and d.get("status") != "deleted"]
+    if leftover:
+        results.append(check("buffer-test-drafts", "Buffer test drafts not yet deleted", False,
+                             "\n".join(leftover) + "\nDelete in Buffer (or run the *Buffer draft cleanup* workflow), "
+                             "then mark the row `deleted` in `buffer-test-drafts.json`.", severity="warning"))
+    return results
 
 
 def latest_runs(runs):
@@ -269,6 +337,16 @@ def sync_issues(gh, results, status_body, digest, run_url, log=print):
 
 # ---------------------------------------------------------------- main
 
+def load_json(name, missing=None):
+    """Repository JSON file; `missing` if absent, None if unparseable (reported by its check)."""
+    try:
+        return json.loads((ROOT / name).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return missing
+    except ValueError:
+        return None
+
+
 def run_checks(site_url, gh, today):
     base = site_url.rstrip("/") + "/"
     status, ctype, body = http_get(base)
@@ -282,7 +360,9 @@ def run_checks(site_url, gh, today):
     hosted = json.loads((ROOT / "cloudinary-images.json").read_text(encoding="utf-8"))
     results.append(check_hosted_images(hosted, lambda u: http_get(u, method="HEAD")[:2]))
     results.append(check_unhosted(deals, hosted))
-    results.append(check_pending(json.loads((ROOT / "pending_deals.json").read_text(encoding="utf-8"))))
+    results += check_queues({name: load_json(name) for name in REVIEW_QUEUES}, today)
+    results.append(check_reverification_source(load_json("deals-source.json")))
+    results += check_buffer_ledgers(load_json("posts.json", []), load_json("buffer-test-drafts.json", []))
     if gh:
         since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
         runs = gh.call("GET", "/actions/runs", query={"branch": "main", "per_page": 100,
