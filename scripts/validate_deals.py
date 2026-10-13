@@ -34,8 +34,24 @@ def known_domain(host):
     host = host.lower().removeprefix("www.")
     return any(host == d or host.endswith("." + d) for d in DOMAINS)
 
+def price_verified(deal, today=None):
+    """True while the price check is recent (within max_verification_age_days).
+
+    An older check does NOT archive the deal: it stays listed with its price labelled as
+    not re-verified. Only fresh checks may be approved, carded or posted (strict validate).
+    """
+    today = today or date.today()
+    try:
+        checked = date.fromisoformat(deal["verified_date"])
+    except (KeyError, TypeError, ValueError):
+        return False
+    return checked >= today - timedelta(days=RULES["max_verification_age_days"])
+
+
 def deal_status(deal, today=None):
-    """'active' or 'archived'. Unparseable dates count as archived (validation reports them)."""
+    """'active' or 'archived'. A deal is archived only when its own offer has ended
+    (expires_date in the past) or someone set status "archived"; age alone never archives
+    it (see price_verified). Unparseable dates count as archived (validation reports them)."""
     today = today or date.today()
     if deal.get("status") == "archived":
         return "archived"
@@ -43,13 +59,22 @@ def deal_status(deal, today=None):
     if isinstance(expires, str) and expires < today.isoformat():
         return "archived"
     try:
-        checked = date.fromisoformat(deal["verified_date"])
+        date.fromisoformat(deal["verified_date"])
     except (KeyError, TypeError, ValueError):
         return "archived"
-    return "archived" if checked < today - timedelta(days=RULES["max_verification_age_days"]) else "active"
+    return "active"
+
+
+def feed_counts(data, today=None):
+    """(active with a recent price check, active with an unverified price, archived)."""
+    today = today or date.today()
+    archived = [d for d in data if deal_status(d, today) == "archived"]
+    active = [d for d in data if deal_status(d, today) == "active"]
+    unverified = sum(1 for d in active if not price_verified(d, today))
+    return len(active) - unverified, unverified, len(archived)
 
 def validate_feed(data, today=None):
-    """Validate the published feed, allowing archived (stale/expired) deals. Returns (active, archived)."""
+    """Validate the published feed, allowing archived and unverified-price deals. Returns (active, archived)."""
     today = today or date.today()
     if not isinstance(data, list):
         raise ValueError("Feed must be an array")
@@ -104,7 +129,7 @@ def validate(data, today=None, allow_archived=False):
                 raise ValueError(f"Deal {i}: invalid expires_date") from exc
         if deal.get("status") not in (None, "active", "archived"):
             raise ValueError(f"Deal {i}: status must be 'active' or 'archived'")
-        if not allow_archived and deal_status(deal, today) == "archived":
+        if not allow_archived and (deal_status(deal, today) == "archived" or not price_verified(deal, today)):
             raise ValueError(f"Deal {i}: verification is stale or the deal is archived")
         if deal.get("promo_code") and not deal.get("promo_note"):
             raise ValueError(f"Deal {i}: promo_code requires promo_note with terms")
@@ -114,5 +139,8 @@ def validate(data, today=None, allow_archived=False):
     return len(data)
 
 if __name__ == "__main__":
-    active, archived = validate_feed(json.loads(Path("deals.json").read_text(encoding="utf-8")))
-    print(f"Validated {active + archived} public deal(s): {active} active, {archived} archived (shown as expired).")
+    feed = json.loads(Path("deals.json").read_text(encoding="utf-8"))
+    validate_feed(feed)
+    fresh, unverified, archived = feed_counts(feed)
+    print(f"Validated {len(feed)} public deal(s): {fresh} active with a recent price check, "
+          f"{unverified} active with the price labelled unverified, {archived} archived (offer ended).")
