@@ -48,6 +48,22 @@ class VerdictTests(unittest.TestCase):
         off = dict(AMAZON, visible=dict(AMAZON["visible"], savings_percent=20))  # wrong variant's price or reference
         self.assertEqual(verdict(off), "mismatch")
 
+    def test_reference_comes_from_the_products_own_element(self):
+        # run 38455885607: reference element held the price; the page also showed other products' prices
+        row = dict(AMAZON, reference_values=["195.99", "259.99"],
+                   visible=dict(AMAZON["visible"], price="89.99", reference="89.99", savings_percent=64))
+        self.assertEqual(verdict(row), "unconfirmed")
+        row = dict(AMAZON, visible=dict(AMAZON["visible"], price="89.99", reference="252.99", savings_percent=64))
+        self.assertEqual(verdict(row), "verified")
+        self.assertEqual(verdict(dict(row, visible=dict(row["visible"], reference="259.99"))), "mismatch")  # 65.4%
+
+    def test_missing_badge_where_the_store_shows_one_is_unconfirmed(self):
+        row = dict(AMAZON, visible=dict(AMAZON["visible"], savings_percent=None, savings_expected=True))
+        self.assertEqual(verdict(row), "unconfirmed")
+
+    def test_ambiguous_text_reference_is_unconfirmed(self):
+        self.assertEqual(verdict(dict(OK, reference_values=["699.99", "649.99"])), "unconfirmed")
+
     def test_under_50_percent_is_rejected_with_floor(self):
         self.assertEqual(verdict(dict(OK, reference_values=["599.97"])), "below_50")  # 49.99% -> 49
         self.assertEqual(verdict(dict(OK, reference_values=["599.98"])), "verified")  # exactly 50%

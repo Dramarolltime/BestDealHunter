@@ -16,10 +16,11 @@ from datetime import datetime, timezone
 
 REF = re.compile(r"(?:Orig\.?|Reg\.?|Regular|Was|List(?: Price)?|Comp\. Value|Typical price)\s*:?\s*\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", re.I)
 # Store-specific page elements: (current price, reference price, reference label, availability, buy button
-# [, the page's own "-NN%" savings badge, which must agree with the discount computed from the two prices])
+# [, the page's own "-NN%" savings badge, which must agree with the discount computed from the two prices]).
+# Comma-separated alternatives are tried in the order written; the first match wins.
 VISIBLE = {
-    "amazon.com": ("#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen, "
-                   "#corePriceDisplay_desktop_feature_div .priceToPay .a-offscreen",
+    "amazon.com": ("#corePriceDisplay_desktop_feature_div .priceToPay .a-offscreen, "
+                   "#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen",
                    "#corePriceDisplay_desktop_feature_div .basisPrice .a-offscreen, #corePrice_feature_div .a-text-price .a-offscreen",
                    "#corePriceDisplay_desktop_feature_div .basisPrice", "#availability", "#add-to-cart-button",
                    "#corePriceDisplay_desktop_feature_div .savingsPercentage"),
@@ -57,8 +58,13 @@ def page_facts(row):
     offers = [o for o in row.get("offers") or [] if _num(o.get("price")) is not None]
     vis = row.get("visible") or {}
     price = _num(offers[0]["price"]) if offers else _num(vis.get("price"))
-    refs = [r for r in (_num(vis.get("reference")), *(_num(m) for m in row.get("reference_values") or [])) if r]
-    reference = max((r for r in refs if price and r > price), default=None)
+    if vis:  # the product's own reference element only; never another number elsewhere on the page
+        reference = _num(vis.get("reference"))
+    else:    # schema.org stores: a labelled "Was/Reg./..." amount in the text, only if it is unambiguous
+        refs = {r for r in (_num(m) for m in row.get("reference_values") or []) if r and price and r > price}
+        reference = refs.pop() if len(refs) == 1 else None
+    if reference is not None and (price is None or reference <= price):
+        reference = None  # the "reference" element held the price itself: not a reference
     stock = (offers[0].get("availability") or "").lower() if offers else ""
     text = (vis.get("availability") or "").lower()
     signals = row.get("signals") or {}
@@ -71,6 +77,8 @@ def page_facts(row):
     pct = (round(reference * 100) - round(price * 100)) * 100 // round(reference * 100) if price and reference else None
     return {"price": price, "reference": reference, "reference_label": vis.get("reference_label"),
             "discount": pct, "page_savings_percent": vis.get("savings_percent"),
+            "exact_discount": (reference - price) * 100 / reference if price and reference else None,
+            "savings_expected": bool(vis.get("savings_expected")),
             "buyable": buyable, "seller": (offers[0].get("seller") if offers else vis.get("seller"))}
 
 
@@ -100,8 +108,11 @@ def verdict(row):
     if claimed is not None and claimed != facts["price"]:
         return "mismatch"
     badge = facts["page_savings_percent"]
-    if badge is not None and abs(badge - facts["discount"]) > 1:  # read the wrong price or reference element
-        return "mismatch"
+    if badge is None and facts["savings_expected"]:
+        return "unconfirmed"  # the page shows no savings badge to confirm which reference it compares against
+    exact = facts["exact_discount"]
+    if badge is not None and badge not in (int(exact), int(exact + 0.5)):  # floor or rounded, nothing else
+        return "mismatch"  # we read a different price or reference than the page's own savings badge uses
     if not facts["buyable"]:
         return "unavailable"
     if facts["discount"] < MIN_DISCOUNT:
@@ -160,8 +171,12 @@ def visible(page, url):
         return {}
 
     def first(css):
-        el = page.query_selector(css)
-        return el.inner_text().strip()[:200] if el else None
+        for alternative in css.split(", "):
+            el = page.query_selector(alternative)
+            text = el.inner_text().strip()[:200] if el else ""
+            if text:
+                return text
+        return None
 
     price, ref, label, avail, buy, *savings = sel
     out = {"price": first(price), "reference": first(ref), "reference_label": first(label), "availability": first(avail),
@@ -169,6 +184,7 @@ def visible(page, url):
     badge = first(savings[0]) if savings else None
     m = re.search(r"(\d{1,2})\s*%", badge or "")
     out["savings_percent"] = int(m.group(1)) if m else None
+    out["savings_expected"] = bool(savings)
     if out["reference"]:
         m = re.search(r"\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", out["reference"])
         out["reference"] = m.group(1) if m else None
