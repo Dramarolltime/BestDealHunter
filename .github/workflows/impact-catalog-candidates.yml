@@ -1,0 +1,27 @@
+name: Impact catalog candidates (Target, Walmart)
+# Manual only, and skipped unless the repository variable IMPACT_CATALOGS_ENABLED is "true".
+# Read-only: writes impact-candidates.json as a run artifact; never commits, lists or posts deals.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidates:
+    if: vars.IMPACT_CATALOGS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read shared Target/Walmart catalogs
+        env:
+          IMPACT_CATALOGS_ENABLED: ${{ vars.IMPACT_CATALOGS_ENABLED }}
+          IMPACT_ACCOUNT_SID: ${{ secrets.IMPACT_ACCOUNT_SID }}
+          IMPACT_AUTH_TOKEN: ${{ secrets.IMPACT_AUTH_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python3 scripts/impact_catalog_candidates.py --out impact-candidates.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impact-candidates
+          path: impact-candidates.json
+          if-no-files-found: ignore
+          retention-days: 7
