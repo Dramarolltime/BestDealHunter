@@ -337,8 +337,20 @@ class ListingPolicyRequirementTests(unittest.TestCase):
 
 
 class StaleImageTests(unittest.TestCase):
-    def test_unverified_deal_image_is_marked_not_current(self):
-        html = (ROOT / "index.html").read_text(encoding="utf-8")
-        self.assertIn("Old price shown \\u2014 not current", html)
-        self.assertIn(".stale-image .deal-image{filter:grayscale(.85);opacity:.5}", html)
-        self.assertIn("graphic with an old, unverified price", html)
+    """Images printed with a price must never pass for a current offer (PR #24)."""
+
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+
+    def test_unverified_and_ended_deal_images_carry_a_banner(self):
+        self.assertIn("(d.unverified||d.archived?'<div class=\"stale-image\">", self.html)
+        self.assertIn("Old price shown \\u2014 not current", self.html)
+        self.assertIn("Offer ended \\u2014 old price", self.html)
+        self.assertIn("graphic with an old, unverified price", self.html)
+        self.assertIn("graphic with an expired price", self.html)
+
+    def test_old_price_in_the_image_is_unreadable_even_on_hover(self):
+        rule = (".card .stale-image .deal-image,.card .deal-link:hover .stale-image .deal-image"
+                "{filter:grayscale(1) blur(6px);opacity:.45}")
+        self.assertIn(rule, self.html)
+        # declared after the archived and hover rules, so it wins for both
+        self.assertGreater(self.html.index(rule), self.html.index(".card.archived .deal-image{"))
