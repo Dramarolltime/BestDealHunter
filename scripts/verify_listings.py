@@ -147,7 +147,7 @@ def offers_from_ldjson(blocks):
 
 def visible(page, url):
     """The page's own price/reference/stock elements for stores whose schema.org data lacks them."""
-    host = re.sub(r"^www\.", "", url.split("/")[2])
+    host = re.sub(r"^www\.", "", page.url.split("/")[2])  # after redirects (link.amazon -> amazon.com)
     sel = VISIBLE.get(host)
     if not sel:
         return {}
