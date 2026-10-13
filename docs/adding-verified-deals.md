@@ -51,6 +51,7 @@ One bad record means nothing is written. `--apply` only appends to `pending_deal
 |---|---|---|
 | **Website listing** | `python scripts/approve_deal.py <id>`, committed in a reviewed PR | Refuses rows without verification evidence and any price check older than 2 days (strict `validate`). Append-only. |
 | **Instagram post** | set `publication_approved: true` on the deal in a reviewed PR | Buffer publisher (#6/#14/#16) also requires a fresh price check, a branded card hosted on Cloudinary, no earlier post at this price, and not Amazon. |
+| **Scheduled refresh** | `refresh-deals.yml` (every 6 h) merges `deals-source.json` | Applies only entries that carry `evidence_method` and pass strict `validate`; `deals-source.json` changes only through a reviewed commit. |
 | **Live posting switch** | repository variable `INSTAGRAM_PUBLISH_ENABLED=true` | Without it the publisher only does a dry run. |
 
 ## 4. Images, hosting, Instagram drafts
