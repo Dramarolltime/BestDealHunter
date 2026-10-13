@@ -1,0 +1,36 @@
+{
+  "checked_date": "2026-10-13",
+  "status": "needs_checkout_verification",
+  "publication_eligible": false,
+  "candidates": [
+    {
+      "store": "Best Buy",
+      "title": "Acer Nitro 31.5-inch Curved WQHD 180Hz Gaming Monitor (EDB323QU S3bmiipx)",
+      "sku": "6593333",
+      "url": "https://www.bestbuy.com/product/acer-nitro-gaming-31-5-curved-wqhd-180hz-1ms-freesync-premium-gaming-monitor-displayport-hdmi-x2-black/JJ8V8H2SHV",
+      "observed_price": 179.99,
+      "retailer_comparable_value": 459.99,
+      "listed_discount_percent": 61,
+      "reference_price_type": "A Best Buy product page snapshot from approximately two months earlier displayed a $459.99 selling price; not independently validated with transaction data.",
+      "promo_code": null,
+      "promo_note": "No code shown for observed Techtober Deal price. Shipping, tax, location-specific availability, final checkout total and exact promotion expiration not confirmed.",
+      "evidence": "Best Buy product page captured approximately 5 days before this check showed $179.99 and Add to cart, while current Best Buy Top Deals listings show a discount of at least 50% but not an independently confirmed cart total.",
+      "blockers": [
+        "Current final checkout total not confirmed",
+        "Live current price and location-specific availability not independently verified",
+        "Promotion expiration not confirmed",
+        "No branded image URL verified"
+      ]
+    }
+  ],
+  "expired_offer_recheck": {
+    "product": "It Takes Two - PS4/PS5 physical",
+    "sku": "6444455",
+    "review_queue_expiration_date": "2026-10-12",
+    "recommendation": "Mark prior $19.99 promotion expired; do not publish from stale queue. Main review queue edit blocked."
+  },
+  "publications": {
+    "website": 0,
+    "instagram": 0
+  }
+}
