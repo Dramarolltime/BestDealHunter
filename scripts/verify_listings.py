@@ -61,11 +61,26 @@ def offers_from_ldjson(blocks):
     return found
 
 
-def check(page, url):
+def check(ctx, url):
+    """One fresh tab per URL (a redirect can't spill into the next check); one retry."""
+    for attempt in (1, 2):
+        page = ctx.new_page()
+        row = _check(page, url)
+        page.close()
+        if "error" not in row:
+            break
+        row["attempts"] = attempt
+    return row
+
+
+def _check(page, url):
     row = {"url": url}
     try:
         resp = page.goto(url, wait_until="domcontentloaded", timeout=45000)
-        page.wait_for_timeout(4000)
+        try:
+            page.wait_for_load_state("networkidle", timeout=15000)
+        except Exception:  # retailer pages keep polling; settle for what has loaded
+            pass
         row["http"] = resp.status if resp else None
         row["final_url"] = page.url
         row["title"] = page.title()
@@ -90,13 +105,12 @@ def main(paths):
         ctx = browser.new_context(locale="en-US", timezone_id="America/New_York", viewport={"width": 1366, "height": 900},
                                   user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                                              "(KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
-        page = ctx.new_page()
         for path in paths:
             for d in items(path):
                 if d["url"] in seen:
                     continue
                 seen.add(d["url"])
-                row = check(page, d["url"])
+                row = check(ctx, d["url"])
                 row.update(source_file=path, store=d.get("store"), claimed_title=d.get("title"),
                            claimed_price=d.get("price", d.get("listed_price")),
                            claimed_reference=d.get("original_price", d.get("retailer_previous_price") or d.get("retailer_comparable_value")),
