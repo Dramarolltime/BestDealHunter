@@ -7,7 +7,7 @@ Nothing is published. The Buffer step builds the exact post, then exercises the 
 publish() code against an in-memory fake Buffer and an in-memory copy of the ledger to
 prove duplicate protection; the repository's posts.json is never written.
 
-  python scripts/e2e_one_deal.py                       # first active non-Amazon deal with a card
+  python scripts/e2e_one_deal.py                       # first freshly verified deal with a card
   python scripts/e2e_one_deal.py --deal 9ace7211bab6   # a specific deal (card id)
   python scripts/e2e_one_deal.py --verify-urls         # also fetch the Cloudinary URLs (CI)
 """
@@ -31,6 +31,9 @@ from validate_deals import RULES, deal_status, price_verified, validate
 ROOT = Path(__file__).resolve().parents[1]
 
 
+NOTHING_FRESH = "no listed deal has a price check from the last 2 days and a branded card"
+
+
 class StepFailed(Exception):
     pass
 
@@ -47,11 +50,11 @@ def pick_deal(deals, wanted, today):
             continue
         if wanted and card_id(deal) != wanted:
             continue
-        if not wanted and (deal.get("store") == "Amazon" or deal_status(deal, today) != "active"
+        if not wanted and (deal_status(deal, today) != "active" or not price_verified(deal, today)
                            or not str(deal.get("image", "")).startswith("images/generated/deal-")):
             continue
         return deal
-    raise StepFailed(f"no deal found for {wanted!r}" if wanted else "no active non-Amazon deal with a branded card")
+    raise StepFailed(f"no deal found for {wanted!r}" if wanted else NOTHING_FRESH)
 
 
 def step_validate(deal, today):
@@ -221,6 +224,8 @@ def main(argv=None):
     if summary:
         with open(summary, "a", encoding="utf-8") as fh:
             fh.write(text + "\n")
+    if not args.deal and rows == [("Pick deal", False, NOTHING_FRESH)]:
+        return 0  # nothing freshly verified to test is not a pipeline failure (auto-publish.yml covers new deals)
     return 0 if all(ok for _, ok, _ in rows) else 1
 
 
