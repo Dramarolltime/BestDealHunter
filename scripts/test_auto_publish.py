@@ -39,6 +39,13 @@ class SelectTests(unittest.TestCase):
         self.assertIs(d["publication_approved"], True)
         self.assertEqual((d["evidence_method"], d["evidence_source"]), ("retailer_page_check", RUN))
 
+    def test_discovered_candidates_take_the_product_page_title(self):
+        logs = []
+        new = ap.select([row(title="Amazon.com: Samsung 34' Odyssey G5 Monitor | 165Hz, 1ms : Electronics")],
+                        [{"url": URL, "store": "Amazon", "asin": "B000TEST01", "title": "Burlwood"}], [], RUN, TODAY, 5,
+                        log=logs.append)
+        self.assertEqual((new[0]["title"], new[0]["category"]), ("Samsung 34' Odyssey G5 Monitor", "Electronics"))
+
     def test_nothing_but_verified_is_published(self):
         for verdict in ("blocked", "unconfirmed", "mismatch", "below_50", "unavailable", None):
             self.assertEqual(self.select([row(verdict=verdict)])[0], [], verdict)

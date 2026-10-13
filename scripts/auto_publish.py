@@ -40,7 +40,12 @@ def clean_title(title):
     t = re.sub(r"^\s*Amazon\.com\s*:\s*", "", str(title or ""))
     t = re.sub(r"\s+:\s+[^:]+$", "", t)                       # trailing ' : Department'
     t = re.sub(r"\s+at Amazon .*$", "", t)                    # '... at Amazon Men's Clothing store'
-    return re.sub(r"\s+", " ", t).strip()[:140]
+    t = re.sub(r"^\s*Amazon\.com\s*[-:]\s*", "", t)            # 'Amazon.com - Cordless Vacuum ...'
+    t = re.split(r"\s+[|\[(]", t)[0]                          # drop '| feature list', '[3 Stand Ways]', '(...)'
+    t = re.sub(r"\s+", " ", t).strip(" ,-")
+    if len(t) > 90:                                           # keep whole words, end on a clause
+        t = t[:90].rsplit(",", 1)[0] if "," in t[:90] else t[:90].rsplit(" ", 1)[0]
+    return t
 
 
 def category(candidate, page_title):
@@ -53,7 +58,8 @@ def category(candidate, page_title):
 def record(row, candidate, run_url):
     """An add_verified_deals record built only from what the product page showed."""
     page = row.get("page") or {}
-    title = candidate.get("title") or clean_title(row.get("title"))
+    # Discovered candidates only carry deals-page link text (sometimes just a brand): use the product page's title.
+    title = clean_title(row.get("title")) if candidate.get("asin") or not candidate.get("title") else candidate["title"]
     return {
         "store": row.get("store") or candidate.get("store"),
         "title": title, "url": candidate.get("url") or row["url"],
