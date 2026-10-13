@@ -13,10 +13,10 @@ import json
 import os
 import sys
 import tempfile
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
-from validate_deals import RULES, deal_status, validate, validate_feed
+from validate_deals import RULES, deal_status, price_verified, validate, validate_feed
 
 ROOT = Path(__file__).resolve().parents[1]
 OK, WARN, FAIL = "ok", "warn", "fail"
@@ -49,12 +49,12 @@ def check_freshness(deals, today):
     active = active_deals(deals, today)
     if not active:
         return stage("Freshness", WARN, "No active deals: the site shows only Past Deals")
-    limit = RULES["max_verification_age_days"]
-    soon = [d for d in active if date.fromisoformat(d["verified_date"]) + timedelta(days=limit) <= today]
-    details = [f"{d['store']}: {d['title']} (verified {d['verified_date']})" for d in soon]
-    if soon:
-        return stage("Freshness", WARN, f"{len(soon)} of {len(active)} active deal(s) move to Past Deals within 24h", details)
-    return stage("Freshness", OK, f"{len(active)} active deal(s) verified within {limit} days")
+    stale = [d for d in active if not price_verified(d, today)]
+    details = [f"{d['store']}: {d['title']} (price last checked {d['verified_date']})" for d in stale]
+    if stale:
+        return stage("Freshness", WARN, f"{len(stale)} of {len(active)} active deal(s) labelled 'Price not re-verified' "
+                     "(still listed; not posted)", details)
+    return stage("Freshness", OK, f"{len(active)} active deal(s) verified within {RULES['max_verification_age_days']} days")
 
 
 def check_discovery(env):
@@ -75,6 +75,10 @@ def check_cards(deals, today):
     with tempfile.TemporaryDirectory() as tmp:
         for deal in active_deals(deals, today):
             title = deal.get("title", "Untitled")
+            if not price_verified(deal, today):  # #23: listed as "Price not re-verified"; no new card
+                warnings.append(f"{title}: price not re-verified in {RULES['max_verification_age_days']} days; "
+                                "card not checked")
+                continue
             try:
                 facts = card_facts(deal)
                 validate([deal], today)
