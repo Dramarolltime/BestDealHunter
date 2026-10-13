@@ -1,0 +1,44 @@
+name: Read Amazon Associates policy text (one-off, read-only)
+on:
+  push:
+    branches: [claude/associates-policy-check]
+permissions:
+  contents: read
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: python -m pip install -q 'playwright==1.56.0'
+      - name: Fetch the public policy pages and print matching clauses
+        shell: python
+        run: |
+          import re
+          from playwright.sync_api import sync_playwright
+          PAGES = {
+            "Operating Agreement": "https://affiliate-program.amazon.com/help/operating/agreement",
+            "Program Policies": "https://affiliate-program.amazon.com/help/operating/policies",
+            "IP License": "https://affiliate-program.amazon.com/help/operating/license",
+            "Social media disclosure help": "https://affiliate-program.amazon.com/help/node/topic/GPXFHVYZMTGPUMPE",
+          }
+          KEYS = re.compile(r"robot|spider|scrap|automated|price|pricing|availability|image|social media|instagram|"
+                            r"as an amazon associate|disclos|#ad|commissionsearned|data feed|creators api|advertising api|"
+                            r"link shorten|offline|e-?mail", re.I)
+          with sync_playwright() as p:
+              b = p.chromium.launch(channel="chrome", headless=True)
+              pg = b.new_page()
+              for name, url in PAGES.items():
+                  try:
+                      r = pg.goto(url, wait_until="domcontentloaded", timeout=45000)
+                      pg.wait_for_timeout(2500)
+                      text = pg.inner_text("body")
+                  except Exception as e:
+                      print(f"===== {name}: FAILED {e}"); continue
+                  print(f"===== {name} | {url} | HTTP {r.status if r else '?'} | {len(text)} chars | title {pg.title()!r}")
+                  m = re.search(r"(Last updated|Effective|updated on)[^\n]{0,80}", text, re.I)
+                  print("DATE:", m.group(0) if m else "not found")
+                  paras = [x.strip() for x in re.split(r"\n\s*\n|\n", text) if x.strip()]
+                  for i, para in enumerate(paras):
+                      if KEYS.search(para):
+                          print(f"[{i}] {para[:1500]}")
+              b.close()
