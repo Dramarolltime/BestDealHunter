@@ -21,7 +21,7 @@ from urllib import error, parse, request
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from validate_deals import RULES, deal_status, validate_feed  # noqa: E402
+from validate_deals import RULES, deal_status, price_verified, validate_feed  # noqa: E402
 
 MARKER = "<!-- bdh-maintenance:{key} -->"
 INCIDENT_LABEL = "maintenance"
@@ -112,12 +112,14 @@ def deal_age_days(deal, today):
 
 
 def check_freshness(deals, today, max_age=RULES["max_verification_age_days"]):
-    """Archive policy (#1): stale or expired deals stay on the site as "Past Deals".
+    """Listing policy: deals stay on the main page until their own expires_date.
 
-    They are reported, not treated as incidents. Warnings: deals that archive within
-    24h, and a site with no active deals left. An invalid feed is an incident.
+    A price check older than `max_age` days does not hide a deal; the site labels its price
+    as not re-verified. Ended offers move to Past Deals and are never deleted. Warnings:
+    unverified prices, price labels that turn unverified within 24h, and no active deals.
+    An invalid feed is an incident.
     """
-    archived, expiring = [], []
+    archived, unverified, expiring = [], [], []
     for deal in deals:
         if not isinstance(deal, dict):
             continue
@@ -125,24 +127,31 @@ def check_freshness(deals, today, max_age=RULES["max_verification_age_days"]):
         if deal_status(deal, today) == "archived":
             expires = deal.get("expires_date")
             archived.append(label + (f", offer ended {expires}" if isinstance(expires, str) and expires < today.isoformat() else ""))
+        elif not price_verified(deal, today):
+            unverified.append(label)
         elif deal_age_days(deal, today) == max_age:
             expiring.append(label)
     active = len(deals) - len(archived)
-    summary = f"{active} active, {len(archived)} archived (shown in Past Deals as expired; never deleted)."
+    summary = (f"{active} active ({len(unverified)} with the price labelled unverified), "
+               f"{len(archived)} archived (offer ended; shown in Past Deals, never deleted).")
     if archived:
-        summary += "\nRe-verify to reactivate, or leave archived:\n" + "\n".join(f"- {s}" for s in archived)
+        summary += "\nArchived:\n" + "\n".join(f"- {s}" for s in archived)
     results = [check("stale-deals", "Published deals are stale or expired", True, summary)]
     try:
         validate_feed(deals, today)
         results.append(check("feed-valid", "Published deals.json fails validation", True, "Feed passes validate_feed."))
     except ValueError as exc:
         results.append(check("feed-valid", "Published deals.json fails validation", False, str(exc)))
+    if unverified:
+        results.append(check("unverified-prices", "Listed deals with prices not re-verified", False,
+                             "Still listed, labelled \"price not re-verified\". Re-check to restore the badge:\n"
+                             + "\n".join(f"- {s}" for s in unverified), severity="warning"))
     if expiring:
-        results.append(check("expiring-deals", "Deals move to Past Deals within 24h", False,
+        results.append(check("expiring-deals", "Price labels turn unverified within 24h", False,
                              "\n".join(f"- {s}" for s in expiring), severity="warning"))
     if deals and not active:
         results.append(check("no-active-deals", "No active deals on the site", False,
-                             "Every published deal is archived. Add or re-verify deals.", severity="warning"))
+                             "Every published deal's offer has ended. Add new deals.", severity="warning"))
     return results
 
 
