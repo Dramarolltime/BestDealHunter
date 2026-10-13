@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-13",
+  "publication_eligible": false,
+  "candidates": [
+    {
+      "retailer": "Macy's",
+      "product": "Calvin Klein faux-fur-lined hooded puffer coat Black XXS",
+      "url": "https://www.macys.com/shop/product/calvin-klein-womens-faux-fur-lined-hooded-puffer-coat?ID=18332492",
+      "advertised_price": 39.96,
+      "retailer_reference_price": 265,
+      "promo_code": null,
+      "promo_note": "No code; coupons excluded; final sale",
+      "blockers": [
+        "Checkout unverified",
+        "Reference price unverified",
+        "Expiration unknown",
+        "Public branded image missing"
+      ]
+    },
+    {
+      "retailer": "Kohl's",
+      "product": "NIGHT Airlight Foam Pillow Core",
+      "url": "https://www.kohls.com/product/prd-7239998/night-airlight-foam-pillow-core.jsp",
+      "advertised_sale_price": 107.49,
+      "retailer_reference_price": 214.99,
+      "advertised_code_price": 85.99,
+      "promo_code": "GOSHOP20",
+      "promo_note": "Code shown on retailer page but NOT tested at checkout; inconsistent coupon names across page captures",
+      "blockers": [
+        "Coupon not tested",
+        "Checkout unverified",
+        "Reference price unverified",
+        "Expiration unknown",
+        "Public branded image missing"
+      ]
+    }
+  ]
+}
