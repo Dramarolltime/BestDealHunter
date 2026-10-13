@@ -334,3 +334,11 @@ class ListingPolicyRequirementTests(unittest.TestCase):
         self.assertIn('d.archived=d.status==="archived"||!!(d.expires_date&&new Date(d.expires_date+"T23:59:59")<new Date());', html)
         self.assertIn("d.unverified=!d.archived&&!(verified>=new Date(today.getTime()-maxVerificationAgeDays*864e5));", html)
         self.assertIn("Price not re-verified", html)
+
+
+class StaleImageTests(unittest.TestCase):
+    def test_unverified_deal_image_is_marked_not_current(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("Old price shown \\u2014 not current", html)
+        self.assertIn(".stale-image .deal-image{filter:grayscale(.85);opacity:.5}", html)
+        self.assertIn("graphic with an old, unverified price", html)
