@@ -1,0 +1,32 @@
+name: Live site check (temporary, read-only)
+# TEMPORARY verification for PR #19 after merge. Fetches the public GitHub Pages site only.
+on:
+  pull_request:
+    paths: ['.github/workflows/live-site-check.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Live site shows the logo linked to the Instagram post
+        run: |
+          set -euo pipefail
+          SITE=https://dramarolltime.github.io/BestDealHunter
+          POST=https://www.instagram.com/p/DeaArllHfX1/
+          for i in $(seq 1 30); do   # wait for the Pages deployment of the merge commit
+            curl -fsS "$SITE/brand-post.json" -o live-brand.json 2>/dev/null && grep -q "$POST" live-brand.json && break
+            sleep 20
+          done
+          echo "== index.html";        curl -fsS -o index.html -w "HTTP %{http_code}\n" "$SITE/"
+          grep -o 'id="brand-post-image" src="[^"]*"' index.html
+          grep -q 'id="brand-post"' index.html && echo "logo section present in live HTML"
+          echo "== brand-post.json";   cat live-brand.json; python3 -c "import json;d=json.load(open('live-brand.json'));assert d['instagram_url']=='$POST',d;print('instagram_url OK')"
+          echo "== logo image";        curl -fsS -o logo.jpg -w "HTTP %{http_code} %{content_type}\n" "$SITE/images/brand/bestdealhunter-logo-1080.jpg"
+          live=$(sha256sum logo.jpg | cut -d' ' -f1); repo=$(sha256sum images/brand/bestdealhunter-logo-1080.jpg | cut -d' ' -f1)
+          echo "live sha256 $live"; echo "repo sha256 $repo"; [ "$live" = "$repo" ] && echo "live logo is byte-identical to the posted logo"
+          echo "== Instagram post";    curl -sS -o /dev/null -L -A "Mozilla/5.0" -w "HTTP %{http_code} final %{url_effective}\n" "$POST"
