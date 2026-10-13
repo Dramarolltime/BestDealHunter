@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-13",
+  "publication_eligible": false,
+  "source_checked_at_local": "2026-10-13 07:59 PDT",
+  "candidates": [
+    {
+      "status": "needs_checkout_verification",
+      "store": "Best Buy",
+      "title": "TCL 40-inch Q3CR Series 1080p QLED Roku Smart TV (2026)",
+      "model": "40Q3CR",
+      "sku": "6687111",
+      "url": "https://www.bestbuy.com/product/tcl-40-q3cr-series-1080p-fhd-qled-smart-tv-with-roku-2026/J36QYTQWPL",
+      "listed_price": 149.99,
+      "reference_price": 299.99,
+      "advertised_discount_percent": 50,
+      "reference_price_type": "Best Buy comparable value; earlier retailer page displayed $299.99 as Coming Soon, not proof of actual completed historical sales",
+      "promo_code": null,
+      "promo_note": "No code required; Top Deal advertised, quantities limited. Taxes, delivery fees and ZIP-specific inventory unverified.",
+      "expiration_date": null,
+      "availability_evidence": "Sold by Best Buy; Add to cart on Oct 13 product page",
+      "blockers": [
+        "Final checkout total unverified",
+        "Reference-price legitimacy unconfirmed",
+        "Specific deal expiration unknown",
+        "Location-specific availability unconfirmed",
+        "No verified GitHub-hosted branded promotional image"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "title": "Razer Basilisk V3 Wired Gaming Mouse",
+      "url": "https://www.bestbuy.com/product/razer-basilisk-v3-optical-gaming-mouse-with-chroma-rbg-lighting-wired-black/J3GTVWWXLS/sku/6475703",
+      "reason": "Fresh official product page now displays $49.99 vs $69.99 (29% discount), so prior $34.99 50%-off listing is stale."
+    },
+    {
+      "title": "It Takes Two PS4/PS5",
+      "reason": "Previous promotion ended Oct 12; earlier recheck Oct 13 showed $39.99, not $19.99."
+    }
+  ],
+  "publication": "None. Do not publish until full checkout and graphic checks pass."
+}
