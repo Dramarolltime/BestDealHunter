@@ -26,7 +26,7 @@ from urllib import error, request
 from cloudinary_upload import load_mapping
 from deal_graphics import card_facts, card_id, render_card
 from publish_buffer import BufferClient, apply_dry_run_approval, caption, feed_card, plan, publish
-from validate_deals import RULES, deal_status, validate
+from validate_deals import RULES, deal_status, price_verified, validate
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -119,6 +119,8 @@ def step_website(deal, mapping, today):
         raise StepFailed("site would fall back to the repo-hosted image, not Cloudinary")
     if deal_status(deal, today) != "active":
         raise StepFailed("deal would appear under Past Deals, not Explore Deals")
+    if not price_verified(deal, today):  # listing policy (#23): stays listed, but labelled
+        raise StepFailed("price check is older than 2 days: shown as 'Price not re-verified', not with a % OFF badge")
     pct = int((deal["original_price"] - deal["price"]) * 100 // deal["original_price"])
     return f"shown in Explore Deals (50%+ tier) with a {pct}% OFF badge; card served from Cloudinary ({src})"
 
