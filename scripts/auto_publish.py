@@ -64,7 +64,8 @@ def record(row, candidate, run_url):
         "store": row.get("store") or candidate.get("store"),
         "title": title, "url": candidate.get("url") or row["url"],
         "category": category(candidate, row.get("title")),
-        "seller": page.get("seller") or row.get("store") or candidate.get("store"),
+        # the page check does not establish who sells it (Amazon listings are often third-party sellers)
+        "seller": page.get("seller") or "unverified",
         "price": page.get("price"), "original_price": page.get("reference"),
         "reference_label": page.get("reference_label") or "Reference price",
         "availability": "In stock (retailer product page)",

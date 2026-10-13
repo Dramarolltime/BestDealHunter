@@ -37,6 +37,7 @@ class SelectTests(unittest.TestCase):
         self.assertEqual((d["price"], d["original_price"], d["reference_price_label"]), (19.99, 49.99, "List Price"))
         self.assertEqual((d["title"], d["category"], d["verified_date"]), ("ILLUSTRATIVE TEST Kettle, 1.7L, Black", "Home", "2026-10-13"))
         self.assertIs(d["publication_approved"], True)
+        self.assertEqual(d["seller"], "unverified")  # never claim the store itself sells it
         self.assertEqual((d["evidence_method"], d["evidence_source"]), ("retailer_page_check", RUN))
 
     def test_discovered_candidates_take_the_product_page_title(self):
