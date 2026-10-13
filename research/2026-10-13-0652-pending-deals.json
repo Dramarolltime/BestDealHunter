@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-13",
+  "checked_at": "2026-10-13T06:52:00-07:00",
+  "publication_eligible": false,
+  "review_queue_update": "Blocked by safety checks; saved research separately.",
+  "candidates": [
+    {
+      "retailer": "Macy's",
+      "product": "Cottage Floral Comforter Set, Multi, Twin (6 pieces)",
+      "url": "https://www.macys.com/shop/product/sunham-cottage-floral-8-pc.-comforter-sets?ID=23159487",
+      "advertised_price": 29.93,
+      "retailer_previous_price": 100,
+      "advertised_discount_percent": 70,
+      "variant": "Multi, Twin — six pieces, not eight",
+      "promo_code": null,
+      "promo_note": "No code needed; coupon excluded. Last Act final sale. Free shipping subject to minimum purchase; location restrictions may apply.",
+      "availability": "Add To Bag and Buy Now displayed October 13; final checkout and ZIP-specific fulfillment not verified",
+      "expiration_date": null,
+      "source": "Official Macy's product page Web ID 23159487; opened October 13 2026",
+      "blockers": [
+        "Historical reference price unverified",
+        "Final checkout price including shipping and taxes unverified",
+        "ZIP-specific inventory unverified",
+        "Expiration not specified",
+        "Publicly accessible product-specific branded image not verified"
+      ]
+    },
+    {
+      "retailer": "Macy's",
+      "product": "Cloud Stripe Comforter Set, Striped, Twin XL (2 pieces)",
+      "url": "https://www.macys.com/shop/product/liberty-mills-cloud-stripe-3-pc.-comforter-sets?ID=23723933",
+      "advertised_price": 23.93,
+      "retailer_previous_price": 80,
+      "advertised_discount_percent": 70,
+      "variant": "Striped, Twin XL — two pieces, not three",
+      "promo_code": null,
+      "promo_note": "No code needed; coupon excluded. Last Act final sale. Free shipping subject to minimum purchase; location restrictions may apply.",
+      "availability": "Add To Bag and Buy Now displayed October 13; final checkout and ZIP-specific fulfillment not verified",
+      "expiration_date": null,
+      "source": "Official Macy's product page Web ID 23723933; opened October 13 2026",
+      "blockers": [
+        "Historical reference price unverified",
+        "Final checkout price including shipping and taxes unverified",
+        "ZIP-specific inventory unverified",
+        "Expiration not specified",
+        "Publicly accessible product-specific branded image not verified"
+      ]
+    }
+  ],
+  "recheck": [
+    {
+      "retailer": "Best Buy",
+      "product": "It Takes Two PS4/PS5 physical edition",
+      "url": "https://www.bestbuy.com/product/it-takes-two-playstation-5-playstation-4/J7CYF9YKJ5/sku/6444455",
+      "last_verified_observed_price": 39.99,
+      "last_rechecked_date": "2026-10-13",
+      "previous_offer_end_date": "2026-10-12",
+      "status": "expired_nonqualifying",
+      "note": "Previously flagged expired in earlier research. The main review queue still contains the stale $19.99 entry; queue update was blocked. Do not publish."
+    }
+  ]
+}
