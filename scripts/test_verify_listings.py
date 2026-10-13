@@ -42,6 +42,12 @@ class VerdictTests(unittest.TestCase):
         self.assertEqual(verdict(dict(OK, claimed_price=249.99)), "mismatch")
         self.assertEqual(verdict(dict(OK, claimed_price=None)), "verified")  # page values are the evidence
 
+    def test_page_savings_badge_must_agree(self):
+        ok = dict(AMAZON, visible=dict(AMAZON["visible"], savings_percent=53))   # 169/359 -> 52.9 -> 52, badge 53
+        self.assertEqual(verdict(ok), "verified")
+        off = dict(AMAZON, visible=dict(AMAZON["visible"], savings_percent=20))  # wrong variant's price or reference
+        self.assertEqual(verdict(off), "mismatch")
+
     def test_under_50_percent_is_rejected_with_floor(self):
         self.assertEqual(verdict(dict(OK, reference_values=["599.97"])), "below_50")  # 49.99% -> 49
         self.assertEqual(verdict(dict(OK, reference_values=["599.98"])), "verified")  # exactly 50%

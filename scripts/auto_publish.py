@@ -5,7 +5,7 @@ Policy (owner + Alpha, 2026-10-13): no checkout and no manual approval. A deal i
 when verify_listings.py's verdict is "verified", i.e. the retailer's product page itself shows
 the current price, a higher reference price giving >= 50% off (floored), and that it can be
 bought now. Blocked, failed, unconfirmed, mismatched, under-50% or unavailable pages are never
-published.
+published, and a page claiming 80%+ off is held (likely an inflated reference price).
 
 Each verified page becomes a deals.json entry through add_verified_deals.check() (evidence
 method "retailer_page_check", the GitHub Actions run URL as evidence source, strict validation,
@@ -25,6 +25,9 @@ from add_verified_deals import Rejected, check
 
 ROOT = Path(__file__).resolve().parents[1]
 APPROVED_BY = "automatic: retailer product page check (owner policy 2026-10-13)"
+# A page claiming 80%+ off is held for a person instead of auto-published: in run 38452512276 these
+# were inflated list prices (e.g. a smoke detector "List Price $269.99", sold at $35.98).
+HOLD_AT_PERCENT = 80
 CATEGORY_HINTS = (("Electronics", r"electronic|computer|cell phone|camera|video game|headphone|tv\b|television"),
                   ("Fashion", r"clothing|shoes|jewelry|fashion|watches|luggage"),
                   ("Beauty", r"beauty|personal care|health"),
@@ -77,6 +80,10 @@ def select(results, candidates, deals, run_url, today, limit, log=print):
             entry = check(record(row, candidate, run_url), today, urls)
         except (Rejected, ValueError) as exc:
             log(f"SKIP {row['url']}: {exc}")
+            continue
+        pct = int((entry["original_price"] - entry["price"]) * 100 // entry["original_price"])
+        if pct >= HOLD_AT_PERCENT:
+            log(f"HOLD {entry['title']}: {pct}% off is {HOLD_AT_PERCENT}%+; questionable reference price, not auto-published")
             continue
         entry.update(publication_approved=True, approved_by=APPROVED_BY, auto_published_at=row["checked_at"])
         if len(new) >= limit:

@@ -15,12 +15,14 @@ import sys
 from datetime import datetime, timezone
 
 REF = re.compile(r"(?:Orig\.?|Reg\.?|Regular|Was|List(?: Price)?|Comp\. Value|Typical price)\s*:?\s*\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", re.I)
-# Store-specific page elements: (current price, reference price, reference label, availability, buy button)
+# Store-specific page elements: (current price, reference price, reference label, availability, buy button
+# [, the page's own "-NN%" savings badge, which must agree with the discount computed from the two prices])
 VISIBLE = {
     "amazon.com": ("#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen, "
                    "#corePriceDisplay_desktop_feature_div .priceToPay .a-offscreen",
                    "#corePriceDisplay_desktop_feature_div .basisPrice .a-offscreen, #corePrice_feature_div .a-text-price .a-offscreen",
-                   "#corePriceDisplay_desktop_feature_div .basisPrice", "#availability", "#add-to-cart-button"),
+                   "#corePriceDisplay_desktop_feature_div .basisPrice", "#availability", "#add-to-cart-button",
+                   "#corePriceDisplay_desktop_feature_div .savingsPercentage"),
     "bestbuy.com": ('[data-testid="customer-price"] span, .priceView-customer-price span',
                     '[data-testid="regular-price"], .pricing-price__regular-price', '[data-testid="regular-price"]',
                     '.fulfillment-fulfillment-summary', 'button.add-to-cart-button:not([disabled]), button[data-button-state="ADD_TO_CART"]'),
@@ -68,7 +70,8 @@ def page_facts(row):
         buyable = "in stock" in text or bool(vis.get("buy_button"))
     pct = (round(reference * 100) - round(price * 100)) * 100 // round(reference * 100) if price and reference else None
     return {"price": price, "reference": reference, "reference_label": vis.get("reference_label"),
-            "discount": pct, "buyable": buyable, "seller": (offers[0].get("seller") if offers else vis.get("seller"))}
+            "discount": pct, "page_savings_percent": vis.get("savings_percent"),
+            "buyable": buyable, "seller": (offers[0].get("seller") if offers else vis.get("seller"))}
 
 
 def verdict(row):
@@ -79,7 +82,8 @@ def verdict(row):
                 bought now. If a candidate claimed a price, the page must show that price.
     blocked     the retailer refused the automated check (403/429, block/captcha page,
                 protocol error); says NOTHING about the deal.
-    mismatch    the page price differs from the claimed price.
+    mismatch    the page price differs from the claimed price, or the page's own savings badge
+                ("-53%") disagrees with the discount computed from its price and reference.
     below_50    the page shows the item, but under 50% off its own reference price.
     unavailable the page says it can't be bought now.
     unconfirmed the page loaded but showed no price or no reference price.
@@ -94,6 +98,9 @@ def verdict(row):
         return "unconfirmed"
     claimed = _num(row.get("claimed_price"))
     if claimed is not None and claimed != facts["price"]:
+        return "mismatch"
+    badge = facts["page_savings_percent"]
+    if badge is not None and abs(badge - facts["discount"]) > 1:  # read the wrong price or reference element
         return "mismatch"
     if not facts["buyable"]:
         return "unavailable"
@@ -156,9 +163,12 @@ def visible(page, url):
         el = page.query_selector(css)
         return el.inner_text().strip()[:200] if el else None
 
-    price, ref, label, avail, buy = sel
+    price, ref, label, avail, buy, *savings = sel
     out = {"price": first(price), "reference": first(ref), "reference_label": first(label), "availability": first(avail),
            "buy_button": page.query_selector(buy) is not None}
+    badge = first(savings[0]) if savings else None
+    m = re.search(r"(\d{1,2})\s*%", badge or "")
+    out["savings_percent"] = int(m.group(1)) if m else None
     if out["reference"]:
         m = re.search(r"\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", out["reference"])
         out["reference"] = m.group(1) if m else None

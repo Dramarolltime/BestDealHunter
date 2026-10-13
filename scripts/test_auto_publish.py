@@ -50,6 +50,11 @@ class SelectTests(unittest.TestCase):
         self.assertEqual(new, [])
         self.assertTrue(any("too old" in m for m in logs) and any("only 49% off" in m for m in logs))
 
+    def test_80_percent_or_more_is_held(self):
+        new, logs = self.select([row(page=dict(row()["page"], price=9.99, reference=49.99))])  # 80%
+        self.assertEqual(new, [])
+        self.assertTrue(any(m.startswith("HOLD") for m in logs))
+
     def test_duplicates_and_limit(self):
         self.assertEqual(self.select([row()], deals=[{"url": URL}])[0], [])
         rows = [row(url=f"https://www.amazon.com/dp/B000TEST0{n}") for n in range(3)]
