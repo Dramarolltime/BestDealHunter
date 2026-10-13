@@ -1,0 +1,67 @@
+{
+  "research_date": "2026-10-13",
+  "run_local_time": "15:54 PDT",
+  "publication_eligible": false,
+  "review_queue_update_status": "blocked_by_safety_checks",
+  "candidates": [
+    {
+      "retailer": "Target",
+      "title": "art class Girls' Oversized Fleece Hoodie Sweatshirt — Gray, L",
+      "product_id": "94414616",
+      "direct_url": "https://www.target.com/p/-/A-94414616",
+      "advertised_price": 7.5,
+      "retailer_regular_price": 15,
+      "advertised_discount_percent": 50,
+      "promo_code": null,
+      "promo_note": "No promo code required for displayed clearance price. Price is specific to Gray, size L; other variants may differ.",
+      "observed_page": "Target direct page search result crawled approximately one month prior; Target category page corroborates price, no real-time checkout performed.",
+      "availability_evidence": "Target direct page capture displayed In Stock and Add to cart for Gray L; not verified in a live cart.",
+      "expiration_date": null,
+      "reference_price_type": "Target displayed regular price, not independently verified historic transaction price",
+      "publication_eligible": false,
+      "blockers": [
+        "Live cart and final checkout total including shipping and taxes unverified",
+        "Live location-specific availability not confirmed",
+        "Expiration unknown",
+        "Regular reference price not independently corroborated",
+        "No GitHub-hosted branded product-specific image URL verified"
+      ]
+    },
+    {
+      "retailer": "Target",
+      "title": "Wild Fable Women's Low-Rise Side-Tie Linen Pull-On Shorts — White, 4X",
+      "product_id": "95043523",
+      "direct_url": "https://www.target.com/p/-/A-95043523",
+      "advertised_price": 10,
+      "retailer_regular_price": 20,
+      "advertised_discount_percent": 50,
+      "promo_code": null,
+      "promo_note": "No promo code required for displayed clearance price; White 4X variant only. Other colors and sizes may vary.",
+      "observed_page": "Target direct product page search capture crawled about one week prior; live direct URL fetch returned 404, so current offer is NOT verified.",
+      "availability_evidence": "Older Target direct page capture displayed In Stock and Add to cart; live URL retrieval failed.",
+      "expiration_date": null,
+      "reference_price_type": "Target displayed regular price, independent historical transactions unverified",
+      "publication_eligible": false,
+      "blockers": [
+        "Current direct URL failed retrieval (404)",
+        "Final cart and checkout price unverified",
+        "Current inventory and ZIP-specific availability unverified",
+        "Expiration unknown",
+        "No branded product-specific public image URL verified"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "retailer": "Best Buy",
+      "title": "It Takes Two — PS4/PS5 physical edition",
+      "product_id": "6444455",
+      "previous_promo_price": 19.99,
+      "expiration_date": "2026-10-12",
+      "reason": "Expired October 12. Previously rechecked at $39.99 on October 13; do not publish. Existing review queue entry remains uncorrected because GitHub update_file was blocked."
+    }
+  ],
+  "website_publications": 0,
+  "instagram_publications": 0,
+  "branded_graphics_generated": 0
+}
