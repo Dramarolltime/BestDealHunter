@@ -27,6 +27,7 @@ jobs:
           with sync_playwright() as p:
               b = p.chromium.launch(channel="chrome", headless=True)
               pg = b.new_page()
+              PAGES = {"Program Policies": PAGES["Program Policies"]}
               for name, url in PAGES.items():
                   try:
                       r = pg.goto(url, wait_until="domcontentloaded", timeout=45000)
@@ -38,7 +39,11 @@ jobs:
                   m = re.search(r"(Last updated|Effective|updated on)[^\n]{0,80}", text, re.I)
                   print("DATE:", m.group(0) if m else "not found")
                   paras = [x.strip() for x in re.split(r"\n\s*\n|\n", text) if x.strip()]
-                  for i, para in enumerate(paras):
-                      if KEYS.search(para):
-                          print(f"[{i}] {para[:1500]}")
+                  start = next((i for i, x in enumerate(paras) if re.search(r"agent", x, re.I) and i > 225), 226)
+                  for i in range(max(start - 6, 0), min(start + 14, len(paras))):
+                      print(f"[{i}] {paras[i][:1500]}")
+                  print("--- headings containing 'Policy' ---")
+                  for i, x in enumerate(paras):
+                      if len(x) < 90 and re.search(r"polic|guideline|license|schedule", x, re.I):
+                          print(f"[{i}] {x}")
               b.close()
