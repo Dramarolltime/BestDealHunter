@@ -10,7 +10,11 @@ DESTINATION = ROOT / "deals.json"
 
 def valid(item):
     # Same rules as the public feed validator (deal_rules.json), so refreshes
-    # can never admit a deal the hourly check would reject.
+    # can never admit a deal the hourly check would reject. This job runs on a
+    # schedule, so it also requires verification evidence (as approve_deal.py does):
+    # an entry without evidence_method is never listed or used to change a price.
+    if not isinstance(item, dict) or not item.get("evidence_method"):
+        return False
     try:
         validate([item])
         return True

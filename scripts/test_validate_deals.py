@@ -235,9 +235,19 @@ class ConsistencyTests(unittest.TestCase):
             self.assertIn(d.get("category"), RULES["categories"])
 
 
+def evidenced(**changes):
+    """A refresh-source entry carrying verification evidence (required by refresh_deals.valid)."""
+    return dict(sample(), evidence_method="retailer_api", **changes)
+
+
 class RefreshTests(unittest.TestCase):
+    def test_refresh_never_lists_or_reprices_without_verification_evidence(self):
+        old = sample()
+        merged, updates = merge([old], [sample(), dict(sample(), url="https://www.ebay.com/itm/other")])
+        self.assertEqual((merged, updates), ([old], 0))
+
     def test_refresh_accepts_macys(self):
-        d = sample()
+        d = evidenced()
         d["store"], d["url"] = "Macy's", "https://www.macys.com/shop/product/x?ID=1"
         merged, updates = merge([], [d])
         self.assertEqual((len(merged), updates), (1, 1))
@@ -254,8 +264,7 @@ class RefreshTests(unittest.TestCase):
         # The hourly validator and the maintenance monitor flag them instead.
         old = sample()
         old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
-        fresh = sample()
-        fresh["url"] = "https://www.ebay.com/itm/other"
+        fresh = evidenced(url="https://www.ebay.com/itm/other")
         merged, updates = merge([old], [fresh])
         self.assertEqual((len(merged), updates), (2, 1))
         self.assertEqual(merged[0]["verified_date"], old["verified_date"])
@@ -265,15 +274,14 @@ class RefreshTests(unittest.TestCase):
     def test_refresh_ignores_stale_update_for_existing_deal(self):
         old = sample()
         old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
-        stale_update = dict(old, price=40)
+        stale_update = dict(old, price=40, evidence_method="retailer_api")
         merged, updates = merge([old], [stale_update])
         self.assertEqual((merged, updates), ([old], 0))
 
     def test_refresh_updates_matching_url_and_keeps_image(self):
         old = sample()
         old["image"] = "images/generated/card.jpg"
-        new = sample()
-        new["price"] = 40
+        new = evidenced(price=40)
         merged, updates = merge([old], [new])
         self.assertEqual((merged[0]["price"], merged[0]["image"], updates), (40, "images/generated/card.jpg", 1))
 
