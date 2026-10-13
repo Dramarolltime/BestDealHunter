@@ -1,5 +1,14 @@
 # Adding verified deals
 
+> **Policy (owner + Alpha, 2026-10-13): automatic publishing.** No checkout and no manual approval.
+> `.github/workflows/auto-publish.yml` runs every 6 hours on `main`:
+> find candidates → `verify_listings.py` opens each **retailer product page** → if the page itself shows
+> the price, a higher reference price giving **≥ 50% off** (rounded down) and that it can be bought now
+> (verdict `verified`), `auto_publish.py` adds it to `deals.json` with `publication_approved: true` →
+> branded cards → Cloudinary → Buffer/Instagram (while `INSTAGRAM_PUBLISH_ENABLED` is `true`).
+> Blocked, failed, unconfirmed, mismatched, under-50% or out-of-stock pages are never published.
+> The manual route below remains for deals a person checks in a browser.
+
 A deal goes on BestDealHunter only after its price was checked against the retailer's live data
 within the last 2 days. Old deals are never deleted (see `validate_deals.py`).
 

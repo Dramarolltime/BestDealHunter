@@ -9,9 +9,10 @@ BEFORE Buffer is called (Buffer's createPost has no idempotency key), and any ex
 blocks that key, so the same deal at the same price can never be queued twice, even if a
 run crashes mid-call.
 
-Live (--live) needs ALL of: repo variable INSTAGRAM_PUBLISH_ENABLED == "true", the
-BUFFER_API_KEY secret, the BUFFER_CHANNEL_ID variable, and a deal with
-`publication_approved: true`. A post is recorded as `sent` only when Buffer says so.
+Live (--live) needs ALL of: repo variable INSTAGRAM_PUBLISH_ENABLED == "true" (the owner's
+on/off switch), the BUFFER_API_KEY secret, the BUFFER_CHANNEL_ID variable, and a deal with
+`publication_approved: true`, which auto_publish.py sets for deals verified on the retailer's
+own product page in the last 2 days (owner policy 2026-10-13: no manual approval). A post is recorded as `sent` only when Buffer says so.
 
 --draft-check <card id> is a separate, fail-closed path (see draft_check()): it creates one
 Buffer DRAFT with saveToDraft + schedulingType "notification", verifies Buffer's response
@@ -68,9 +69,8 @@ def eligibility(deal, hosted, posted_keys, today):
     except ValueError as exc:
         return False, f"fails validation ({exc})"
     if deal.get("publication_approved") is not True:
-        return False, "not approved for posting (needs publication_approved: true from Alpha/owner)"
-    if deal.get("store") == "Amazon":
-        return False, "Amazon prices need approved Amazon data access before social posting"
+        # set automatically by auto_publish.py for deals verified on the retailer's product page
+        return False, "not approved for posting (publication_approved is not true)"
     image = feed_card(deal)
     if not image:
         return False, "image is not a generated branded card (images/generated/deal-<id>-square/feed.jpg)"

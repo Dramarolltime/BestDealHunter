@@ -86,10 +86,10 @@ class DraftRequestTests(unittest.TestCase):
         self.assertIs(unapproved["publication_approved"], False)
 
     def test_other_gates_still_apply(self):
-        amazon = deal(store="Amazon", url="https://www.amazon.com/dp/X")
+        legacy_image = deal(image="images/IMG_4236.jpeg")  # not a branded card
         fake = FakeBuffer()
         with self.assertRaises(pb.DraftCheckFailed):
-            check(fake, deals=[amazon], card=card_id(amazon))
+            check(fake, deals=[legacy_image], card=card_id(legacy_image))
         with self.assertRaises(pb.DraftCheckFailed):
             check(fake, deals=[deal(verified_date="2026-10-01")])
         self.assertEqual(fake.requests, [])

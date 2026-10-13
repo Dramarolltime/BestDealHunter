@@ -30,11 +30,13 @@ class EligibilityTests(unittest.TestCase):
     def test_fully_ready_deal_is_eligible(self):
         self.assertEqual(self.check(deal()), (True, "eligible"))
 
+    def test_amazon_deal_follows_the_same_rules_as_every_store(self):
+        self.assertEqual(self.check(deal(store="Amazon", url="https://www.amazon.com/dp/X")), (True, "eligible"))
+
     def test_each_gate_blocks(self):
         cases = {
             "fails validation": deal(verified_date="2026-10-01"),
             "not approved": deal(publication_approved="yes"),
-            "Amazon": deal(store="Amazon", url="https://www.amazon.com/dp/X"),
             "not a generated branded card": deal(image="images/IMG_4236.jpeg"),
             "not hosted": deal(image="images/generated/deal-ffffffffffff-feed.jpg"),
             "fails validation (": deal(verified_date="2026-10-07"),  # archived deals never post
@@ -204,7 +206,8 @@ class PublishLedgerTests(unittest.TestCase):
         approved = pb.apply_dry_run_approval([amazon], {card_id(amazon)})
         self.assertTrue(approved[0]["publication_approved"])
         self.assertFalse(amazon["publication_approved"])  # original data untouched
-        self.assertIn("Amazon", pb.plan(approved, HOSTED, [], TODAY)[1][0][1])
+        ready, skipped = pb.plan(approved, HOSTED, [], TODAY)
+        self.assertEqual(len(ready), 1, skipped)  # a fresh, approved Amazon deal now qualifies (#2026-10-13 policy)
 
 
 if __name__ == "__main__":
