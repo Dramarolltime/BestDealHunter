@@ -18,6 +18,43 @@ REF = re.compile(r"(?:Orig\.?|Reg\.?|Regular|Was|List(?: Price)?|Comp\. Value)\s
 NOW = re.compile(r"(?:Now|Sale|Your Price|Price)\s*:?\s*\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", re.I)
 
 
+BLOCK_TITLE = re.compile(r"access denied|robot or human|are you a human|captcha|blocked|unusual traffic|pardon our interruption", re.I)
+
+
+def _num(value):
+    try:
+        return round(float(str(value).replace(",", "").replace("$", "")), 2)
+    except (TypeError, ValueError):
+        return None
+
+
+def verdict(row):
+    """Classify a check. Only "verified" may be used as evidence; everything else is not.
+
+    verified    HTTP 200, no block page, the retailer's own schema.org offer shows the
+                claimed price (to the cent) and InStock availability.
+    blocked     the retailer refused the automated check (403/429, block/captcha page,
+                protocol error); says NOTHING about the deal.
+    mismatch    the retailer's offer price differs from the claimed price.
+    unavailable the offer says out of stock / discontinued.
+    unconfirmed the page loaded but carried no usable offer data.
+    """
+    if "error" in row or row.get("http") in (403, 429) or BLOCK_TITLE.search(row.get("title") or ""):
+        return "blocked"
+    if row.get("http") != 200:
+        return "unconfirmed"
+    offers = [o for o in row.get("offers") or [] if _num(o.get("price")) is not None]
+    if not offers:
+        return "unconfirmed"
+    claimed = _num(row.get("claimed_price"))
+    if claimed is None or all(_num(o["price"]) != claimed for o in offers):
+        return "mismatch"
+    match = [o for o in offers if _num(o["price"]) == claimed]
+    if not any((o.get("availability") or "").lower() in ("instock", "limitedavailability", "onlineonly") for o in match):
+        return "unavailable"
+    return "verified"
+
+
 def items(path):
     data = json.load(open(path, encoding="utf-8"))
     data = data if isinstance(data, list) else data.get("deals", [])
@@ -115,10 +152,15 @@ def main(paths):
                            claimed_price=d.get("price", d.get("listed_price")),
                            claimed_reference=d.get("original_price", d.get("retailer_previous_price") or d.get("retailer_comparable_value")),
                            checked_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
+                row["verdict"] = verdict(row)
                 rows.append(row)
                 print(json.dumps(row, ensure_ascii=False))
         browser.close()
     json.dump(rows, open("verify-results.json", "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+    counts = {}
+    for r in rows:
+        counts[r["verdict"]] = counts.get(r["verdict"], 0) + 1
+    print("Verdicts: " + json.dumps(counts) + "  (only 'verified' counts as evidence)")
 
 
 if __name__ == "__main__":
