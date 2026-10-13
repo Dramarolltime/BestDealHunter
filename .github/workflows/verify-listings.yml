@@ -4,7 +4,7 @@ name: Verify retailer listings (read-only)
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['scripts/verify_listings.py', '.github/workflows/verify-listings.yml']
+    paths: ['scripts/verify_listings.py', 'scripts/probe_retailers.py', '.github/workflows/verify-listings.yml']
 permissions:
   contents: read
 jobs:
@@ -19,10 +19,14 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install 'playwright==1.56.0'
+      - name: Which retailers allow automated read-only checks?
+        run: python scripts/probe_retailers.py
       - name: Check live retailer pages
         run: python scripts/verify_listings.py deal-review-queue.json deals.json
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: verify-results
-          path: verify-results.json
+          path: |
+            verify-results.json
+            probe-results.json
