@@ -18,25 +18,30 @@ class FreshnessTests(unittest.TestCase):
     def test_fresh_deals_pass(self):
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-09")], TODAY)}
         self.assertTrue(results["stale-deals"]["ok"])
-        self.assertIn("1 active, 0 archived", results["stale-deals"]["details"])
+        self.assertIn("1 active (0 with the price labelled unverified), 0 archived", results["stale-deals"]["details"])
         self.assertNotIn("expiring-deals", results)
+        self.assertNotIn("unverified-prices", results)
 
-    def test_stale_deal_is_archived_not_an_incident(self):
+    def test_old_check_stays_listed_with_unverified_price(self):
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-07"), deal("2026-10-10")], TODAY)}
         self.assertTrue(results["stale-deals"]["ok"])
-        self.assertIn("1 active, 1 archived", results["stale-deals"]["details"])
-        self.assertIn("never deleted", results["stale-deals"]["details"])
+        self.assertIn("2 active (1 with the price labelled unverified), 0 archived", results["stale-deals"]["details"])
+        self.assertEqual(results["unverified-prices"]["severity"], "warning")
+        self.assertNotIn("no-active-deals", results)
 
     def test_past_expiry_is_archived(self):
         details = monitor.check_freshness([deal("2026-10-10", expires_date="2026-10-09")], TODAY)[0]["details"]
         self.assertIn("offer ended 2026-10-09", details)
+        self.assertIn("never deleted", details)
 
-    def test_warning_one_day_before_archive(self):
+    def test_warning_one_day_before_price_label_changes(self):
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-08")], TODAY)}
         self.assertEqual(results["expiring-deals"]["severity"], "warning")
 
-    def test_no_active_deals_warns(self):
+    def test_no_active_deals_warns_only_when_every_offer_ended(self):
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-01")], TODAY)}
+        self.assertNotIn("no-active-deals", results)  # old check alone keeps it listed
+        results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-01", expires_date="2026-10-05")], TODAY)}
         self.assertEqual((results["no-active-deals"]["ok"], results["no-active-deals"]["severity"]), (False, "warning"))
 
     def test_invalid_feed_is_an_incident(self):
