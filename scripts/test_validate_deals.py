@@ -279,3 +279,58 @@ class RefreshTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ListingPolicyRequirementTests(unittest.TestCase):
+    """One test per requirement in Alpha's review of PR #23."""
+
+    TODAY = date(2026, 10, 13)
+
+    def deal(self, **changes):
+        d = sample()
+        d.update(changes)
+        return d
+
+    def test_five_original_deals_remain_on_main_page(self):
+        deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
+        originals = [d for d in deals if d["title"].split(" ")[0] in {"Delsey", "KitchenAid", "Hanes", "Bose", "Insignia"}]
+        self.assertEqual(len(originals), 5)
+        self.assertTrue(all(deal_status(d, self.TODAY) == "active" for d in originals))
+
+    def test_deal_visible_until_its_actual_expiration_date(self):
+        ends_today = self.deal(verified_date="2026-10-01", expires_date="2026-10-13")
+        self.assertEqual(deal_status(ends_today, self.TODAY), "active")          # last day still shown
+        self.assertEqual(deal_status(ends_today, date(2026, 10, 14)), "archived")  # moves the day after
+
+    def test_deal_without_expiration_date_is_never_auto_archived(self):
+        undated = self.deal(verified_date="2025-01-01")
+        self.assertNotIn("expires_date", undated)
+        self.assertEqual(deal_status(undated, date(2030, 1, 1)), "active")
+
+    def test_expired_deal_moves_to_past_deals(self):
+        ended = self.deal(expires_date="2026-10-12")
+        self.assertEqual(deal_status(ended, self.TODAY), "archived")
+        self.assertEqual(validate_feed([ended], self.TODAY), (0, 1))
+
+    def test_no_history_is_automatically_deleted(self):
+        feed = [self.deal(url=f"https://www.ebay.com/itm/{i}", verified_date="2026-09-01", expires_date=e)
+                for i, e in enumerate([None, "2026-09-05", "2026-12-31"])]
+        before = json.dumps(feed)
+        validate_feed(feed, self.TODAY)
+        feed_counts(feed, self.TODAY)
+        self.assertEqual(json.dumps(feed), before)  # validation never drops or edits entries
+        self.assertEqual(sum(feed_counts(feed, self.TODAY)), 3)
+
+    def test_older_price_needs_reverification(self):
+        old = self.deal(verified_date="2026-10-10")
+        self.assertEqual(deal_status(old, self.TODAY), "active")
+        self.assertFalse(price_verified(old, self.TODAY))   # site shows "Price not re-verified"
+        with self.assertRaises(ValueError):
+            validate([old], self.TODAY)                      # cannot be approved, carded or posted
+        self.assertTrue(price_verified(self.deal(verified_date="2026-10-11"), self.TODAY))
+
+    def test_site_uses_the_same_rules(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn('d.archived=d.status==="archived"||!!(d.expires_date&&new Date(d.expires_date+"T23:59:59")<new Date());', html)
+        self.assertIn("d.unverified=!d.archived&&!(verified>=new Date(today.getTime()-maxVerificationAgeDays*864e5));", html)
+        self.assertIn("Price not re-verified", html)
