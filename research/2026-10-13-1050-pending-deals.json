@@ -1,0 +1,38 @@
+{
+  "checked_at": "2026-10-13T10:50:00-07:00",
+  "status": "research_only_not_for_publication",
+  "candidates": [
+    {
+      "store": "Macy's",
+      "title": "Geoffrey's Toy Box Cafe Cake Bakery Coffee Shop Playset",
+      "product_id": "18890568",
+      "url": "https://www.macys.com/shop/product/geoffreys-toy-box-cafe-cake-bakery-coffee-shop-playset-created-for-macys?ID=18890568",
+      "listed_price": 29.96,
+      "retailer_reference_price": 149.99,
+      "advertised_discount_percent": 80,
+      "reference_price_note": "Retailer displayed comparison price; historical selling-price legitimacy not independently verified",
+      "promo_code": null,
+      "promo_note": "No promo code needed for displayed Last Act price. Macy's says coupon excluded; final sale. Free shipping only with qualifying minimum purchase.",
+      "availability_evidence": "Add To Bag and Buy Now visible on official Macy's product page",
+      "expiration_date": null,
+      "checkout_verified": false,
+      "publication_eligible": false,
+      "blockers": [
+        "Checkout final total, tax and shipping unverified",
+        "ZIP-specific availability and orderability unverified",
+        "Historical reference price unverified",
+        "No confirmed expiration",
+        "No verified GitHub-hosted branded graphic"
+      ],
+      "source": "Macy's product page accessed 2026-10-13; Web ID 18890568"
+    }
+  ],
+  "expired_offers_to_exclude": [
+    {
+      "title": "It Takes Two PlayStation 4/5",
+      "product_id": "6444455",
+      "expired_on": "2026-10-12",
+      "note": "Previously identified as expired; still present in review queue; attempted update blocked."
+    }
+  ]
+}
