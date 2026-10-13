@@ -27,12 +27,13 @@ within the last 2 days. Old deals are never deleted (see `validate_deals.py`).
 
 Don't use deal blogs or search snippets as evidence. Use them only to find candidates.
 
-## 2. Record it
-Add one object per deal to a JSON file (example in `scripts/add_verified_deals.py`), then:
+## 2. Stage it for approval
+Add one object per deal to a JSON file (example in `scripts/add_verified_deals.py`; `image_source` may name
+an authorized product photo committed under `images/source/`), then:
 
 ```
 python scripts/add_verified_deals.py verified-deals.json          # dry run: shows OK / REJECTED
-python scripts/add_verified_deals.py verified-deals.json --apply  # append to deals.json
+python scripts/add_verified_deals.py verified-deals.json --apply  # stage in pending_deals.json
 ```
 
 The script computes the discount itself, rounded down, and needs **≥ 50%**. It rejects:
@@ -40,12 +41,23 @@ The script computes the discount itself, rounded down, and needs **≥ 50%**. It
 - a seller that isn't named;
 - an item that can't be bought right now;
 - a link that isn't on the store's own site;
-- a duplicate.
+- a duplicate of a listed or already-staged deal.
 
-One bad record means nothing is written. New deals start with `publication_approved: false`.
+One bad record means nothing is written. `--apply` only appends to `pending_deals.json` (with an `id`,
+`review_status: "verified_awaiting_approval"`, `publication_approved: false`); the website does not change.
 
-## 3. Images, hosting, Instagram drafts (open PR stack)
-1. **Branded cards:** run `generate_deal_images.py` (#5) to render the square card for the site and the 4:5 card for Instagram from the deal data.
-2. **Cloudinary:** run `cloudinary_upload.py` (#4) to upload both cards, check the public URLs return HTTP 200, and record them in `cloudinary-images.json`.
-3. **Buffer:** run `publish_buffer.py` (#6/#14/#16) to plan the caption with disclosures. A draft-check creates a non-published Buffer draft, protected by a one-time lock.
-4. **Approval and live posting:** a person sets `publication_approved: true` in a reviewed PR. Live posting also needs `INSTAGRAM_PUBLISH_ENABLED=true`. Nothing is posted automatically.
+## 3. Approval gates (each one is a person)
+| Gate | Command / setting | Re-checks |
+|---|---|---|
+| **Website listing** | `python scripts/approve_deal.py <id>`, committed in a reviewed PR | Refuses rows without verification evidence and any price check older than 2 days (strict `validate`). Append-only. |
+| **Instagram post** | set `publication_approved: true` on the deal in a reviewed PR | Buffer publisher (#6/#14/#16) also requires a fresh price check, a branded card hosted on Cloudinary, no earlier post at this price, and not Amazon. |
+| **Live posting switch** | repository variable `INSTAGRAM_PUBLISH_ENABLED=true` | Without it the publisher only does a dry run. |
+
+## 4. Images, hosting, Instagram drafts
+| Step | On `main` today | With the open PR stack |
+|---|---|---|
+| Card | `generate-deal-images.yml` (on push to `main`) renders a 1080×1080 card for deals with an authorized `image_source` | `generate_deal_images.py` / `deal_graphics.py` (#5) render the square website card and the 4:5 Instagram card for every deal (typographic when there's no photo); every number comes from the deal record, and the label comes from `reference_price_label` |
+| Cloudinary | `host-deal-image.yml` uploads one image you name and checks the public URL | `cloudinary_upload.py` (#4) uploads every card, checks each URL returns an image, and merges it into `cloudinary-images.json`, which the website reads |
+| Buffer | — | `publish_buffer.py` (#6/#14/#16) builds the caption with `#ad` and disclosure; dry run by default; a draft-check makes one unpublished Buffer draft behind a one-time lock |
+
+Nothing in this flow posts automatically.

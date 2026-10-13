@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add independently verified deals to deals.json, only with evidence. Never deletes anything.
+"""Stage independently verified deals for approval, only with evidence. Never deletes anything.
 
 Input: a JSON list of verification records (see docs/adding-verified-deals.md), e.g.
 
@@ -18,22 +18,28 @@ Every record must pass, or nothing is written:
 - the discount, computed here from price and original_price and rounded down, is >= 50%;
 - strict validate() passes for the new deal and it isn't already listed.
 
-New deals are added with publication_approved false: cards, Cloudinary and Buffer drafts follow,
-and a person approves publication. Dry run by default; --apply writes deals.json.
+Accepted deals are appended to pending_deals.json with an id; nothing reaches the website until
+a person runs `approve_deal.py <id>` (which re-checks freshness) and the change is merged. They carry
+publication_approved false, so Buffer/Instagram stays off until a person sets it to true.
+Dry run by default; --apply writes pending_deals.json.
 
   python scripts/add_verified_deals.py verified-deals.json          # check only
-  python scripts/add_verified_deals.py verified-deals.json --apply  # append to deals.json
+  python scripts/add_verified_deals.py verified-deals.json --apply  # stage for approval
+  python scripts/approve_deal.py <id>                               # list it on the website
 """
 import argparse
+import hashlib
 import json
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
-from validate_deals import RULES, validate, validate_feed
+from validate_deals import RULES, validate
 
 ROOT = Path(__file__).resolve().parents[1]
+STAGING = "verified_awaiting_approval"
+PHOTO = "images/source/"
 METHODS = {"retailer_page_check", "retailer_api", "affiliate_catalog", "human_browser_check"}
 STORE_DOMAINS = {"Target": "target.com", "Walmart": "walmart.com", "Best Buy": "bestbuy.com", "Macy's": "macys.com",
                  "Home Depot": "homedepot.com", "Lowe's": "lowes.com", "eBay": "ebay.com", "Amazon": "amazon.com"}
@@ -92,8 +98,12 @@ def check(record, today, existing_urls):
             problems.append("human check needs a screenshot committed under evidence/ (evidence.source)")
     elif method in METHODS and not source.startswith("https://"):
         problems.append("automated check needs evidence.source = the run or API URL")
+    photo = record.get("image_source")
+    if photo is not None and not (isinstance(photo, str) and photo.startswith(PHOTO) and ".." not in photo
+                                  and (ROOT / photo).is_file()):
+        problems.append(f"image_source must be an authorized photo committed under {PHOTO}")
     if url in existing_urls:
-        problems.append("already listed")
+        problems.append("already listed or awaiting approval")
     if problems:
         raise Rejected(f"{record.get('title', 'untitled')}: " + "; ".join(problems))
     title = record["title"].strip() + (f" — {record['variant'].strip()}" if record.get("variant") else "")
@@ -104,18 +114,28 @@ def check(record, today, existing_urls):
         "source": f"{store} product page ({record['seller'].strip()} seller)",
         "price_evidence": (f"{method} {ev['checked_at']}: {store} showed ${price:.2f}, "
                            f"{record['reference_label'].strip()} ${original:.2f}, {record['availability'].strip()}; {source}"),
-        "seller": record["seller"].strip(), "reference_label": record["reference_label"].strip(),
+        "seller": record["seller"].strip(),
+        # read by the card generator (#5) and the Buffer caption (#6), e.g. "Reg." or "Comp. value"
+        "reference_price_label": record["reference_label"].strip(),
+        "availability": record["availability"].strip(),
+        "evidence_method": method, "evidence_source": source,
         "publication_approved": False,
     }
-    if record.get("expires_date"):
-        deal["expires_date"] = record["expires_date"]
+    for optional in ("expires_date", "image_source"):
+        if record.get(optional):
+            deal[optional] = record[optional]
     validate([deal], today)  # strict: fresh, >= 50%, known store/category, valid URL
     return deal
 
 
-def run(records, deals, today):
+def staged(deal):
+    """The pending_deals.json row: an id for approve_deal.py plus the review status."""
+    return {"id": hashlib.sha256(deal["url"].encode()).hexdigest()[:12], "review_status": STAGING, **deal}
+
+
+def run(records, deals, today, pending=()):
     """Return (accepted entries, rejection messages). All-or-nothing is enforced by main()."""
-    urls = {d.get("url") for d in deals if isinstance(d, dict)}
+    urls = {d.get("url") for d in [*deals, *pending] if isinstance(d, dict)}
     accepted, rejected = [], []
     for record in records:
         try:
@@ -130,13 +150,16 @@ def run(records, deals, today):
 def main(argv=None, today=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("records")
-    parser.add_argument("--apply", action="store_true", help="append the accepted deals to deals.json")
+    parser.add_argument("--apply", action="store_true", help="stage the accepted deals in pending_deals.json")
     args = parser.parse_args(argv)
     today = today or date.today()
     records = json.loads(Path(args.records).read_text(encoding="utf-8"))
-    feed_path = ROOT / "deals.json"
-    deals = json.loads(feed_path.read_text(encoding="utf-8"))
-    accepted, rejected = run(records if isinstance(records, list) else [], deals, today)
+    deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
+    queue_path = ROOT / "pending_deals.json"
+    queue = json.loads(queue_path.read_text(encoding="utf-8"))
+    if not isinstance(queue, list):
+        raise SystemExit("pending_deals.json must be a list")
+    accepted, rejected = run(records if isinstance(records, list) else [], deals, today, queue)
     for msg in rejected:
         print(f"REJECTED {msg}")
     for d in accepted:
@@ -146,12 +169,13 @@ def main(argv=None, today=None):
         print("Nothing written." if rejected else "No records.")
         return 1 if rejected else 0
     if not args.apply:
-        print(f"Dry run: {len(accepted)} deal(s) would be added (publication_approved false). Use --apply.")
+        print(f"Dry run: {len(accepted)} deal(s) would be staged for approval. Use --apply.")
         return 0
-    updated = deals + accepted  # append only; existing history is never touched
-    validate_feed(updated, today)
-    feed_path.write_text(json.dumps(updated, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Added {len(accepted)} deal(s); deals.json now has {len(updated)}.")
+    rows = [staged(d) for d in accepted]
+    queue_path.write_text(json.dumps(queue + rows, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    for row in rows:
+        print(f"Staged {row['id']}: approve with  python scripts/approve_deal.py {row['id']}")
+    print("Not on the website yet; not approved for Instagram (publication_approved false).")
     return 0
 
 
