@@ -45,11 +45,38 @@ CHANNEL = "best_dealhunter"  # existing Buffer-connected Instagram channel (per 
 CARD = re.compile(r"images/generated/deal-([0-9a-f]{12})-(?:feed|square)\.jpg")
 CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 30
 MAX_POSTS_PER_RUN = 1
+MAX_POST_AGE_HOURS = 3  # an auto-published deal is posted only while its page check is this fresh
+ASIN = re.compile(r"/(?:dp|gp/product)/([A-Z0-9]{10})")
+LOCK_PREFIX = "deal-post/"  # git tags on GitHub: a durable one-post-per-key lock across runs
+
+
+def product_id(deal):
+    """The product, not the link: an Amazon ASIN, else host + path without the query string."""
+    from urllib.parse import urlparse
+    url = str(deal.get("url", ""))
+    asin = deal.get("asin") or (ASIN.search(url).group(1) if ASIN.search(url) else None)
+    if asin:
+        return f"amazon:{asin}"
+    parsed = urlparse(url)
+    return f"{(parsed.hostname or '').removeprefix('www.')}{parsed.path.rstrip('/').lower()}"
 
 
 def post_key(deal):
-    """One post per deal URL and price: a later, different price may be posted again."""
-    return hashlib.sha256(f"{deal.get('url', '')}|{deal.get('price')}".encode()).hexdigest()[:16]
+    """One post per product and price: a later, different price may be posted again."""
+    return hashlib.sha256(f"{product_id(deal)}|{deal.get('price')}".encode()).hexdigest()[:16]
+
+
+def price_check_age_hours(deal, now):
+    """Hours since the product page was checked, for auto-published deals; None when unknown."""
+    from datetime import datetime
+    stamp = deal.get("auto_published_at")
+    if not stamp:
+        return None
+    try:
+        checked = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return (now - checked).total_seconds() / 3600
 
 
 def hosted_urls(mapping):
@@ -62,7 +89,7 @@ def feed_card(deal):
     return f"images/generated/deal-{match.group(1)}-feed.jpg" if match else None
 
 
-def eligibility(deal, hosted, posted_keys, today):
+def eligibility(deal, hosted, posted_keys, today, now=None):
     """Return (eligible, reason). Every rule must pass; the first failure is reported."""
     try:
         validate([deal], today=today)
@@ -79,6 +106,11 @@ def eligibility(deal, hosted, posted_keys, today):
         return False, "4:5 feed card is not hosted on Cloudinary as a JPEG"
     if post_key(deal) in posted_keys:
         return False, "already queued or posted at this price"
+    if now is not None and deal.get("approved_by", "").startswith("automatic"):
+        age = price_check_age_hours(deal, now)
+        if age is None or age > MAX_POST_AGE_HOURS:
+            return False, (f"price checked {age:.1f} h ago" if age is not None else "no price-check time") + \
+                f"; Instagram needs a check within {MAX_POST_AGE_HOURS} h (re-verify first)"
     return True, "eligible"
 
 
@@ -103,14 +135,14 @@ def caption(deal):
     return text
 
 
-def plan(deals, mapping, posts, today):
+def plan(deals, mapping, posts, today, now=None):
     hosted = hosted_urls(mapping)
     posted_keys = {p.get("key") for p in posts if isinstance(p, dict)}
     ready, skipped = [], []
     for deal in deals:
         if not isinstance(deal, dict):
             continue
-        ok, reason = eligibility(deal, hosted, posted_keys, today)
+        ok, reason = eligibility(deal, hosted, posted_keys, today, now)
         if not ok:
             skipped.append((deal.get("title", "Untitled"), reason))
             continue
@@ -215,8 +247,9 @@ class BufferClient:
         return data.get("data") or {}
 
     def create_post(self, channel_id, text, image_url):
-        """Live queue post (only reached from publish(), behind every live gate)."""
-        payload = {"text": text, "channelId": channel_id, "schedulingType": "automatic", "mode": "addToQueue",
+        """Live post, shared now (only reached from publish(), behind every live gate)."""
+        # shareNow: published at once, while the price check is minutes old (a queue slot could be hours later)
+        payload = {"text": text, "channelId": channel_id, "schedulingType": "automatic", "mode": "shareNow",
                    "assets": [{"image": {"url": image_url}}], "metadata": INSTAGRAM_METADATA}
         result = self._call(CREATE_POST, {"input": payload}).get("createPost") or {}
         if result.get("__typename") != "PostActionSuccess":
@@ -235,12 +268,15 @@ class BufferClient:
         return (self._call(POST_STATUS, {"input": {"id": post_id}}).get("post") or {}).get("status")
 
 
-def publish(ready, posts, client, channel_id, now, log=print):
+def publish(ready, posts, client, channel_id, now, log=print, lock=lambda key: True):
     """Send planned posts with reserve-before-send duplicate protection.
 
     A ledger row is written to `posts` BEFORE calling Buffer, because createPost has no
     idempotency key: if the run dies mid-call, the row (status "reserved") still blocks
     any retry until a person checks Buffer and clears it. Every existing row blocks its key.
+    lock(key) must then succeed before Buffer is called: in live runs it creates the git tag
+    deal-post/<key> on GitHub without force, so even if posts.json is never pushed (crash, push
+    race) a later run cannot post the same product at the same price again.
     """
     taken = {p.get("key") for p in posts if isinstance(p, dict)}
     results = []
@@ -252,6 +288,11 @@ def publish(ready, posts, client, channel_id, now, log=print):
                "image_url": post["image_url"], "status": "reserved", "reserved_at": now}
         posts.append(row)
         taken.add(post["key"])
+        if not lock(post["key"]):
+            row.update(status="locked", error="durable lock already taken: posted or attempted before")
+            log(f"Duplicate blocked by lock tag {LOCK_PREFIX}{post['key']}: {post['title']}")
+            results.append(row)
+            continue
         try:
             created = client.create_post(channel_id, post["text"], post["image_url"])
         except Exception as exc:  # keep the reservation: a timeout may still have created the post
@@ -260,9 +301,21 @@ def publish(ready, posts, client, channel_id, now, log=print):
             results.append(row)
             continue
         row.update(status="queued", buffer_post_id=created["id"])
-        log(f"Queued in Buffer: {post['title']} (id {created['id']})")
+        log(f"Sent to Buffer (share now): {post['title']} (id {created['id']})")
         results.append(row)
     return results
+
+
+def git_tag_lock(key, run=None):
+    """Create refs/tags/deal-post/<key> on GitHub, never forced. False if it exists or can't be made."""
+    import subprocess
+    run = run or (lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, cwd=ROOT))
+    name = f"{LOCK_PREFIX}{key}"
+    if run("ls-remote", "--tags", "origin", f"refs/tags/{name}").stdout.strip():
+        return False
+    if run("tag", name, "HEAD").returncode != 0 and run("rev-parse", "-q", "--verify", f"refs/tags/{name}").returncode != 0:
+        return False
+    return run("push", "origin", f"refs/tags/{name}:refs/tags/{name}").returncode == 0
 
 
 def refresh_statuses(posts, client):
@@ -388,7 +441,8 @@ def main(argv=None):
         deals = apply_dry_run_approval(deals, set(args.approve_for_dry_run))
     mapping = load(ROOT / "cloudinary-images.json", [])
     posts = load(POSTS, [])
-    ready, skipped = plan(deals, mapping, posts, date.today())
+    from datetime import datetime, timezone
+    ready, skipped = plan(deals, mapping, posts, date.today(), now=datetime.now(timezone.utc))
     report = render_report(ready, skipped, live=False)
     print(report)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -407,7 +461,7 @@ def main(argv=None):
         return 2
     client = BufferClient(os.environ["BUFFER_API_KEY"])
     from datetime import datetime, timezone
-    publish(ready, posts, client, channel, datetime.now(timezone.utc).isoformat(timespec="seconds"))
+    publish(ready, posts, client, channel, datetime.now(timezone.utc).isoformat(timespec="seconds"), lock=git_tag_lock)
     refresh_statuses(posts, client)
     POSTS.write_text(json.dumps(posts, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return 0

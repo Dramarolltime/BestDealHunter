@@ -22,6 +22,7 @@ from datetime import date
 from pathlib import Path
 
 from add_verified_deals import Rejected, check
+from publish_buffer import product_id
 
 ROOT = Path(__file__).resolve().parents[1]
 APPROVED_BY = "automatic: retailer product page check (owner policy 2026-10-13)"
@@ -78,6 +79,7 @@ def select(results, candidates, deals, run_url, today, limit, log=print):
     """Return the new deals.json entries for every verified page (up to limit), logging every skip."""
     by_url = {c["url"]: c for c in candidates if isinstance(c, dict) and c.get("url")}
     urls = {d.get("url") for d in deals if isinstance(d, dict)}
+    products = {product_id(d) for d in deals if isinstance(d, dict)}  # same ASIN under another link
     new = []
     for row in results:
         if row.get("verdict") != "verified":
@@ -92,12 +94,18 @@ def select(results, candidates, deals, run_url, today, limit, log=print):
         if pct >= HOLD_AT_PERCENT:
             log(f"HOLD {entry['title']}: {pct}% off is {HOLD_AT_PERCENT}%+; questionable reference price, not auto-published")
             continue
+        if product_id(entry) in products:
+            log(f"SKIP {row['url']}: product already listed ({product_id(entry)})")
+            continue
         entry.update(publication_approved=True, approved_by=APPROVED_BY, auto_published_at=row["checked_at"])
+        if candidate.get("asin"):
+            entry["asin"] = candidate["asin"]
         if len(new) >= limit:
             log(f"LIMIT {entry['title']}: run limit of {limit} new deals reached; next run")
             continue
         new.append(entry)
         urls.add(entry["url"])
+        products.add(product_id(entry))
         log(f"PUBLISH {entry['store']}: {entry['title']} ${entry['price']:.2f} vs {entry['reference_price_label']} "
             f"${entry['original_price']:.2f} ({int((entry['original_price'] - entry['price']) * 100 // entry['original_price'])}% off) "
             f"{entry['url']}")

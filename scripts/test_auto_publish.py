@@ -65,6 +65,8 @@ class SelectTests(unittest.TestCase):
 
     def test_duplicates_and_limit(self):
         self.assertEqual(self.select([row()], deals=[{"url": URL}])[0], [])
+        listed_elsewhere = {"url": "https://link.amazon/xyz", "asin": "B000TEST01"}  # same product, short link
+        self.assertEqual(self.select([row()], deals=[listed_elsewhere])[0], [])
         rows = [row(url=f"https://www.amazon.com/dp/B000TEST0{n}") for n in range(3)]
         new, logs = self.select(rows, limit=2)
         self.assertEqual(len(new), 2)

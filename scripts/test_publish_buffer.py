@@ -180,12 +180,13 @@ class PublishLedgerTests(unittest.TestCase):
             self.assertEqual(posts[0]["status"], "error")
             self.assertEqual(pb.plan([deal()], HOSTED, posts, TODAY)[0], [])  # no automatic retry
 
-    def test_live_post_uses_automatic_queue_without_draft_flag(self):
+    def test_live_post_is_shared_now_without_draft_flag(self):
         fake = FakeBuffer()
         pb.publish(self.ready(), [], pb.BufferClient("k", fake), "c", "t", log=lambda *_: None)
         sent = fake.requests[0]["variables"]["input"]
         self.assertNotIn("saveToDraft", sent)
-        self.assertEqual((sent["schedulingType"], sent["mode"]), ("automatic", "addToQueue"))
+        # shareNow: posted while the price check is minutes old, not at a later queue slot
+        self.assertEqual((sent["schedulingType"], sent["mode"]), ("automatic", "shareNow"))
         self.assertEqual(sent["metadata"], {"instagram": {"type": "post", "shouldShareToFeed": True}})
 
     def test_sent_only_when_buffer_reports_it(self):
@@ -208,6 +209,51 @@ class PublishLedgerTests(unittest.TestCase):
         self.assertFalse(amazon["publication_approved"])  # original data untouched
         ready, skipped = pb.plan(approved, HOSTED, [], TODAY)
         self.assertEqual(len(ready), 1, skipped)  # a fresh, approved Amazon deal now qualifies (#2026-10-13 policy)
+
+
+class DuplicateAndFreshnessTests(unittest.TestCase):
+    """Owner/Alpha 2026-10-13: no duplicate Instagram posts, no stale prices on Instagram."""
+
+    def test_same_amazon_product_under_another_link_is_the_same_post(self):
+        a = deal(store="Amazon", url="https://www.amazon.com/dp/B0H876MWDM?tag=bestdealhun0b-20")
+        b = deal(store="Amazon", url="https://www.amazon.com/gp/product/B0H876MWDM?th=1&psc=1")
+        c = deal(store="Amazon", url="https://link.amazon/B0iYV850b", asin="B0H876MWDM")
+        self.assertEqual(len({pb.post_key(a), pb.post_key(b), pb.post_key(c)}), 1)
+        self.assertNotEqual(pb.post_key(a), pb.post_key(dict(a, price=89.99)))  # a new price may post again
+        self.assertEqual(pb.post_key(deal()), pb.post_key(deal(url="https://bestbuy.com/site/test/?x=1")))
+
+    def test_lock_tag_blocks_a_post_even_when_the_ledger_was_lost(self):
+        fake = FakeBuffer()
+        ready = pb.plan([deal()], HOSTED, [], TODAY)[0]
+        rows = pb.publish(ready, [], pb.BufferClient("k", fake), "c", "t", log=lambda *_: None, lock=lambda key: False)
+        self.assertEqual(fake.requests, [])  # Buffer never called
+        self.assertEqual(rows[0]["status"], "locked")
+
+    def test_git_tag_lock_never_forces(self):
+        calls = []
+
+        def run(*args, exists=False):
+            calls.append(args)
+            out = "abc refs/tags/x" if args[0] == "ls-remote" and exists else ""
+            return type("R", (), {"stdout": out, "returncode": 0})()
+        self.assertTrue(pb.git_tag_lock("k1", run=run))
+        self.assertEqual(calls[-1], ("push", "origin", "refs/tags/deal-post/k1:refs/tags/deal-post/k1"))
+        self.assertFalse(any("--force" in a or "-f" in a for c in calls for a in c))
+        calls.clear()
+        self.assertFalse(pb.git_tag_lock("k1", run=lambda *a: run(*a, exists=True)))
+        self.assertEqual([c[0] for c in calls], ["ls-remote"])  # stops before tagging or pushing
+
+    def test_auto_published_deal_needs_a_price_check_within_3_hours(self):
+        from datetime import datetime, timezone
+        now = datetime(2026, 10, 10, 20, 0, tzinfo=timezone.utc)
+        auto = deal(approved_by="automatic: retailer product page check", auto_published_at="2026-10-10T18:30:00+00:00")
+        self.assertEqual(pb.eligibility(auto, pb.hosted_urls(HOSTED), set(), TODAY, now), (True, "eligible"))
+        stale = dict(auto, auto_published_at="2026-10-10T16:00:00+00:00")
+        ok, reason = pb.eligibility(stale, pb.hosted_urls(HOSTED), set(), TODAY, now)
+        self.assertFalse(ok)
+        self.assertIn("4.0 h ago", reason)
+        ok, reason = pb.eligibility(dict(auto, auto_published_at=None), pb.hosted_urls(HOSTED), set(), TODAY, now)
+        self.assertEqual((ok, reason.split(";")[0]), (False, "no price-check time"))
 
 
 if __name__ == "__main__":
