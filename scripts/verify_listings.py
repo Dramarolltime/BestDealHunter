@@ -14,7 +14,19 @@ import re
 import sys
 from datetime import datetime, timezone
 
-REF = re.compile(r"(?:Orig\.?|Reg\.?|Regular|Was|List(?: Price)?|Comp\. Value)\s*:?\s*\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", re.I)
+REF = re.compile(r"(?:Orig\.?|Reg\.?|Regular|Was|List(?: Price)?|Comp\. Value|Typical price)\s*:?\s*\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", re.I)
+# Store-specific page elements: (current price, reference price, reference label, availability, buy button)
+VISIBLE = {
+    "amazon.com": ("#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen, "
+                   "#corePriceDisplay_desktop_feature_div .priceToPay .a-offscreen",
+                   "#corePriceDisplay_desktop_feature_div .basisPrice .a-offscreen, #corePrice_feature_div .a-text-price .a-offscreen",
+                   "#corePriceDisplay_desktop_feature_div .basisPrice", "#availability", "#add-to-cart-button"),
+    "bestbuy.com": ('[data-testid="customer-price"] span, .priceView-customer-price span',
+                    '[data-testid="regular-price"], .pricing-price__regular-price', '[data-testid="regular-price"]',
+                    '.fulfillment-fulfillment-summary', 'button.add-to-cart-button:not([disabled]), button[data-button-state="ADD_TO_CART"]'),
+    "macys.com": ('[data-auto="sale-price"], .lowest-sale-price', '[data-auto="original-price"], .price-strike',
+                  '[data-auto="original-price"]', '[data-auto="availability"]', 'button[data-auto="add-to-bag"]'),
+}
 NOW = re.compile(r"(?:Now|Sale|Your Price|Price)\s*:?\s*\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", re.I)
 
 
@@ -28,30 +40,65 @@ def _num(value):
         return None
 
 
+MIN_DISCOUNT = 50
+BUYABLE = ("instock", "limitedavailability", "onlineonly")
+
+
+def page_facts(row):
+    """Price, reference price and stock exactly as the retailer's product page shows them.
+
+    Current price: the retailer's schema.org offer if it has one, else the page's own price
+    element (store-specific selectors in VISIBLE). Reference price: the page's own labelled
+    reference ("Was", "Reg.", "List Price", "Comp. Value", "Typical price"). Availability: the
+    schema.org offer, else the page's stock text / buy button. Returns None for anything absent.
+    """
+    offers = [o for o in row.get("offers") or [] if _num(o.get("price")) is not None]
+    vis = row.get("visible") or {}
+    price = _num(offers[0]["price"]) if offers else _num(vis.get("price"))
+    refs = [r for r in (_num(vis.get("reference")), *(_num(m) for m in row.get("reference_values") or [])) if r]
+    reference = max((r for r in refs if price and r > price), default=None)
+    stock = (offers[0].get("availability") or "").lower() if offers else ""
+    text = (vis.get("availability") or "").lower()
+    signals = row.get("signals") or {}
+    if stock:
+        buyable = stock in BUYABLE
+    elif any(w in text for w in ("out of stock", "unavailable", "sold out")) or signals.get("sold out") or signals.get("out of stock"):
+        buyable = False
+    else:
+        buyable = "in stock" in text or bool(vis.get("buy_button"))
+    pct = (round(reference * 100) - round(price * 100)) * 100 // round(reference * 100) if price and reference else None
+    return {"price": price, "reference": reference, "reference_label": vis.get("reference_label"),
+            "discount": pct, "buyable": buyable, "seller": (offers[0].get("seller") if offers else vis.get("seller"))}
+
+
 def verdict(row):
     """Classify a check. Only "verified" may be used as evidence; everything else is not.
 
-    verified    HTTP 200, no block page, the retailer's own schema.org offer shows the
-                claimed price (to the cent) and InStock availability.
+    verified    HTTP 200, no block page, and the retailer's product page itself shows a current
+                price, a higher reference price giving >= 50% off (floored), and that it can be
+                bought now. If a candidate claimed a price, the page must show that price.
     blocked     the retailer refused the automated check (403/429, block/captcha page,
                 protocol error); says NOTHING about the deal.
-    mismatch    the retailer's offer price differs from the claimed price.
-    unavailable the offer says out of stock / discontinued.
-    unconfirmed the page loaded but carried no usable offer data.
+    mismatch    the page price differs from the claimed price.
+    below_50    the page shows the item, but under 50% off its own reference price.
+    unavailable the page says it can't be bought now.
+    unconfirmed the page loaded but showed no price or no reference price.
     """
     if "error" in row or row.get("http") in (403, 429) or BLOCK_TITLE.search(row.get("title") or ""):
         return "blocked"
     if row.get("http") != 200:
         return "unconfirmed"
-    offers = [o for o in row.get("offers") or [] if _num(o.get("price")) is not None]
-    if not offers:
+    facts = page_facts(row)
+    row["page"] = facts
+    if facts["price"] is None or facts["reference"] is None:
         return "unconfirmed"
     claimed = _num(row.get("claimed_price"))
-    if claimed is None or all(_num(o["price"]) != claimed for o in offers):
+    if claimed is not None and claimed != facts["price"]:
         return "mismatch"
-    match = [o for o in offers if _num(o["price"]) == claimed]
-    if not any((o.get("availability") or "").lower() in ("instock", "limitedavailability", "onlineonly") for o in match):
+    if not facts["buyable"]:
         return "unavailable"
+    if facts["discount"] < MIN_DISCOUNT:
+        return "below_50"
     return "verified"
 
 
@@ -98,6 +145,31 @@ def offers_from_ldjson(blocks):
     return found
 
 
+def visible(page, url):
+    """The page's own price/reference/stock elements for stores whose schema.org data lacks them."""
+    host = re.sub(r"^www\.", "", url.split("/")[2])
+    sel = VISIBLE.get(host)
+    if not sel:
+        return {}
+
+    def first(css):
+        el = page.query_selector(css)
+        return el.inner_text().strip()[:200] if el else None
+
+    price, ref, label, avail, buy = sel
+    out = {"price": first(price), "reference": first(ref), "reference_label": first(label), "availability": first(avail),
+           "buy_button": page.query_selector(buy) is not None}
+    if out["reference"]:
+        m = re.search(r"\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", out["reference"])
+        out["reference"] = m.group(1) if m else None
+    if out["price"]:
+        m = re.search(r"\$\s?([0-9][0-9,]*\.?[0-9]{0,2})", out["price"])
+        out["price"] = m.group(1) if m else None
+    if out["reference_label"]:
+        out["reference_label"] = re.sub(r"\s*:?\s*\$.*", "", out["reference_label"], flags=re.S).strip()[:40] or None
+    return out
+
+
 def check(ctx, url):
     """One fresh tab per URL (a redirect can't spill into the next check); one retry."""
     for attempt in (1, 2):
@@ -124,7 +196,10 @@ def _check(page, url):
         blocks = page.eval_on_selector_all('script[type="application/ld+json"]', "els => els.map(e => e.textContent)")
         row["offers"] = offers_from_ldjson(blocks)
         text = page.inner_text("body")[:200000]
-        row["reference_text"] = sorted({m.group(0).strip() for m in REF.finditer(text)})[:8]
+        refs = list(REF.finditer(text))
+        row["reference_text"] = sorted({m.group(0).strip() for m in refs})[:8]
+        row["reference_values"] = sorted({m.group(1) for m in refs})[:8]
+        row["visible"] = visible(page, url)
         row["price_text"] = sorted({m.group(0).strip() for m in NOW.finditer(text)})[:8]
         low = text.lower()
         row["signals"] = {k: (k in low) for k in ("add to bag", "add to cart", "out of stock", "sold out",
