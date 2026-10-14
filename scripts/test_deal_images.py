@@ -78,9 +78,9 @@ class RenderTests(unittest.TestCase):
             self.assertTrue((g.FONTS / name).is_file(), name)
         self.assertIn("SIL Open Font License", (g.FONTS / "Inter-OFL.txt").read_text())
 
-    def test_playbook_palette_and_footer(self):
+    def test_bold_palette_and_price_time(self):
         card = g.render_card(sample(price_checked_at="2026-10-14T05:30:00Z"))
-        self.assertEqual(card.getpixel((5, 5)), (11, 18, 32))  # #0B1220 background
+        self.assertEqual(card.getpixel((5, 5)), (7, 16, 31))  # #07101F background
         self.assertEqual(g.card_facts(sample(price_checked_at="2026-10-14T05:30:00Z"))["as_of"],
                          "Oct 13, 2026, 10:30 PM PT")
         self.assertEqual(g.card_facts(sample(verified_date="2026-10-09"))["as_of"], "Oct 9, 2026")
@@ -106,8 +106,8 @@ class PhotoTests(unittest.TestCase):
     def test_authorized_photo_is_used(self):
         with_photo = g.render_card(sample(image_source="images/source/photo.png"))
         without = g.render_card(sample())
-        green = lambda card: any(card.getpixel((540, y)) == (34, 197, 94) for y in range(350, 800, 10))
-        self.assertTrue(green(with_photo))  # the photo (green) sits between the badge and the title
+        green = lambda card: any(card.getpixel((829, y)) == (34, 197, 94) for y in range(200, 800, 10))
+        self.assertTrue(green(with_photo))  # the photo (green) sits right of the title
         self.assertFalse(green(without))
         self.assertEqual(g.render_card(sample(image_source="images/source/photo.png"), "square").size, (1080, 1080))
 

@@ -56,8 +56,15 @@ class SubmitTests(unittest.TestCase):
         path.write_bytes(b"\x89PNG fake")
         return path
 
+    def fetch_card(self, url, number):
+        from PIL import Image
+        path = sd.EVIDENCE / f"deal-issue-{number}-card.png"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (1320, 860), "#22c55e").save(path)
+        return path
+
     def submit(self, i=None, deals=()):
-        return sd.submit(i or issue(), list(deals), NOW, fetch=self.fetch)
+        return sd.submit(i or issue(), list(deals), NOW, fetch=self.fetch, fetch_card=self.fetch_card)[0]
 
     def test_good_submission_becomes_a_published_deal(self):
         d = self.submit()
@@ -69,6 +76,26 @@ class SubmitTests(unittest.TestCase):
         self.assertEqual(d["evidence_source"], "evidence/deal-issue-42.png")
         self.assertEqual(d["price_checked_at"], "2026-10-14T16:50:00+00:00")
         validate([d], NOW.date())
+
+    def test_alphas_image_is_used_only_when_its_box_is_ticked(self):
+        from PIL import Image
+        art = f"![alpha]({SHOT.replace('123456789abc', '000000000def')})"
+        ticked = "- [X] The image's numbers match this deal (sale price, was price, % off) and it has no store or brand logos"
+        entry, note = sd.submit(issue(body=body(**{"Alpha's image": art, "Image check": ticked})), [], NOW,
+                                fetch=self.fetch, fetch_card=self.fetch_card)
+        self.assertEqual(entry["card_source"], "submitted")
+        self.assertIn("Alpha's image", note)
+        self.assertTrue(entry["image"].startswith("images/generated/deal-") and entry["image"].endswith("-square.jpg"))
+        for kind, size in (("square", (1080, 1080)), ("feed", (1080, 1350))):
+            with Image.open(sd.ROOT / entry["image"].replace("-square.jpg", f"-{kind}.jpg")) as card:
+                self.assertEqual(card.size, size)
+                pixel = card.getpixel((540, size[1] // 2 - 32))  # Alpha's art at the centre (JPEG: near, not exact)
+                self.assertTrue(all(abs(a - b) <= 6 for a, b in zip(pixel, (34, 197, 94))), pixel)
+        validate([entry], NOW.date())
+        unticked, note = sd.submit(issue(number=7, body=body(**{"Alpha's image": art, "Image check": "- [ ] x"})), [],
+                                   NOW, fetch=self.fetch, fetch_card=self.fetch_card)
+        self.assertNotIn("card_source", unticked)
+        self.assertIn("not used", note)
 
     def test_only_owner_or_collaborators(self):
         for who in ("NONE", "CONTRIBUTOR", "FIRST_TIME_CONTRIBUTOR"):
@@ -125,12 +152,13 @@ class SubmitTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         form = (root / ".github/ISSUE_TEMPLATE/submit-deal.yml").read_text()
         for label in ("Store", "Product name", "Product link", "Sale price", "Was price", "Was price label",
-                      "Category", "Checks", "Screenshot"):
+                      "Category", "Checks", "Screenshot", "Alpha's image", "Image check"):
             self.assertIn(f"label: {label}\n", form)
         self.assertNotIn("- Amazon", form)
         flow = (root / ".github/workflows/submit-deal.yml").read_text()
         self.assertIn("author_association", flow)
         self.assertIn("'Deal:'", flow)
+        self.assertIn(sd.IMAGE_CONFIRMED, form.lower())
 
 
 if __name__ == "__main__":

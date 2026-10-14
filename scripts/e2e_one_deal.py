@@ -74,7 +74,7 @@ def step_card(deal):
         path = ROOT / f"images/generated/deal-{cid}-{kind}.jpg"
         if not path.is_file():
             raise StepFailed(f"missing {kind} card {path.name}")
-        if path.read_bytes() != jpeg(render_card(deal, kind)):
+        if deal.get("card_source") != "submitted" and path.read_bytes() != jpeg(render_card(deal, kind)):
             raise StepFailed(f"{kind} card is out of date with the deal data")
     if deal.get("image") != f"images/generated/deal-{cid}-square.jpg":
         raise StepFailed("site image is not the deal's square card")

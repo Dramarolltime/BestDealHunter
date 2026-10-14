@@ -97,3 +97,15 @@ body:
       description: Drag in a screenshot of the store page showing the sale price and the was price.
     validations:
       required: true
+  - type: textarea
+    id: card
+    attributes:
+      label: Alpha's image
+      description: Optional. Drag in Alpha's deal image to post it instead of the standard card.
+  - type: checkboxes
+    id: card-check
+    attributes:
+      label: Image check
+      description: Required for Alpha's image to be used.
+      options:
+        - label: The image's numbers match this deal (sale price, was price, % off) and it has no store or brand logos

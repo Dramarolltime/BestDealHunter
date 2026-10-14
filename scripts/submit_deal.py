@@ -41,6 +41,7 @@ MAX_SCREENSHOT_BYTES = 10 * 1024 * 1024
 LABELS = {"Was": "Was", "Reg.": "Reg.", "Orig.": "Orig.", "List price": "List price",
           "Comparable value": "Comparable value"}
 REQUIRED_CHECKS = ("in stock", "sold by", "last hour")
+IMAGE_CONFIRMED = "numbers match"  # the "Alpha's image" checkbox
 
 
 def fields(body):
@@ -100,23 +101,55 @@ def record(issue, now):
     }, shot.group(0)
 
 
-def fetch_screenshot(url, number, opener=urllib.request.urlopen):
-    """Download the attached screenshot to evidence/deal-issue-<n>.<ext>; must be a PNG, JPEG or WebP."""
+def download_image(url, stem, what, opener=urllib.request.urlopen):
+    """Download an attached image to <stem>.<ext>; must be a PNG, JPEG or WebP of at most 10 MB."""
     with opener(urllib.request.Request(url, headers={"User-Agent": "BestDealHunter deal form"}), timeout=30) as resp:
         data = resp.read(MAX_SCREENSHOT_BYTES + 1)
     if len(data) > MAX_SCREENSHOT_BYTES:
-        raise Rejected("screenshot is larger than 10 MB")
+        raise Rejected(f"{what} is larger than 10 MB")
     ext = next((e for magic, e in IMAGE_TYPES.items() if data.startswith(magic)), None)
     if not ext:
-        raise Rejected("screenshot must be a PNG, JPEG or WebP image")
-    path = EVIDENCE / f"deal-issue-{number}{ext}"
+        raise Rejected(f"{what} must be a PNG, JPEG or WebP image")
+    path = stem.with_name(stem.name + ext)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
     return path
 
 
-def submit(issue, deals, now, fetch=fetch_screenshot):
-    """Return the new deals.json entry for the issue, or raise Rejected."""
+def fetch_screenshot(url, number, opener=urllib.request.urlopen):
+    """The price screenshot, saved as evidence/deal-issue-<n>.<ext>."""
+    return download_image(url, EVIDENCE / f"deal-issue-{number}", "screenshot", opener)
+
+
+def fetch_card_image(url, number, opener=urllib.request.urlopen):
+    """Alpha's deal image, kept with the evidence as submitted (evidence/deal-issue-<n>-card.<ext>)."""
+    return download_image(url, EVIDENCE / f"deal-issue-{number}-card", "Alpha's image", opener)
+
+
+def submitted_cards(source, deal):
+    """Alpha's image as the deal's square (site) and 4:5 (Instagram) cards, letterboxed so nothing is
+    cropped, with a footer line carrying the site, the price-check time and "Prices may change"."""
+    from PIL import Image, ImageDraw, ImageOps
+    import deal_graphics as g
+    facts = g.card_facts(deal)
+    foot = f"{g.SITE}  ·  Price as of {facts['as_of']}  ·  Prices may change"
+    paths = {}
+    with Image.open(source) as src:
+        art = ImageOps.exif_transpose(src).convert("RGB")
+    for kind, (w, h) in g.SIZES.items():
+        canvas = Image.new("RGB", (w, h), g.BACKGROUND)
+        fitted = ImageOps.contain(art, (w, h - 64), Image.Resampling.LANCZOS)
+        canvas.paste(fitted, ((w - fitted.width) // 2, (h - 64 - fitted.height) // 2))
+        draw = ImageDraw.Draw(canvas)
+        draw.text((w / 2, h - 24), foot, font=g.fit(draw, foot, 500, 25, w - 60), fill=g.GRAY, anchor="ms")
+        paths[kind] = g.save(canvas, ROOT / f"images/generated/deal-{g.card_id(deal)}-{kind}.jpg")
+    return paths
+
+
+def submit(issue, deals, now, fetch=fetch_screenshot, fetch_card=fetch_card_image):
+    """Return (deals.json entry, note) for the issue, or raise Rejected."""
+
+
     rec, shot = record(issue, now)
     products = {product_id(d) for d in deals if isinstance(d, dict)}
     if product_id(rec) in products:
@@ -130,7 +163,24 @@ def submit(issue, deals, now, fetch=fetch_screenshot):
         raise
     entry.update(publication_approved=True, approved_by=f"owner deal form: {issue.get('html_url')}",
                  price_checked_at=rec["evidence"]["checked_at"])
-    return entry
+    f = fields(issue.get("body"))
+    art = SCREENSHOT.search(f.get("Alpha's image", ""))
+    confirmed = any(IMAGE_CONFIRMED in line.lower() for line in f.get("Image check", "").splitlines()
+                    if line.lower().startswith("- [x]"))
+    note = ""
+    if art and confirmed:
+        try:
+            source = fetch_card(art.group(0), issue.get("number"))
+            square = submitted_cards(source, entry)["square"]
+        except (Rejected, OSError, ValueError) as exc:  # the deal still posts, with the standard card
+            note = f" Alpha's image could not be used ({exc}); the standard card is used."
+        else:
+            entry.update(image=str(square.relative_to(ROOT)), card_source="submitted",
+                         card_evidence=str(source.relative_to(ROOT)))
+            note = " Using Alpha's image."
+    elif art:
+        note = " Alpha's image was not used (its check box was not ticked); the standard card is used."
+    return entry, note
 
 
 def main(argv=None, now=None):
@@ -142,7 +192,7 @@ def main(argv=None, now=None):
     issue = json.loads(Path(args.event).read_text(encoding="utf-8"))["issue"]
     deals = json.loads(FEED.read_text(encoding="utf-8"))
     try:
-        entry = submit(issue, deals, now or datetime.now(timezone.utc))
+        entry, note = submit(issue, deals, now or datetime.now(timezone.utc))
     except (Rejected, ValueError, OSError) as exc:
         message = f"❌ Not published: {exc}"
         ok = False
@@ -150,7 +200,7 @@ def main(argv=None, now=None):
         pct = int((entry["original_price"] - entry["price"]) * 100 // entry["original_price"])
         message = (f"✅ Accepted: {entry['store']} · {entry['title']} · ${entry['price']:.2f} "
                    f"({entry['reference_price_label']} ${entry['original_price']:.2f}) · {pct}% off. "
-                   "Card, website and Instagram follow in this run.")
+                   f"Card, website and Instagram follow in this run.{note}")
         ok = True
         if args.apply:
             FEED.write_text(json.dumps(deals + [entry], indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
