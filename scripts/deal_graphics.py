@@ -31,7 +31,7 @@ from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 from links import disclosure, is_affiliate_link
 
@@ -237,12 +237,24 @@ def fact_rows(deal, facts):
     return rows
 
 
+def trim(art, threshold=40, pad=0.08):
+    """Cut away a plain background border (as AI pictures have) so the product fills the space."""
+    corner = Image.new("RGB", art.size, art.getpixel((2, 2)))
+    diff = ImageChops.difference(art, corner).convert("L").point(lambda v: 255 if v > threshold else 0)
+    box = diff.getbbox()
+    if not box:
+        return art
+    px, py = int((box[2] - box[0]) * pad), int((box[3] - box[1]) * pad)
+    return art.crop((max(0, box[0] - px), max(0, box[1] - py), min(art.width, box[2] + px), min(art.height, box[3] + py)))
+
+
 def draw_art(canvas, path, box, illustration):
     """The product picture, scaled to fit the box (never cropped), its edges faded into the background.
     AI pictures carry an "Illustration" label: they show the kind of product, not the exact item."""
     x0, y0, x1, y1 = (int(v) for v in box)
     with Image.open(path) as src:
         art = ImageOps.exif_transpose(src).convert("RGB")
+    art = trim(art)
     art = ImageOps.contain(art, (x1 - x0, y1 - y0), Image.Resampling.LANCZOS)
     mask = Image.new("L", art.size, 0)
     inset = max(8, min(art.size) // 14)
@@ -294,7 +306,7 @@ def render_card(deal, kind="feed"):
     if photo_path:
         title_face = font(60 * k, 800)
         lines = wrap(draw, facts["title"], title_face, w - 2 * margin, 2)
-        art_box = (margin, 190 * k + len(lines) * title_face.size * 1.12 + 12 * k, w - margin, badge_top + 150 * k)
+        art_box = (margin, 190 * k + len(lines) * title_face.size * 1.12 + 12 * k, w - margin, badge_top + 120 * k)
         draw_art(canvas, photo_path, art_box, illustration=deal.get("image_source_kind") == AI_KIND)
         draw = ImageDraw.Draw(canvas)
 
