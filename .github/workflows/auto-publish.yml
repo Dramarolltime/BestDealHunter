@@ -63,6 +63,11 @@ jobs:
           python scripts/auto_publish.py verify-results.json pending_deals.json deal-review-queue.json \
             --also-results bestbuy-results.json --also-results ebay-results.json \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" --apply | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: AI product pictures (only when the OPENAI_API_KEY secret is set)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
+        run: python scripts/ai_product_art.py --max 3
       - name: Branded cards for new deals
         run: python scripts/generate_deal_images.py
       - name: Host new cards on Cloudinary
@@ -78,7 +83,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add deals.json cloudinary-images.json images/generated
+          git add deals.json cloudinary-images.json images/generated images/source
           if git diff --cached --quiet; then echo "No new deals."; exit 0; fi
           git commit -m "Auto-publish page-verified deals"
           for attempt in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep $((attempt * 5)); done

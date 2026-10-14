@@ -106,8 +106,8 @@ class PhotoTests(unittest.TestCase):
     def test_authorized_photo_is_used(self):
         with_photo = g.render_card(sample(image_source="images/source/photo.png"))
         without = g.render_card(sample())
-        green = lambda card: any(card.getpixel((829, y)) == (34, 197, 94) for y in range(200, 800, 10))
-        self.assertTrue(green(with_photo))  # the photo (green) sits right of the title
+        green = lambda card: any(card.getpixel((540, y)) == (34, 197, 94) for y in range(300, 800, 10))
+        self.assertTrue(green(with_photo))  # the photo (green) fills the middle
         self.assertFalse(green(without))
         self.assertEqual(g.render_card(sample(image_source="images/source/photo.png"), "square").size, (1080, 1080))
 
