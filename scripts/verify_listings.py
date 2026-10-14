@@ -130,6 +130,19 @@ def is_amazon(url):
     return bool(AMAZON_HOSTS.search(host))
 
 
+def cleared_hosts():
+    """Retailers whose terms were reviewed and allow automated page reading (deal_rules.json)."""
+    from pathlib import Path
+    rules = json.loads((Path(__file__).resolve().parent / "deal_rules.json").read_text(encoding="utf-8"))
+    return [h.lower() for h in rules.get("page_check_allowed_hosts", [])]
+
+
+def page_reading_allowed(url, hosts=None):
+    host = (url.split("/")[2] if url.count("/") >= 2 else "").split(":")[0].lower().removeprefix("www.")
+    hosts = cleared_hosts() if hosts is None else hosts
+    return any(host == h or host.endswith("." + h) for h in hosts)
+
+
 def items(path):
     data = json.load(open(path, encoding="utf-8"))
     data = data if isinstance(data, list) else data.get("deals", [])
@@ -137,6 +150,9 @@ def items(path):
         if isinstance(d, dict) and str(d.get("url", "")).startswith("https://"):
             if is_amazon(d["url"]) or d.get("store") == "Amazon":
                 print(f"skipped (Amazon: API only, no page reading): {d['url']}")
+                continue
+            if not page_reading_allowed(d["url"]):
+                print(f"skipped (retailer terms not cleared for automated page reading): {d['url']}")
                 continue
             yield d
 

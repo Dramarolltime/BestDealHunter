@@ -24,6 +24,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
+from links import disclosure
+
 ROOT = Path(__file__).resolve().parents[1]
 FONT = ROOT / "assets" / "fonts" / "Montserrat-Variable.ttf"
 SOURCE = ROOT / "images" / "source"
@@ -244,7 +246,7 @@ def render_card(deal, kind="feed"):
     verified = f"Price verified {facts['verified']}" if facts["verified"] else "Price verification pending"
     draw.text((margin, h - (68 if square else 78)), f"{verified} · Prices and availability may change",
               font=foot, fill=MUTED)
-    draw.text((margin, h - (36 if square else 44)), "#ad · We may earn a commission · Link in bio",
+    draw.text((margin, h - (36 if square else 44)), disclosure(deal)[0],  # "#ad ..." only for affiliate links
               font=foot, fill=MUTED)
     return canvas
 

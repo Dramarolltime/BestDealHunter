@@ -40,7 +40,8 @@ class EligibilityTests(unittest.TestCase):
         self.assertEqual(self.check(dict(amazon, evidence_method="amazon_creators_api")), (True, "eligible"))
 
     def test_amazon_caption_carries_the_associates_statement_and_time_stamp(self):
-        text = pb.caption(deal(store="Amazon", url="https://www.amazon.com/dp/X", auto_published_at="2026-10-10T18:05:00+00:00"))
+        text = pb.caption(deal(store="Amazon", url="https://www.amazon.com/dp/X?tag=bestdealhun0b-20",
+                               auto_published_at="2026-10-10T18:05:00+00:00"))
         self.assertIn("As an Amazon Associate I earn from qualifying purchases.", text)
         self.assertIn("Price as of Oct 10, 2026 18:05 UTC", text)
         self.assertIn("the price on Amazon at the time of purchase applies", text)
@@ -79,10 +80,16 @@ class CaptionTests(unittest.TestCase):
     def test_caption_uses_deal_numbers_and_disclosures(self):
         text = pb.caption(deal())
         for expected in ("57% OFF at Best Buy", "$299.99", "Comparable value $699.99", "Save $400",
-                         "Price as of Oct 10, 2026", "subject to change", "at the time of purchase applies", "#ad",
-                         "may earn a commission", "Link in bio"):
+                         "Price as of Oct 10, 2026", "subject to change", "at the time of purchase applies",
+                         "Link in bio", "not sponsored"):
             self.assertIn(expected, text)
+        self.assertNotIn("#ad", text)  # a direct link earns nothing: no ad / commission claim
         self.assertLessEqual(len(text), pb.CAPTION_LIMIT)
+
+    def test_affiliate_link_gets_the_ad_disclosure(self):
+        text = pb.caption(deal(url="https://www.bestbuy.com/site/test?irclickid=abc"))
+        self.assertIn("#ad", text)
+        self.assertIn("may earn a commission", text)
 
 
 class PlanTests(unittest.TestCase):
@@ -169,7 +176,7 @@ class PublishLedgerTests(unittest.TestCase):
         rows = pb.publish(self.ready(), posts, pb.BufferClient("k", fake), "chan1", "now", log=lambda *_: None)
         sent = fake.requests[0]["variables"]["input"]
         self.assertEqual((sent["channelId"], sent["assets"][0]["image"]["url"]), ("chan1", HOSTED[0]["cloudinary_url"]))
-        self.assertIn("#ad", sent["text"])
+        self.assertIn("Price as of", sent["text"])
         self.assertEqual((rows[0]["status"], rows[0]["buffer_post_id"]), ("queued", "p1"))
 
     def test_same_deal_can_never_be_queued_twice(self):

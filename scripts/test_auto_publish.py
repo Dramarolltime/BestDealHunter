@@ -16,7 +16,7 @@ URL = "https://www.walmart.com/ip/illustrative-test-kettle/123456789"
 
 
 def row(**changes):
-    r = {"url": URL, "store": "Walmart", "verdict": "verified", "checked_at": "2026-10-13T19:10:00+00:00",
+    r = {"url": URL, "store": "Walmart", "verdict": "verified", "evidence_method": "retailer_api", "checked_at": "2026-10-13T19:10:00+00:00",
          "title": "ILLUSTRATIVE TEST Kettle, 1.7L, Black : Home & Kitchen",
          "page": {"price": 19.99, "reference": 49.99, "reference_label": "List Price", "discount": 60,
                   "buyable": True, "seller": None}}
@@ -38,7 +38,7 @@ class SelectTests(unittest.TestCase):
         self.assertEqual((d["title"], d["category"], d["verified_date"]), ("ILLUSTRATIVE TEST Kettle, 1.7L, Black", "Home", "2026-10-13"))
         self.assertIs(d["publication_approved"], True)
         self.assertEqual(d["seller"], "unverified")  # never claim the store itself sells it
-        self.assertEqual((d["evidence_method"], d["evidence_source"]), ("retailer_page_check", RUN))
+        self.assertEqual((d["evidence_method"], d["evidence_source"]), ("retailer_api", RUN))
 
     def test_discovered_candidates_take_the_product_page_title(self):
         logs = []
@@ -47,6 +47,28 @@ class SelectTests(unittest.TestCase):
                         RUN, TODAY, 5,
                         log=logs.append)
         self.assertEqual((new[0]["title"], new[0]["category"]), ("Samsung 34' Odyssey G5 Monitor", "Electronics"))
+
+    def test_page_checks_publish_only_for_retailers_cleared_for_automated_reading(self):
+        page = row(evidence_method=None)
+        new, logs = self.select([page])
+        self.assertEqual(new, [])
+        self.assertTrue(any("not cleared" in m for m in logs))
+        with mock.patch.dict(ap.RULES, {"page_check_allowed_hosts": ["walmart.com"]}):
+            self.assertEqual(len(self.select([page])[0]), 1)
+
+    def test_tracking_is_stripped_and_affiliate_redirects_are_refused(self):
+        logs = []
+        tracked = URL + "?irgwc=1&wmlspartner=xyz&utm_source=x&selected=true"
+        new = ap.select([row(url=tracked)], [{"url": tracked, "store": "Walmart"}], [], RUN, TODAY, 5, log=logs.append)
+        self.assertEqual(new[0]["url"], URL + "?selected=true")
+        redirect = "https://goto.walmart.com/c/1/2/3?u=x"
+        new = ap.select([row(url=redirect)], [{"url": redirect, "store": "Walmart"}], [], RUN, TODAY, 5, log=logs.append)
+        self.assertEqual(new, [])
+        self.assertTrue(any("affiliate redirect" in m for m in logs))
+
+    def test_api_rows_record_the_api_as_evidence(self):
+        d = self.select([row()])[0][0]
+        self.assertEqual((d["evidence_method"], d["availability"]), ("retailer_api", "In stock online (retailer API)"))
 
     def test_amazon_page_checks_are_never_published(self):
         # Associates Program Policies: Amazon prices only from an Amazon-served link or Creators API / PA API

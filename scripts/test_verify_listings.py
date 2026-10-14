@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from verify_listings import is_amazon, verdict  # noqa: E402
+from verify_listings import is_amazon, page_reading_allowed, verdict  # noqa: E402
 
 OK = {"http": 200, "title": "Insignia 55in TV - Best Buy", "claimed_price": 299.99,
       "offers": [{"price": "299.99", "availability": "InStock"}], "reference_values": ["699.99"]}
@@ -83,6 +83,12 @@ class NoAmazonPageReadingTests(unittest.TestCase):
             self.assertTrue(is_amazon(url), url)
         for url in ("https://www.bestbuy.com/site/x", "https://www.macys.com/shop/product/x", "https://amazonia.example.com/"):
             self.assertFalse(is_amazon(url), url)
+
+    def test_pages_are_read_only_for_cleared_retailers(self):
+        self.assertFalse(page_reading_allowed("https://www.macys.com/shop/product/x", hosts=[]))
+        self.assertTrue(page_reading_allowed("https://www.example-store.com/p/1", hosts=["example-store.com"]))
+        self.assertFalse(page_reading_allowed("https://example-store.com.evil.net/p/1", hosts=["example-store.com"]))
+        self.assertEqual(page_reading_allowed("https://www.macys.com/x"), False)  # nothing cleared by default
 
 
 if __name__ == "__main__":

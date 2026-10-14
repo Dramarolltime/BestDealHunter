@@ -35,6 +35,7 @@ from datetime import date
 from pathlib import Path
 
 from deal_graphics import CardError, card_facts
+from links import disclosure
 from validate_deals import validate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -145,9 +146,7 @@ def caption(deal):
         "",
         "🔗 Link in bio",
         "",
-        "#ad #affiliate #deals #bestdealhunter",
-        "As an Amazon Associate I earn from qualifying purchases." if deal.get("store") == "Amazon"
-        else "BestDealHunter may earn a commission from qualifying purchases.",
+        *disclosure(deal)[1],  # "#ad" + commission statement only when the link is an affiliate link
     ]
     text = "\n".join(lines)
     if len(text) > CAPTION_LIMIT or text.count("#") > HASHTAG_LIMIT:

@@ -22,7 +22,9 @@ from datetime import date
 from pathlib import Path
 
 from add_verified_deals import Rejected, check
+from links import direct_url
 from publish_buffer import product_id
+from validate_deals import RULES
 
 ROOT = Path(__file__).resolve().parents[1]
 APPROVED_BY = "automatic: retailer product page check (owner policy 2026-10-13)"
@@ -54,10 +56,10 @@ def clean_title(title):
     return t
 
 
-def category(candidate, page_title):
+def category(candidate, page_title, hint=""):
     if candidate.get("category") and candidate["category"] != "Other":
         return candidate["category"]
-    dept = (str(page_title or "").rsplit(" : ", 1)[-1] + " " + str(page_title or "")).lower()
+    dept = (str(hint or "") + " " + str(page_title or "").rsplit(" : ", 1)[-1] + " " + str(page_title or "")).lower()
     return next((name for name, rx in CATEGORY_HINTS if re.search(rx, dept)), "Other")
 
 
@@ -67,18 +69,26 @@ def record(row, candidate, run_url):
     # Discovered candidates only carry deals-page link text (sometimes just a brand): use the product page's title.
     discovered = candidate.get("asin") or candidate.get("discovered_from")
     title = clean_title(row.get("title")) if discovered or not candidate.get("title") else candidate["title"]
+    method = row.get("evidence_method") or "retailer_page_check"
     return {
         "store": row.get("store") or candidate.get("store"),
-        "title": title, "url": candidate.get("url") or row["url"],
-        "category": category(candidate, row.get("title")),
+        "title": title, "url": direct_url(candidate.get("url") or row["url"]),
+        "category": category(candidate, row.get("title"), row.get("category_hint")),
         # the page check does not establish who sells it (Amazon listings are often third-party sellers)
         "seller": page.get("seller") or "unverified",
         "price": page.get("price"), "original_price": page.get("reference"),
         "reference_label": page.get("reference_label") or "Reference price",
-        "availability": "In stock (retailer product page)",
-        "evidence": {"method": "retailer_page_check", "checked_at": row["checked_at"], "source": run_url,
-                     "checked_by": "verify_listings.py"},
+        "availability": "In stock online (retailer API)" if method == "retailer_api" else "In stock (retailer product page)",
+        "evidence": {"method": method, "checked_at": row["checked_at"], "source": run_url,
+                     "checked_by": row.get("evidence_detail") or "verify_listings.py"},
     }
+
+
+def page_check_allowed(url):
+    """Only retailers whose terms we have reviewed and that permit automated page reading (deal_rules.json)."""
+    from urllib.parse import urlparse
+    host = (urlparse(str(url)).hostname or "").lower().removeprefix("www.")
+    return any(host == h or host.endswith("." + h) for h in RULES.get("page_check_allowed_hosts", []))
 
 
 def select(results, candidates, deals, run_url, today, limit, log=print):
@@ -93,6 +103,13 @@ def select(results, candidates, deals, run_url, today, limit, log=print):
         candidate = by_url.get(row["url"], {})
         if (row.get("store") or candidate.get("store")) == "Amazon":
             log(f"SKIP {row['url']}: {AMAZON_RULE}")
+            continue
+        if not direct_url(candidate.get("url") or row["url"]):
+            log(f"SKIP {row['url']}: affiliate redirect link; publish the retailer's direct product URL")
+            continue
+        if (row.get("evidence_method") or "retailer_page_check") == "retailer_page_check" and \
+                not page_check_allowed(candidate.get("url") or row["url"]):
+            log(f"SKIP {row['url']}: automated page reading is not cleared for this retailer's terms")
             continue
         try:
             entry = check(record(row, candidate, run_url), today, urls)
@@ -124,6 +141,7 @@ def select(results, candidates, deals, run_url, today, limit, log=print):
 def main(argv=None, today=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("results")
+    parser.add_argument("--also-results", action="append", default=[], help="more result files (e.g. retailer APIs)")
     parser.add_argument("candidates", nargs="*")
     parser.add_argument("--run-url", required=True)
     parser.add_argument("--max", type=int, default=5)
@@ -133,6 +151,9 @@ def main(argv=None, today=None):
         raise SystemExit("--run-url must be the https GitHub Actions run URL (it is the evidence source)")
     today = today or date.today()
     results = json.loads(Path(args.results).read_text(encoding="utf-8"))
+    for extra in args.also_results:
+        if Path(extra).is_file():
+            results += json.loads(Path(extra).read_text(encoding="utf-8"))
     candidates = []
     for path in args.candidates:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
