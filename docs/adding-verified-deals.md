@@ -7,6 +7,9 @@
 > (verdict `verified`), `auto_publish.py` adds it to `deals.json` with `publication_approved: true` →
 > branded cards → Cloudinary → Buffer/Instagram (while `INSTAGRAM_PUBLISH_ENABLED` is `true`).
 > Blocked, failed, unconfirmed, mismatched, under-50% or out-of-stock pages are never published.
+> **Amazon is excluded from page checks.** Amazon's Associates terms allow Amazon prices only from Amazon's own
+> Creators API / PA API, and forbid robots or data-gathering tools. So `verify_listings.py` never opens Amazon pages,
+> and Amazon deals publish only with `evidence_method` `amazon_creators_api` / `amazon_pa_api` (not built yet).
 > The manual route below remains for deals a person checks in a browser.
 
 A deal goes on BestDealHunter only after its price was checked against the retailer's live data

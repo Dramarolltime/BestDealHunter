@@ -12,7 +12,7 @@ method "retailer_page_check", the GitHub Actions run URL as evidence source, str
 no duplicates) with publication_approved true, so the card generator, Cloudinary upload and the
 Buffer publisher pick it up in the same workflow run. Append-only; at most --max new deals a run.
 
-  python scripts/auto_publish.py verify-results.json amazon-candidates.json ... --run-url URL [--apply]
+  python scripts/auto_publish.py verify-results.json pending_deals.json ... --run-url URL [--apply]
 """
 import argparse
 import json

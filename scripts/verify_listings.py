@@ -120,11 +120,24 @@ def verdict(row):
     return "verified"
 
 
+# Amazon pages are never opened: the Associates IP License excludes "data mining, robots, or similar data
+# gathering and extraction tools", and Amazon prices may only come from Creators API / PA API (Program Policies).
+AMAZON_HOSTS = re.compile(r"(^|\.)(amazon\.[a-z.]+|link\.amazon|amzn\.to|a\.co)$", re.I)
+
+
+def is_amazon(url):
+    host = (url.split("/")[2] if url.count("/") >= 2 else "").split(":")[0]
+    return bool(AMAZON_HOSTS.search(host))
+
+
 def items(path):
     data = json.load(open(path, encoding="utf-8"))
     data = data if isinstance(data, list) else data.get("deals", [])
     for d in data:
         if isinstance(d, dict) and str(d.get("url", "")).startswith("https://"):
+            if is_amazon(d["url"]) or d.get("store") == "Amazon":
+                print(f"skipped (Amazon: API only, no page reading): {d['url']}")
+                continue
             yield d
 
 

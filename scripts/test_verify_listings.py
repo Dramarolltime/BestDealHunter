@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from verify_listings import verdict  # noqa: E402
+from verify_listings import is_amazon, verdict  # noqa: E402
 
 OK = {"http": 200, "title": "Insignia 55in TV - Best Buy", "claimed_price": 299.99,
       "offers": [{"price": "299.99", "availability": "InStock"}], "reference_values": ["699.99"]}
@@ -74,6 +74,15 @@ class VerdictTests(unittest.TestCase):
                          "unavailable")
         self.assertEqual(verdict(dict(AMAZON, visible=dict(AMAZON["visible"], availability=None, buy_button=False))),
                          "unavailable")
+
+
+class NoAmazonPageReadingTests(unittest.TestCase):
+    def test_amazon_urls_are_never_opened(self):
+        for url in ("https://www.amazon.com/dp/B0H876MWDM?tag=x", "https://link.amazon/B0iYV850b",
+                    "https://amzn.to/3abc", "https://smile.amazon.co.uk/dp/X", "https://a.co/d/xyz"):
+            self.assertTrue(is_amazon(url), url)
+        for url in ("https://www.bestbuy.com/site/x", "https://www.macys.com/shop/product/x", "https://amazonia.example.com/"):
+            self.assertFalse(is_amazon(url), url)
 
 
 if __name__ == "__main__":

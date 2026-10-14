@@ -4,7 +4,7 @@ name: Verify retailer listings (read-only)
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['scripts/verify_listings.py', 'scripts/discover_amazon_deals.py', 'scripts/probe_retailers.py', '.github/workflows/verify-listings.yml']
+    paths: ['scripts/verify_listings.py', 'scripts/probe_retailers.py', '.github/workflows/verify-listings.yml']
 permissions:
   contents: read
 jobs:
@@ -19,14 +19,11 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install 'playwright==1.56.0'
-      - name: Find current Amazon deal candidates (robots.txt respected)
-        run: python scripts/discover_amazon_deals.py --max 40
       - name: Check live retailer pages
-        run: python scripts/verify_listings.py amazon-candidates.json pending_deals.json deal-review-queue.json deals.json
+        run: python scripts/verify_listings.py pending_deals.json deal-review-queue.json deals.json  # Amazon URLs are skipped
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: verify-results
           path: |
             verify-results.json
-            amazon-candidates.json
