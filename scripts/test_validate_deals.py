@@ -288,6 +288,7 @@ class ListingPolicyRequirementTests(unittest.TestCase):
 
     def deal(self, **changes):
         d = sample()
+        d["verified_date"] = "2026-10-12"  # fixed, relative to TODAY: sample() uses the real date
         d.update(changes)
         return d
 
@@ -334,3 +335,10 @@ class ListingPolicyRequirementTests(unittest.TestCase):
         self.assertIn('d.archived=d.status==="archived"||!!(d.expires_date&&new Date(d.expires_date+"T23:59:59")<new Date());', html)
         self.assertIn("d.unverified=!d.archived&&!(verified>=new Date(today.getTime()-maxVerificationAgeDays*864e5));", html)
         self.assertIn("Price not re-verified", html)
+
+
+class AssociatesDisclosureTests(unittest.TestCase):
+    def test_site_carries_the_operating_agreement_statement(self):
+        # Operating Agreement: "You must clearly and prominently state the following ... on your Site"
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("As an Amazon Associate I earn from qualifying purchases.", html)
