@@ -33,6 +33,7 @@ API = "https://api.openai.com/v1/images/generations"
 DEFAULT_MODEL = "gpt-image-1"
 PROMPT = ("Photorealistic studio product photo of: {title} ({category}). One product, centered, fully visible, "
           "on a dark navy blue background with a soft blue spotlight glow behind it, clean premium lighting. "
+          "Any screen or display shows only an abstract colorful wallpaper. "
           "Absolutely no text, letters, numbers, prices, logos, brand names, labels or watermarks anywhere in "
           "the image.")
 
