@@ -14,6 +14,7 @@ on:
       - 'scripts/auto_publish.py'
       - 'scripts/verify_listings.py'
       - 'scripts/bestbuy_deals.py'
+      - 'scripts/ebay_deals.py'
       - 'scripts/links.py'
       - '.github/workflows/auto-publish.yml'
 permissions:
@@ -40,21 +41,27 @@ jobs:
           BEST_BUY_API_KEY: ${{ secrets.BEST_BUY_API_KEY }}
           BESTBUY_API_KEY: ${{ secrets.BESTBUY_API_KEY }}
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
         run: |
-          for n in BEST_BUY_API_KEY BESTBUY_API_KEY EBAY_CLIENT_ID; do
+          for n in BEST_BUY_API_KEY BESTBUY_API_KEY EBAY_CLIENT_ID EBAY_CLIENT_SECRET; do
             if [ -n "${!n}" ]; then echo "$n: set"; else echo "$n: not set"; fi
           done | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Best Buy deals from the official Products API (no page reading)
         env:
           BEST_BUY_API_KEY: ${{ secrets.BEST_BUY_API_KEY || secrets.BESTBUY_API_KEY }}
         run: python scripts/bestbuy_deals.py --out bestbuy-results.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: eBay deals from the official Browse API (no page reading)
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+        run: python scripts/ebay_deals.py --out ebay-results.json | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Verify product pages (price, >= 50% off its reference, in stock)
         # Only retailers cleared in deal_rules.json (page_check_allowed_hosts) are read; Amazon never is.
         run: python scripts/verify_listings.py pending_deals.json deal-review-queue.json
       - name: Publish verified deals to deals.json
         run: |
           python scripts/auto_publish.py verify-results.json pending_deals.json deal-review-queue.json \
-            --also-results bestbuy-results.json \
+            --also-results bestbuy-results.json --also-results ebay-results.json \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" --apply | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Branded cards for new deals
         run: python scripts/generate_deal_images.py
@@ -102,6 +109,7 @@ jobs:
           path: |
             verify-results.json
             bestbuy-results.json
+            ebay-results.json
             deals.json
             cloudinary-images.json
             images/generated/
