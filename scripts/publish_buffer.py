@@ -34,8 +34,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from deal_graphics import CardError, card_facts
-from links import disclosure
+from deal_graphics import CardError, as_of_text, card_facts
+from links import disclosure, is_affiliate_link
 from validate_deals import validate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -123,31 +123,59 @@ def eligibility(deal, hosted, posted_keys, today, now=None):
     return True, "eligible"
 
 
+# Playbook v1.0 hashtag sets (5-8 per post, matched to the product, never borrowed from another category).
+HASHTAGS = {
+    "Tech": "#TechDeals #ElectronicsDeals #GadgetDeals #TechSavings #BestDealHunter #ShoppingDeals #DealFinder",
+    "Home": "#HomeDeals #HomeSavings #HomeEssentials #HomeFinds #BudgetHome #BestDealHunter #DiscountDeals",
+    "Kitchen": "#KitchenDeals #KitchenFinds #CookingEssentials #KitchenSavings #HomeCooking #BestDealHunter "
+               "#ShoppingDeals",
+    "Fashion": "#FashionDeals #StyleOnABudget #ClothingDeals #FashionFinds #WardrobeDeals #BestDealHunter #DealAlerts",
+    "Sports": "#SportsDeals #FitnessDeals #OutdoorDeals #ActiveLifestyle #SportsGear #BestDealHunter #DiscountFinds",
+    "Beauty": "#BeautyDeals #BeautyFinds #SkincareDeals #MakeupDeals #BeautySavings #BestDealHunter #ShoppingFinds",
+    "Other": "#DealAlerts #ShoppingDeals #DealFinder #DiscountDeals #BestDealHunter",
+}
+KITCHEN = re.compile(r"kitchen|cook|bak(e|ing)|blender|mixer|air fryer|coffee|espresso|knife|knives|pan\b|pans\b|"
+                     r"pot\b|pots\b|skillet|toaster|kettle|cutlery|utensil|dinnerware|oven mitt|mitt\b", re.I)
+# Varied openings so a day of posts doesn't read identically; the verified numbers never change.
+OPENERS = ("🔥 {percent}% OFF — {title}", "🔥 {percent}% OFF: {title}", "🔥 Deal alert: {percent}% OFF — {title}")
+
+
+def hashtags(deal):
+    category = deal.get("category") or "Other"
+    if category == "Electronics":
+        category = "Tech"
+    elif category == "Home" and KITCHEN.search(str(deal.get("title", ""))):
+        category = "Kitchen"
+    return HASHTAGS.get(category, HASHTAGS["Other"])
+
+
 def checked_at(deal):
-    """'Oct 13, 2026 20:05 UTC' from the price-check time, when the deal records one."""
-    from datetime import datetime
+    """'Oct 13, 2026, 10:30 PM PT' from the price-check time (or the verification day)."""
     try:
-        t = datetime.fromisoformat(str(deal.get("auto_published_at") or "").replace("Z", "+00:00"))
-    except ValueError:
+        return as_of_text(deal)
+    except CardError:
         return None
-    return f"{t:%b} {t.day}, {t.year} {t:%H:%M} UTC"
 
 
 def caption(deal):
+    """Playbook v1.0 primary caption; '#ad' and the commission statement only for affiliate links."""
     facts = card_facts(deal)
+    opener = OPENERS[int(post_key(deal), 16) % len(OPENERS)]
     lines = [
-        f"🔥 {facts['percent']}% OFF at {facts['store']}",
-        "",
-        facts["title"],
-        "",
-        f"💰 {facts['price']} ({facts['reference_label']} {facts['reference']}) · Save {facts['savings']}",
-        f"✅ Price as of {checked_at(deal) or facts['verified']}. Prices and availability are accurate as of that "
-        f"time and subject to change; the price on {facts['store']} at the time of purchase applies.",
-        "",
+        opener.format(percent=facts["percent"], title=facts["title"]),
+        f"🏬 Store: {facts['store']}",
+        f"💰 Now: {facts['price']}",
+        f"🏷️ {facts['reference_label']}: {facts['reference']}",
+        f"💵 Savings: {facts['savings']}",
+        "🛒 Find the deal at bestdealhunters.com",
         "🔗 Link in bio",
+        f"⏰ Price as of {checked_at(deal) or 'the verification time'}",
+        f"⚠️ Prices may change. Availability may vary. The price on {facts['store']} at checkout applies.",
         "",
-        *disclosure(deal)[1],  # "#ad" + commission statement only when the link is an affiliate link
+        hashtags(deal),
     ]
+    if is_affiliate_link(deal.get("url")):
+        lines += ["", *disclosure(deal)[1]]
     text = "\n".join(lines)
     if len(text) > CAPTION_LIMIT or text.count("#") > HASHTAG_LIMIT:
         raise CardError("caption exceeds Instagram limits")

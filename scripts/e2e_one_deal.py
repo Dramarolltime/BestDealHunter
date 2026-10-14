@@ -41,7 +41,7 @@ class StepFailed(Exception):
 
 def jpeg(card):
     buf = io.BytesIO()
-    card.save(buf, "JPEG", quality=92, optimize=True, progressive=True)
+    card.save(buf, "JPEG", quality=95, optimize=True, progressive=True, subsampling=0)  # as deal_graphics.save
     return buf.getvalue()
 
 

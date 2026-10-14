@@ -70,7 +70,7 @@ def check_discovery(env):
 
 
 def check_cards(deals, today):
-    from deal_graphics import CardError, card_facts, card_id, render_card
+    from deal_graphics import CardError, card_facts, card_id, render_card, save
     problems, warnings, checked = [], [], 0
     with tempfile.TemporaryDirectory() as tmp:
         for deal in active_deals(deals, today):
@@ -94,7 +94,7 @@ def check_cards(deals, today):
                 warnings.append(f"{title}: site image is not its branded card ({image or 'none'})")
             else:
                 fresh = Path(tmp) / "card.jpg"
-                render_card(deal, "square").save(fresh, "JPEG", quality=92, optimize=True, progressive=True)
+                save(render_card(deal, "square"), fresh)
                 committed = ROOT / image
                 if not committed.is_file() or committed.read_bytes() != fresh.read_bytes():
                     problems.append(f"{title}: committed card is out of date with the deal data; regenerate it")
