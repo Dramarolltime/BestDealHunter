@@ -44,7 +44,7 @@ class FactsTests(unittest.TestCase):
     def test_reference_label_is_honest_per_store(self):
         self.assertEqual(g.card_facts(sample())["reference_label"], "Comparable value")
         self.assertEqual(g.card_facts(sample(store="Amazon"))["reference_label"], "List price")
-        self.assertEqual(g.card_facts(sample(store="Target"))["reference_label"], "Reference price")
+        self.assertEqual(g.card_facts(sample(store="Target"))["reference_label"], "Was")  # store's crossed-out price
         self.assertEqual(g.card_facts(sample(reference_price_label="Typical price"))["reference_label"], "Typical price")
 
     def test_verified_date_text(self):
@@ -74,7 +74,20 @@ class RenderTests(unittest.TestCase):
 
     def test_bundled_font_and_licence_present(self):
         self.assertTrue(g.FONT.is_file())
-        self.assertIn("SIL Open Font License", (g.FONT.parent / "Montserrat-OFL.txt").read_text())
+        for name in g.WEIGHTS.values():
+            self.assertTrue((g.FONTS / name).is_file(), name)
+        self.assertIn("SIL Open Font License", (g.FONTS / "Inter-OFL.txt").read_text())
+
+    def test_playbook_palette_and_footer(self):
+        card = g.render_card(sample(price_checked_at="2026-10-14T05:30:00Z"))
+        self.assertEqual(card.getpixel((5, 5)), (11, 18, 32))  # #0B1220 background
+        self.assertEqual(g.card_facts(sample(price_checked_at="2026-10-14T05:30:00Z"))["as_of"],
+                         "Oct 13, 2026, 10:30 PM PT")
+        self.assertEqual(g.card_facts(sample(verified_date="2026-10-09"))["as_of"], "Oct 9, 2026")
+
+    def test_price_time_needs_a_time_zone(self):
+        with self.assertRaises(g.CardError):
+            g.card_facts(sample(price_checked_at="2026-10-14T05:30:00"))
 
 
 class PhotoTests(unittest.TestCase):
@@ -93,8 +106,10 @@ class PhotoTests(unittest.TestCase):
     def test_authorized_photo_is_used(self):
         with_photo = g.render_card(sample(image_source="images/source/photo.png"))
         without = g.render_card(sample())
-        self.assertEqual(with_photo.getpixel((540, 470)), (34, 197, 94))  # photo centre (green)
-        self.assertNotEqual(without.getpixel((540, 470)), (34, 197, 94))
+        green = lambda card: any(card.getpixel((540, y)) == (34, 197, 94) for y in range(350, 800, 10))
+        self.assertTrue(green(with_photo))  # the photo (green) sits between the badge and the title
+        self.assertFalse(green(without))
+        self.assertEqual(g.render_card(sample(image_source="images/source/photo.png"), "square").size, (1080, 1080))
 
     def test_unauthorized_photo_paths_are_refused(self):
         for raw in ("images/IMG_4236.jpeg", "images/source/../../deals.json", "/etc/passwd",

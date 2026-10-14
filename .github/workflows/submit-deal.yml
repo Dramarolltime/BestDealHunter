@@ -1,0 +1,96 @@
+name: Publish a submitted deal
+# The "Submit a deal" issue form (owner + Alpha plan, 2026-10-14): a person saw a 50%+ deal on a store's
+# own page and attached a screenshot. submit_deal.py checks it; then the same chain as auto-publish runs:
+# deals.json -> branded cards -> Cloudinary -> website (push to main) -> Instagram via Buffer.
+# INSTAGRAM_PUBLISH_ENABLED stays the owner's on/off switch for Instagram.
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: deal-feed-writer
+  cancel-in-progress: false
+jobs:
+  publish:
+    # The form's issues start with "Deal:" and carry its "### Screenshot" heading; only the owner or a
+    # collaborator can publish (anyone else's issue is ignored).
+    if: >-
+      startsWith(github.event.issue.title, 'Deal:') &&
+      contains(github.event.issue.body, '### Screenshot') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q 'Pillow>=10,<13'
+      - name: Check the submission and add it to deals.json
+        id: submit
+        run: |
+          if python scripts/submit_deal.py --event "$GITHUB_EVENT_PATH" --apply --summary result.md; then
+            echo "accepted=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "accepted=false" >> "$GITHUB_OUTPUT"
+          fi
+          cat result.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Branded cards
+        if: steps.submit.outputs.accepted == 'true'
+        run: python scripts/generate_deal_images.py
+      - name: Host the cards on Cloudinary
+        if: steps.submit.outputs.accepted == 'true'
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: python scripts/cloudinary_upload.py
+      - name: Validate the feed
+        if: steps.submit.outputs.accepted == 'true'
+        run: python scripts/validate_deals.py
+      - name: Commit and push (website goes live via GitHub Pages)
+        if: steps.submit.outputs.accepted == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deals.json cloudinary-images.json images/generated evidence
+          git commit -m "Publish submitted deal (#${{ github.event.issue.number }})"
+          for attempt in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep $((attempt * 5)); done
+          echo "::error::Could not push"; exit 1
+      - name: Instagram via Buffer
+        if: steps.submit.outputs.accepted == 'true'
+        env:
+          INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_CHANNEL_ID: ${{ vars.BUFFER_CHANNEL_ID }}
+        run: |
+          if [ "$INSTAGRAM_PUBLISH_ENABLED" != "true" ]; then
+            echo "Instagram switch (INSTAGRAM_PUBLISH_ENABLED) is off: not posted." | tee -a result.md
+            python scripts/publish_buffer.py; exit 0
+          fi
+          python scripts/publish_buffer.py --live | tee -a result.md
+      - name: Record Buffer posts
+        if: ${{ steps.submit.outputs.accepted == 'true' && !cancelled() }}
+        run: |
+          git add posts.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Record Buffer posts"
+          for attempt in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep $((attempt * 5)); done
+      - name: Reply on the issue
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+          ACCEPTED: ${{ steps.submit.outputs.accepted }}
+        run: |
+          { cat result.md 2>/dev/null || echo "❌ The run failed before checking the deal."
+            if [ "${{ job.status }}" != "success" ]; then echo; echo "⚠️ A later step failed, so the deal may not be live yet. See the run."; fi
+            echo; echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; } > reply.md
+          gh issue comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --body-file reply.md
+          if [ "$ACCEPTED" = "true" ] && [ "${{ job.status }}" = "success" ]; then
+            gh issue close "$NUMBER" --repo "$GITHUB_REPOSITORY" --reason completed
+          fi

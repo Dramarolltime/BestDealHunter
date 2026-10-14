@@ -43,8 +43,8 @@ class EligibilityTests(unittest.TestCase):
         text = pb.caption(deal(store="Amazon", url="https://www.amazon.com/dp/X?tag=bestdealhun0b-20",
                                auto_published_at="2026-10-10T18:05:00+00:00"))
         self.assertIn("As an Amazon Associate I earn from qualifying purchases.", text)
-        self.assertIn("Price as of Oct 10, 2026 18:05 UTC", text)
-        self.assertIn("the price on Amazon at the time of purchase applies", text)
+        self.assertIn("Price as of Oct 10, 2026, 11:05 AM PT", text)
+        self.assertIn("The price on Amazon at checkout applies", text)
 
     def test_each_gate_blocks(self):
         cases = {
@@ -79,12 +79,28 @@ class EligibilityTests(unittest.TestCase):
 class CaptionTests(unittest.TestCase):
     def test_caption_uses_deal_numbers_and_disclosures(self):
         text = pb.caption(deal())
-        for expected in ("57% OFF at Best Buy", "$299.99", "Comparable value $699.99", "Save $400",
-                         "Price as of Oct 10, 2026", "subject to change", "at the time of purchase applies",
-                         "Link in bio", "not sponsored"):
+        for expected in ("57% OFF", "ILLUSTRATIVE TEST TV", "Store: Best Buy", "Now: $299.99",
+                         "Comparable value: $699.99", "Savings: $400", "bestdealhunters.com", "Link in bio",
+                         "Price as of Oct 10, 2026", "Prices may change. Availability may vary.",
+                         "#TechDeals", "#BestDealHunter"):
             self.assertIn(expected, text)
+        self.assertTrue(text.startswith("🔥 "))
         self.assertNotIn("#ad", text)  # a direct link earns nothing: no ad / commission claim
         self.assertLessEqual(len(text), pb.CAPTION_LIMIT)
+
+    def test_hashtags_match_the_product(self):
+        self.assertIn("#TechDeals", pb.hashtags(deal()))
+        self.assertIn("#KitchenDeals", pb.hashtags(deal(category="Home", title="Silicone Oven Mitt 2-Pack")))
+        self.assertIn("#HomeDeals", pb.hashtags(deal(category="Home", title="Queen Bed Sheet Set")))
+        self.assertIn("#FashionDeals", pb.hashtags(deal(category="Fashion")))
+        self.assertIn("#DealAlerts", pb.hashtags(deal(category="Other")))
+        for tags in pb.HASHTAGS.values():
+            self.assertTrue(5 <= tags.count("#") <= 8, tags)
+
+    def test_opening_line_varies_but_numbers_do_not(self):
+        texts = {pb.caption(deal(url=f"https://www.bestbuy.com/site/test-{i}")).split("\n")[0] for i in range(12)}
+        self.assertGreater(len(texts), 1)
+        self.assertTrue(all("57% OFF" in t for t in texts))
 
     def test_affiliate_link_gets_the_ad_disclosure(self):
         text = pb.caption(deal(url="https://www.bestbuy.com/site/test?irclickid=abc"))

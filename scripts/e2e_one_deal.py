@@ -25,7 +25,7 @@ from urllib import error, request
 
 from cloudinary_upload import load_mapping
 from deal_graphics import card_facts, card_id, render_card
-from links import disclosure
+from links import disclosure, is_affiliate_link
 from publish_buffer import BufferClient, apply_dry_run_approval, caption, feed_card, plan, publish
 from validate_deals import RULES, deal_status, price_verified, validate
 
@@ -41,7 +41,7 @@ class StepFailed(Exception):
 
 def jpeg(card):
     buf = io.BytesIO()
-    card.save(buf, "JPEG", quality=92, optimize=True, progressive=True)
+    card.save(buf, "JPEG", quality=95, optimize=True, progressive=True, subsampling=0)  # as deal_graphics.save
     return buf.getvalue()
 
 
@@ -155,7 +155,8 @@ def step_buffer(deal, deals, mapping, posts, today):
     hosted = {m["image"]: m["cloudinary_url"] for m in mapping}
     if post["image_url"] != hosted[feed_card(deal)]:
         raise StepFailed("post would not use the 4:5 Cloudinary card")
-    for must in (*disclosure(deal)[1], "Price as of", "subject to change", card_facts(deal)["price"]):
+    ad = disclosure(deal)[1] if is_affiliate_link(deal.get("url")) else ()  # #ad only for affiliate links
+    for must in (*ad, "Price as of", "Prices may change", card_facts(deal)["price"]):
         if must not in post["text"]:
             raise StepFailed(f"caption missing {must!r}")
     # Duplicate protection, using the real publish() against a fake Buffer and a COPY of the ledger.

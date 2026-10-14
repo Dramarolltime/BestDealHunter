@@ -42,7 +42,8 @@ STAGING = "verified_awaiting_approval"
 PHOTO = "images/source/"
 METHODS = {"retailer_page_check", "retailer_api", "affiliate_catalog", "human_browser_check"}
 STORE_DOMAINS = {"Target": "target.com", "Walmart": "walmart.com", "Best Buy": "bestbuy.com", "Macy's": "macys.com",
-                 "Home Depot": "homedepot.com", "Lowe's": "lowes.com", "eBay": "ebay.com", "Amazon": "amazon.com"}
+                 "Home Depot": "homedepot.com", "Lowe's": "lowes.com", "eBay": "ebay.com", "Amazon": "amazon.com",
+                 "Dick's Sporting Goods": "dickssportinggoods.com"}
 BUYABLE = ("in stock", "available", "ships", "shipping", "pickup", "add to cart")
 NOT_BUYABLE = ("out of stock", "sold out", "unavailable", "not available", "discontinued")
 
