@@ -12,12 +12,12 @@ import auto_publish as ap  # noqa: E402
 
 TODAY = date(2026, 10, 13)
 RUN = "https://github.com/Dramarolltime/BestDealHunter/actions/runs/1"
-URL = "https://www.amazon.com/dp/B000TEST01?tag=bestdealhun0b-20"
+URL = "https://www.walmart.com/ip/illustrative-test-kettle/123456789"
 
 
 def row(**changes):
-    r = {"url": URL, "store": "Amazon", "verdict": "verified", "checked_at": "2026-10-13T19:10:00+00:00",
-         "title": "Amazon.com: ILLUSTRATIVE TEST Kettle, 1.7L, Black : Home & Kitchen",
+    r = {"url": URL, "store": "Walmart", "verdict": "verified", "checked_at": "2026-10-13T19:10:00+00:00",
+         "title": "ILLUSTRATIVE TEST Kettle, 1.7L, Black : Home & Kitchen",
          "page": {"price": 19.99, "reference": 49.99, "reference_label": "List Price", "discount": 60,
                   "buyable": True, "seller": None}}
     r.update(changes)
@@ -27,7 +27,7 @@ def row(**changes):
 class SelectTests(unittest.TestCase):
     def select(self, rows, deals=(), limit=5):
         logs = []
-        new = ap.select(rows, [{"url": URL, "store": "Amazon", "category": "Other"}], list(deals), RUN, TODAY, limit,
+        new = ap.select(rows, [{"url": URL, "store": "Walmart", "category": "Other"}], list(deals), RUN, TODAY, limit,
                         log=logs.append)
         return new, logs
 
@@ -42,10 +42,18 @@ class SelectTests(unittest.TestCase):
 
     def test_discovered_candidates_take_the_product_page_title(self):
         logs = []
-        new = ap.select([row(title="Amazon.com: Samsung 34' Odyssey G5 Monitor | 165Hz, 1ms : Electronics")],
-                        [{"url": URL, "store": "Amazon", "asin": "B000TEST01", "title": "Burlwood"}], [], RUN, TODAY, 5,
+        new = ap.select([row(title="Samsung 34' Odyssey G5 Monitor | 165Hz, 1ms : Electronics")],
+                        [{"url": URL, "store": "Walmart", "discovered_from": "deals page", "title": "Burlwood"}], [],
+                        RUN, TODAY, 5,
                         log=logs.append)
         self.assertEqual((new[0]["title"], new[0]["category"]), ("Samsung 34' Odyssey G5 Monitor", "Electronics"))
+
+    def test_amazon_page_checks_are_never_published(self):
+        # Associates Program Policies: Amazon prices only from an Amazon-served link or Creators API / PA API
+        amazon = row(url="https://www.amazon.com/dp/B000TEST01?tag=bestdealhun0b-20", store="Amazon")
+        new, logs = self.select([amazon])
+        self.assertEqual(new, [])
+        self.assertTrue(any("Creators API" in m for m in logs))
 
     def test_nothing_but_verified_is_published(self):
         for verdict in ("blocked", "unconfirmed", "mismatch", "below_50", "unavailable", None):
@@ -65,9 +73,9 @@ class SelectTests(unittest.TestCase):
 
     def test_duplicates_and_limit(self):
         self.assertEqual(self.select([row()], deals=[{"url": URL}])[0], [])
-        listed_elsewhere = {"url": "https://link.amazon/xyz", "asin": "B000TEST01"}  # same product, short link
+        listed_elsewhere = {"url": URL.replace("www.", "") + "/?athbdg=L1600"}  # same product, other link form
         self.assertEqual(self.select([row()], deals=[listed_elsewhere])[0], [])
-        rows = [row(url=f"https://www.amazon.com/dp/B000TEST0{n}") for n in range(3)]
+        rows = [row(url=f"https://www.walmart.com/ip/illustrative-test/{n}") for n in range(3)]
         new, logs = self.select(rows, limit=2)
         self.assertEqual(len(new), 2)
         self.assertTrue(any(m.startswith("LIMIT") for m in logs))
@@ -78,7 +86,7 @@ class MainTests(unittest.TestCase):
         tmp = Path(tempfile.mkdtemp())
         (tmp / "deals.json").write_text(json.dumps([{"url": "https://www.bestbuy.com/x"}]))
         (tmp / "results.json").write_text(json.dumps([row()]))
-        (tmp / "cands.json").write_text(json.dumps([{"url": URL, "store": "Amazon"}]))
+        (tmp / "cands.json").write_text(json.dumps([{"url": URL, "store": "Walmart"}]))
         args = [str(tmp / "results.json"), str(tmp / "cands.json"), "--run-url", RUN]
         with mock.patch.object(ap, "ROOT", tmp), mock.patch("sys.stdout"):
             ap.main(args, today=TODAY)

@@ -13,7 +13,6 @@ on:
     paths:
       - 'scripts/auto_publish.py'
       - 'scripts/verify_listings.py'
-      - 'scripts/discover_amazon_deals.py'
       - '.github/workflows/auto-publish.yml'
 permissions:
   contents: write
@@ -34,13 +33,13 @@ jobs:
       - run: python -m pip install 'playwright==1.56.0' 'Pillow>=10,<13'
       - name: Tests (no network)
         run: python -m unittest discover -s scripts -p 'test_*.py'
-      - name: Find current Amazon deal candidates (robots.txt respected)
-        run: python scripts/discover_amazon_deals.py --max 40
       - name: Verify product pages (price, >= 50% off its reference, in stock)
-        run: python scripts/verify_listings.py amazon-candidates.json pending_deals.json deal-review-queue.json
+        # Amazon pages are not read: the Associates License excludes robots / data-gathering tools, and Amazon
+        # prices may only come from Creators API / PA API (Program Policies). An API source is the next step.
+        run: python scripts/verify_listings.py pending_deals.json deal-review-queue.json
       - name: Publish verified deals to deals.json
         run: |
-          python scripts/auto_publish.py verify-results.json amazon-candidates.json pending_deals.json deal-review-queue.json \
+          python scripts/auto_publish.py verify-results.json pending_deals.json deal-review-queue.json \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" --apply | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Branded cards for new deals
         run: python scripts/generate_deal_images.py
@@ -87,7 +86,6 @@ jobs:
           name: auto-publish
           path: |
             verify-results.json
-            amazon-candidates.json
             deals.json
             cloudinary-images.json
             images/generated/

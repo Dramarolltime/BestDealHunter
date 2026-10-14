@@ -46,6 +46,12 @@ CARD = re.compile(r"images/generated/deal-([0-9a-f]{12})-(?:feed|square)\.jpg")
 CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 30
 MAX_POSTS_PER_RUN = 1
 MAX_POST_AGE_HOURS = 3  # an auto-published deal is posted only while its page check is this fresh
+# Amazon Associates Program Policies (read 2026-10-13): "your Site may only show prices and availability if:
+# (a) we serve the link in which that price and availability data are displayed, or (b) you obtain Product
+# pricing and availability data via Creators API or PA API". A social media account counts as a "Site".
+AMAZON_PRICE_SOURCES = {"amazon_creators_api", "amazon_pa_api"}
+AMAZON_RULE = ("Amazon prices may only come from Amazon's Creators API / PA API (Associates Program Policies); "
+               "this deal's price came from somewhere else")
 ASIN = re.compile(r"/(?:dp|gp/product)/([A-Z0-9]{10})")
 LOCK_PREFIX = "deal-post/"  # git tags on GitHub: a durable one-post-per-key lock across runs
 
@@ -98,6 +104,8 @@ def eligibility(deal, hosted, posted_keys, today, now=None):
     if deal.get("publication_approved") is not True:
         # set automatically by auto_publish.py for deals verified on the retailer's product page
         return False, "not approved for posting (publication_approved is not true)"
+    if deal.get("store") == "Amazon" and deal.get("evidence_method") not in AMAZON_PRICE_SOURCES:
+        return False, AMAZON_RULE
     image = feed_card(deal)
     if not image:
         return False, "image is not a generated branded card (images/generated/deal-<id>-square/feed.jpg)"
@@ -114,6 +122,16 @@ def eligibility(deal, hosted, posted_keys, today, now=None):
     return True, "eligible"
 
 
+def checked_at(deal):
+    """'Oct 13, 2026 20:05 UTC' from the price-check time, when the deal records one."""
+    from datetime import datetime
+    try:
+        t = datetime.fromisoformat(str(deal.get("auto_published_at") or "").replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return f"{t:%b} {t.day}, {t.year} {t:%H:%M} UTC"
+
+
 def caption(deal):
     facts = card_facts(deal)
     lines = [
@@ -122,12 +140,14 @@ def caption(deal):
         facts["title"],
         "",
         f"💰 {facts['price']} ({facts['reference_label']} {facts['reference']}) · Save {facts['savings']}",
-        f"✅ Price verified {facts['verified']}. Prices and availability may change; check the retailer before buying.",
+        f"✅ Price as of {checked_at(deal) or facts['verified']}. Prices and availability are accurate as of that "
+        f"time and subject to change; the price on {facts['store']} at the time of purchase applies.",
         "",
         "🔗 Link in bio",
         "",
         "#ad #affiliate #deals #bestdealhunter",
-        "BestDealHunter may earn a commission from qualifying purchases.",
+        "As an Amazon Associate I earn from qualifying purchases." if deal.get("store") == "Amazon"
+        else "BestDealHunter may earn a commission from qualifying purchases.",
     ]
     text = "\n".join(lines)
     if len(text) > CAPTION_LIMIT or text.count("#") > HASHTAG_LIMIT:

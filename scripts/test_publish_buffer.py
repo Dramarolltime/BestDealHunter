@@ -30,8 +30,20 @@ class EligibilityTests(unittest.TestCase):
     def test_fully_ready_deal_is_eligible(self):
         self.assertEqual(self.check(deal()), (True, "eligible"))
 
-    def test_amazon_deal_follows_the_same_rules_as_every_store(self):
-        self.assertEqual(self.check(deal(store="Amazon", url="https://www.amazon.com/dp/X")), (True, "eligible"))
+    def test_amazon_needs_an_amazon_api_price_source(self):
+        amazon = deal(store="Amazon", url="https://www.amazon.com/dp/X")
+        ok, reason = self.check(amazon)
+        self.assertFalse(ok)
+        self.assertIn("Creators API", reason)
+        for source in ("retailer_page_check", "human_browser_check", None):
+            self.assertFalse(self.check(dict(amazon, evidence_method=source))[0])
+        self.assertEqual(self.check(dict(amazon, evidence_method="amazon_creators_api")), (True, "eligible"))
+
+    def test_amazon_caption_carries_the_associates_statement_and_time_stamp(self):
+        text = pb.caption(deal(store="Amazon", url="https://www.amazon.com/dp/X", auto_published_at="2026-10-10T18:05:00+00:00"))
+        self.assertIn("As an Amazon Associate I earn from qualifying purchases.", text)
+        self.assertIn("Price as of Oct 10, 2026 18:05 UTC", text)
+        self.assertIn("the price on Amazon at the time of purchase applies", text)
 
     def test_each_gate_blocks(self):
         cases = {
@@ -67,7 +79,8 @@ class CaptionTests(unittest.TestCase):
     def test_caption_uses_deal_numbers_and_disclosures(self):
         text = pb.caption(deal())
         for expected in ("57% OFF at Best Buy", "$299.99", "Comparable value $699.99", "Save $400",
-                         "Price verified Oct 10, 2026", "#ad", "may earn a commission", "Link in bio"):
+                         "Price as of Oct 10, 2026", "subject to change", "at the time of purchase applies", "#ad",
+                         "may earn a commission", "Link in bio"):
             self.assertIn(expected, text)
         self.assertLessEqual(len(text), pb.CAPTION_LIMIT)
 
@@ -208,7 +221,8 @@ class PublishLedgerTests(unittest.TestCase):
         self.assertTrue(approved[0]["publication_approved"])
         self.assertFalse(amazon["publication_approved"])  # original data untouched
         ready, skipped = pb.plan(approved, HOSTED, [], TODAY)
-        self.assertEqual(len(ready), 1, skipped)  # a fresh, approved Amazon deal now qualifies (#2026-10-13 policy)
+        self.assertEqual(ready, [])  # approval never overrides the Amazon price-source rule
+        self.assertIn("Creators API", skipped[0][1])
 
 
 class DuplicateAndFreshnessTests(unittest.TestCase):

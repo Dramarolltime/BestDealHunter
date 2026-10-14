@@ -29,6 +29,11 @@ APPROVED_BY = "automatic: retailer product page check (owner policy 2026-10-13)"
 # A page claiming 80%+ off is held for a person instead of auto-published: in run 38452512276 these
 # were inflated list prices (e.g. a smoke detector "List Price $269.99", sold at $35.98).
 HOLD_AT_PERCENT = 80
+# Amazon Associates Program Policies (read 2026-10-13): prices may be shown only from an Amazon-served link or
+# Creators API / PA API data, and the License excludes "data mining, robots, or similar data gathering and
+# extraction tools". So an Amazon product-page check is never a publishable source.
+AMAZON_RULE = ("Amazon Associates Program Policies: Amazon prices may be shown only from an Amazon-served link "
+               "or Creators API / PA API data, not from a product-page check")
 CATEGORY_HINTS = (("Electronics", r"electronic|computer|cell phone|camera|video game|headphone|tv\b|television"),
                   ("Fashion", r"clothing|shoes|jewelry|fashion|watches|luggage"),
                   ("Beauty", r"beauty|personal care|health"),
@@ -60,7 +65,8 @@ def record(row, candidate, run_url):
     """An add_verified_deals record built only from what the product page showed."""
     page = row.get("page") or {}
     # Discovered candidates only carry deals-page link text (sometimes just a brand): use the product page's title.
-    title = clean_title(row.get("title")) if candidate.get("asin") or not candidate.get("title") else candidate["title"]
+    discovered = candidate.get("asin") or candidate.get("discovered_from")
+    title = clean_title(row.get("title")) if discovered or not candidate.get("title") else candidate["title"]
     return {
         "store": row.get("store") or candidate.get("store"),
         "title": title, "url": candidate.get("url") or row["url"],
@@ -85,6 +91,9 @@ def select(results, candidates, deals, run_url, today, limit, log=print):
         if row.get("verdict") != "verified":
             continue
         candidate = by_url.get(row["url"], {})
+        if (row.get("store") or candidate.get("store")) == "Amazon":
+            log(f"SKIP {row['url']}: {AMAZON_RULE}")
+            continue
         try:
             entry = check(record(row, candidate, run_url), today, urls)
         except (Rejected, ValueError) as exc:

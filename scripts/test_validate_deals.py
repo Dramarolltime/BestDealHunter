@@ -296,6 +296,7 @@ class ListingPolicyRequirementTests(unittest.TestCase):
 
     def deal(self, **changes):
         d = sample()
+        d["verified_date"] = "2026-10-12"  # fixed, relative to TODAY: sample() uses the real date
         d.update(changes)
         return d
 
@@ -362,3 +363,10 @@ class StaleImageTests(unittest.TestCase):
         self.assertIn(rule, self.html)
         # declared after the archived and hover rules, so it wins for both
         self.assertGreater(self.html.index(rule), self.html.index(".card.archived .deal-image{"))
+
+
+class AssociatesDisclosureTests(unittest.TestCase):
+    def test_site_carries_the_operating_agreement_statement(self):
+        # Operating Agreement: "You must clearly and prominently state the following ... on your Site"
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("As an Amazon Associate I earn from qualifying purchases.", html)

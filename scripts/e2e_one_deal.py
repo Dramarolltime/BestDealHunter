@@ -154,7 +154,7 @@ def step_buffer(deal, deals, mapping, posts, today):
     hosted = {m["image"]: m["cloudinary_url"] for m in mapping}
     if post["image_url"] != hosted[feed_card(deal)]:
         raise StepFailed("post would not use the 4:5 Cloudinary card")
-    for must in ("#ad", "may earn a commission", "Prices and availability may change", card_facts(deal)["price"]):
+    for must in ("#ad", "Price as of", "subject to change", card_facts(deal)["price"]):
         if must not in post["text"]:
             raise StepFailed(f"caption missing {must!r}")
     # Duplicate protection, using the real publish() against a fake Buffer and a COPY of the ledger.
