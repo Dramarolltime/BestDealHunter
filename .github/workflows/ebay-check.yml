@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -q 'Pillow>=10,<13'
-      - name: Settings present? (names only)
+      - name: Settings present? (names and shapes only, never values)
         env:
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
           EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
@@ -24,6 +24,15 @@ jobs:
         run: |
           for n in EBAY_CLIENT_ID EBAY_CLIENT_SECRET; do if [ -n "${!n}" ]; then echo "$n is set"; else echo "$n is NOT set"; fi; done
           echo "INSTAGRAM_PUBLISH_ENABLED is '${SWITCH}'"
+          python - <<'PY'
+          import os, re
+          cid, sec = os.environ["EBAY_CLIENT_ID"], os.environ["EBAY_CLIENT_SECRET"]
+          print("App ID: length", len(cid), "| has spaces/newlines:", cid != cid.strip(),
+                "| Sandbox (-SBX-):", "-SBX-" in cid, "| Production (-PRD-):", "-PRD-" in cid)
+          print("Cert ID: length", len(sec), "| has spaces/newlines:", sec != sec.strip(),
+                "| Sandbox (SBX-):", sec.strip().startswith("SBX-"), "| Production (PRD-):", sec.strip().startswith("PRD-"))
+          print("Looks swapped (secret in the ID box):", cid.strip().startswith(("PRD-", "SBX-")))
+          PY
       - name: eBay deals (read-only)
         env:
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
