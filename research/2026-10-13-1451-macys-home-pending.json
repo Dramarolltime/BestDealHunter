@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-13",
+  "status": "pending_not_publishable",
+  "store": "Macy's",
+  "product": "Arch Studio five-piece silicone kitchen tool set, Mint",
+  "product_id": "24917125",
+  "url": "https://www.macys.com/shop/product/arch-studio-5-piece-silicone-utensil-set-macys-exclusive?id=24917125",
+  "observed_price": 18.93,
+  "retailer_reference_price": 62,
+  "promo_code": null,
+  "promo_note": "No coupon needed; coupons excluded; final sale.",
+  "checkout_verified": false,
+  "expiration_verified": false,
+  "availability_verified_at_checkout": false,
+  "reference_price_independently_verified": false,
+  "image_url_verified": false,
+  "website_published": false,
+  "instagram_published": false
+}

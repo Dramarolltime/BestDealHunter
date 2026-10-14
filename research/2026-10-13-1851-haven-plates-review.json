@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-13",
+  "store": "Macy's",
+  "product": "Haven Assorted Easter Egg-Shaped Appetizer Plates Set of 4",
+  "product_id": "25077537",
+  "url": "https://www.macys.com/shop/product/haven-stoneware-egg-appetizer-plate-set-of-4?ID=25077537",
+  "listed_price": 14.93,
+  "reference_price": 50,
+  "promo_code": null,
+  "promo_note": "Coupon excluded, Last Act final sale; no code required.",
+  "status": "needs_verification",
+  "publication_eligible": false,
+  "blockers": [
+    "Checkout total unverified",
+    "Direct product page has older price",
+    "Shipping and stock unverified",
+    "Sale end date unknown",
+    "Reference price not independently validated",
+    "Branded image URL not verified"
+  ]
+}
