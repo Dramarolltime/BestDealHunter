@@ -1,0 +1,65 @@
+{
+  "checked_at_local": "2026-10-13T21:49:00-07:00",
+  "publication_eligible": false,
+  "source_policy": "Research only. Product pages are indexed snapshots, not verified current cart/checkout; never post without current checkout, inventory, expiration and hosted branded image.",
+  "candidates": [
+    {
+      "store": "Best Buy",
+      "title": "NutriBullet Flip Insulated Portable Blender — Black",
+      "model": "NBPB50350AK",
+      "sku": "6589437",
+      "url": "https://www.bestbuy.com/product/nutribullet-flip-insulated-portable-blender-black/6589437",
+      "observed_listed_price": 49.99,
+      "retailer_comparable_value": 99.99,
+      "advertised_discount_percent": 50,
+      "promo_code": null,
+      "promo_note": "No promo code advertised; clearance price tied to exact Black SKU 6589437. Third-party listing of same model at SKU 12557248 is not the same seller offer.",
+      "evidence": "Best Buy product-page search capture dated about one month ago shows $49.99, comparable value $99.99, sold by Best Buy, Add to cart. Separate Best Buy reviews capture six days ago shows $59.99 for SKU 6589437, creating a material pricing conflict. Earlier Best Buy page showed $99.99 former price.",
+      "blockers": [
+        "Current live price conflicts with other recent indexed pages and is not verified",
+        "Cart/checkout total, tax, delivery or pickup not verified",
+        "Current exact SKU inventory and location-specific fulfillment not verified",
+        "Clearance expiration unknown",
+        "Public branded product-specific image not available or tested"
+      ],
+      "status": "needs_fresh_checkout_verification"
+    },
+    {
+      "store": "Best Buy",
+      "title": "Insignia 497 Sq. Ft. HEPA Air Purifier — White",
+      "model": "NS-APLWH2",
+      "sku": "6444067",
+      "url": "https://www.bestbuy.com/product/insignia-497-sq-ft-hepa-air-purifier-with-energy-star-certification-white/J2FPJKYQG5",
+      "observed_listed_price": 100.99,
+      "retailer_comparable_value": 249.99,
+      "advertised_discount_percent": 60,
+      "promo_code": null,
+      "promo_note": "No code advertised. Replacement filter NS-APLWH2 listed at $69.99; ongoing filter cost should be disclosed if posted.",
+      "evidence": "Best Buy indexed official product page, captured about one month ago, displays $100.99 clearance, $249.99 comparable value, sold by Best Buy, Add to cart. Reference is a comparable value, not verified historical selling price.",
+      "blockers": [
+        "Current checkout total, tax and shipping not verified",
+        "Inventory and delivery location not verified; cached dates are September",
+        "Legitimate historical $249.99 reference price not verified",
+        "Clearance end date unknown",
+        "No verified publicly accessible branded graphic"
+      ],
+      "status": "needs_fresh_checkout_verification"
+    }
+  ],
+  "duplicate_check": {
+    "main_deals_json": "Neither product appeared in five current feed listings.",
+    "review_queue": "Neither product appeared in 13 queue items.",
+    "research_files_scanned": 15,
+    "matches_found": 0,
+    "buffer_history": "No posts found for either candidate; a separate Delsey item was already posted twice on October 9."
+  },
+  "expired_queue_alert": {
+    "title": "It Takes Two — PS4/PS5",
+    "expired_date": "2026-10-12",
+    "current_queue_status": "needs_checkout_verification",
+    "desired_status": "expired",
+    "update_attempt": "GitHub update_file rejected by safety checks; no main queue change."
+  },
+  "public_website_updated": false,
+  "instagram_posted": false
+}
