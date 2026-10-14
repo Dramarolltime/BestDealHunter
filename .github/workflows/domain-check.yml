@@ -18,6 +18,7 @@ jobs:
             for t in NS A AAAA; do echo "-- $t bestdealhunters.com"; dig +short @$r bestdealhunters.com $t; done
             echo "-- CNAME www.bestdealhunters.com"; dig +short @$r www.bestdealhunters.com CNAME
             echo "-- MX bestdealhunters.com"; dig +short @$r bestdealhunters.com MX
+            echo "-- TXT bestdealhunters.com"; dig +short @$r bestdealhunters.com TXT
           done
       - name: HTTP check
         run: |
