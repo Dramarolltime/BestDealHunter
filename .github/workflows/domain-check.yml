@@ -1,0 +1,29 @@
+name: Domain check (read-only)
+# Looks up bestdealhunters.com in public DNS and reports whether the Cloudflare token secret exists (name only).
+on:
+  push:
+    branches: [claude/domain-check]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Public DNS (Google and Cloudflare resolvers)
+        run: |
+          for r in 8.8.8.8 1.1.1.1; do
+            echo "== resolver $r"
+            for t in NS A AAAA; do echo "-- $t bestdealhunters.com"; dig +short @$r bestdealhunters.com $t; done
+            echo "-- CNAME www.bestdealhunters.com"; dig +short @$r www.bestdealhunters.com CNAME
+            echo "-- MX bestdealhunters.com"; dig +short @$r bestdealhunters.com MX
+          done
+      - name: HTTP check
+        run: |
+          curl -sS -o /dev/null -w "http://bestdealhunters.com -> %{http_code} %{redirect_url}\n" http://bestdealhunters.com/ || true
+          curl -sS -o /dev/null -w "https://bestdealhunters.com -> %{http_code}\n" https://bestdealhunters.com/ || true
+      - name: Is the Cloudflare token secret present? (never printed)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: if [ -n "$CLOUDFLARE_API_TOKEN" ]; then echo "CLOUDFLARE_API_TOKEN: set"; else echo "CLOUDFLARE_API_TOKEN: not set"; fi
