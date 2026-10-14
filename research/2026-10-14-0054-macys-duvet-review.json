@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-10-14T07:54:31Z",
+  "status": "research_only_not_for_publication",
+  "candidates": [
+    {
+      "store": "Macy's",
+      "title": "Hotel Collection Italian Percale 3-Pc. Duvet Cover Set — White, King",
+      "product_id": "28385072",
+      "url": "https://www.macys.com/shop/product/closeout-hotel-collection-italian-percale-3-pc.-duvet-cover-set-king?ID=28385072",
+      "listed_price": 164.93,
+      "retailer_reference_price": 550,
+      "advertised_discount_percent": 70,
+      "reference_price_note": "Retailer displayed $550 comparison value; independent historical selling price not verified.",
+      "promo_code": null,
+      "promo_note": "No promo code applies: retailer says Coupon excluded. Last Act final sale; no returns, exchanges or price adjustments. California/Minnesota free-shipping terms require retailer confirmation.",
+      "availability_evidence": "Official Macy's product page displayed Add To Bag and Buy Now for White, King on 2026-10-14.",
+      "expiration_date": null,
+      "checkout_verified": false,
+      "publication_eligible": false,
+      "blockers": [
+        "Final checkout total including taxes, shipping and destination-specific availability not verified.",
+        "Retailer comparison price not independently validated as a historical selling price.",
+        "Expiration date not published.",
+        "No product-specific branded graphic with publicly verified GitHub image URL."
+      ],
+      "source": "https://www.macys.com/shop/product/closeout-hotel-collection-italian-percale-3-pc.-duvet-cover-set-king?ID=28385072"
+    }
+  ],
+  "rejected_rechecks": [
+    {
+      "product_id": "18890564",
+      "reason": "Retailer product page says unavailable despite catalog advertising $11.96."
+    },
+    {
+      "product_id": "18890565",
+      "reason": "Retailer product page says unavailable despite catalog advertising $17.96."
+    }
+  ],
+  "existing_expired_queue_offer": {
+    "product_id": "6444455",
+    "expired_on": "2026-10-12",
+    "current_observed_price": 39.99,
+    "correction_status": "update_file blocked by safety checks"
+  }
+}
