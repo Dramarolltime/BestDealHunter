@@ -1,0 +1,70 @@
+{
+  "checked_at": "2026-10-13T19:50:00-07:00",
+  "status": "research_only",
+  "publication_eligible": false,
+  "duplicate_check": "Checked 5 public deals, 13 review-queue entries, 14 GitHub research files, and Buffer's recent posts; no matching product identifiers found.",
+  "candidates": [
+    {
+      "store": "Target",
+      "title": "Cat & Jack Boys' Jersey Tank Top — Blue, size L",
+      "url": "https://www.target.com/p/-/A-94980296",
+      "target_tcin": "94980296",
+      "listed_price": 9,
+      "reference_price": 18,
+      "reference_price_type": "Target displayed regular price; independently established historical sale price unavailable",
+      "advertised_discount_percent": 50,
+      "selected_variant": "Blue, boys L",
+      "retailer_page_observation": "Target official product page search capture crawled Oct 12; In Stock and Add to cart shown",
+      "promo_code": null,
+      "promo_note": "No code needed for displayed clearance price. Other colors/sizes may differ.",
+      "expiration_date": null,
+      "blockers": [
+        "Price capture is not a live checkout session; current cart and final total unverified",
+        "Location-specific availability and shipping/taxes unverified",
+        "Clearance expiration unknown",
+        "Independent historical reference price not established",
+        "No verified product-specific branded image hosted on GitHub"
+      ]
+    },
+    {
+      "store": "Target",
+      "title": "Universal Thread Cotton Triangle Scarf — Orange Paisley",
+      "url": "https://www.target.com/p/-/A-95049022",
+      "target_tcin": "95049022",
+      "listed_price": 7.5,
+      "reference_price": 15,
+      "reference_price_type": "Target displayed regular price; historical reference not independently confirmed",
+      "advertised_discount_percent": 50,
+      "selected_variant": "Orange paisley, one size",
+      "retailer_page_observation": "Target official product page search capture crawled Oct 8; In Stock and Add to cart shown",
+      "promo_code": null,
+      "promo_note": "No promo code required for displayed clearance price. Orange variant only verified in cached page.",
+      "expiration_date": null,
+      "blockers": [
+        "Price capture five days old; live checkout total not verified",
+        "Location-specific availability and shipping/taxes unverified",
+        "Promotion expiration unknown",
+        "Independent historical reference price not established",
+        "No verified product-specific branded image hosted on GitHub"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "store": "Target",
+      "title": "House of Party Balloon Creation Kit Palm Tree",
+      "url": "https://www.target.com/p/-/A-94918819",
+      "reason": "Although $4.50 vs $14.99 was shown, 2.69/5 rating with numerous poor-quality reviews; editorial exclusion."
+    },
+    {
+      "store": "Target",
+      "title": "Little Planet by Carter's Baby Organic Chambray Shortall",
+      "url": "https://www.target.com/p/-/A-94905288",
+      "reason": "Search showed 3M clearance at $12.50 but opened page defaulted to Newborn $25; exact variant checkout price not confirmed."
+    }
+  ],
+  "stale_queue_warning": "It Takes Two PlayStation offer expiration_date 2026-10-12; update_file attempt to set status expired was blocked by safety checks. Do not publish.",
+  "website_publications": 0,
+  "instagram_publications": 0,
+  "graphic_publications": 0
+}
