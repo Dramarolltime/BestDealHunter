@@ -1,0 +1,52 @@
+{
+  "checked_at_local": "2026-10-13T17:56:00-07:00",
+  "publication_eligible": false,
+  "status": "needs_checkout_verification",
+  "candidate": {
+    "store": "LG Electronics USA",
+    "brand": "LG",
+    "title": "LG 27-inch FHD IPS 120Hz HDR10 Monitor with Slim Stand",
+    "model": "27U41YA-B",
+    "product_url": "https://www.lg.com/us/monitors/lg-27u41ya-b-fhd-monitor",
+    "secondary_retailer_url": "https://www.bestbuy.com/product/lg-27-ips-fhd-120hz-monitor-with-hdr10-hdmi-black/JJ8VPZKPZ6",
+    "manufacturer_advertised_price_usd": 109.99,
+    "manufacturer_strikethrough_reference_usd": 249.99,
+    "manufacturer_advertised_savings_usd": 140,
+    "advertised_discount_percent": 56,
+    "reference_price_type": "LG's own struck-through comparison price; historical transactions not independently established",
+    "promo_code": null,
+    "promo_note": "No code required for the displayed $109.99 manufacturer catalog price. Optional extra 5% for buying 2 or more eligible monitors is not counted or checkout-verified.",
+    "stock_evidence": "LG product page has Add to Cart and store pickup text; exact destination inventory not confirmed",
+    "expiration_date": null,
+    "price_evidence": [
+      "https://www.lg.com/us/monitors)/view-all lists 27U41YA-B at $109.99 versus $249.99, fetched Oct 13, 2026",
+      "https://www.bestbuy.com/product/lg-27-ips-fhd-120hz-monitor-with-hdr10-hdmi-black/JJ8VPZKPZ6 shows matching model but dynamic/historical pricing varies"
+    ],
+    "blockers": [
+      "No completed checkout confirmation of $109.99, shipping, tax or location-specific stock",
+      "No verified promotion expiration or historical reference-price legitimacy",
+      "No product-specific branded graphic hosted at a verified public GitHub image URL"
+    ]
+  },
+  "excluded_rechecks": [
+    {
+      "title": "Lenovo IdeaPad Slim 3 Chromebook model 83SX0000US",
+      "reason": "Best Buy product page explicitly states deal ended Oct 12, 2026; stale search results still show $189.00."
+    },
+    {
+      "title": "Target All in Motion Burgundy XXL hooded top",
+      "reason": "Current direct product page says item not available."
+    },
+    {
+      "title": "It Takes Two PlayStation",
+      "reason": "October 12 expiration still incorrectly needs_verification in review queue; attempted status correction blocked by tool safety checks."
+    }
+  ],
+  "publishing": {
+    "website_deals_json_updated": false,
+    "instagram_post_created": false,
+    "buffer_channel_checked": "best_dealhunter",
+    "buffer_post_created": false
+  },
+  "note": "Research-only file. Never treat as public deal listing. Do not publish before blockers resolved."
+}
