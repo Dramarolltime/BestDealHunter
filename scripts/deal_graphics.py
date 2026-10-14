@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Deterministic BestDealHunter branded deal cards (free: Pillow + the bundled Inter fonts, SIL OFL).
 
-Design: Alpha's Creative & Growth Playbook v1.0 (issue #1): deep navy, a lime discount badge as the
-strongest element, cyan sale price, struck-through reference price, "SEE DEAL" button, and a footer
-with the website, the price-check time and "Prices may change".
+Design: the bold style of Alpha's deal images, chosen by the owner (2026-10-14): navy spotlight
+background, BestDealHunter wordmark, the store name on a yellow corner tag, a red brush "% OFF" with a
+yellow "SAVE" strip, big yellow price, struck-through reference price, "SEE DEAL" button, and a footer
+with the website, the price-check time and "Prices may change". Check rows show only what the deal
+record says (seller, stock, price-check time); no product features are invented.
 
 Policy (issue #1, agreed with Alpha):
 * Every number on a card (price, reference price, % off, price-check time) is computed from the
@@ -21,13 +23,14 @@ Usage:
 import argparse
 import hashlib
 import json
+import random
 import re
 import sys
 from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 from links import disclosure, is_affiliate_link
 
@@ -41,9 +44,9 @@ SIZES = {"feed": (1080, 1350), "square": (1080, 1080)}
 SITE = "bestdealhunters.com"
 PACIFIC = ZoneInfo("America/Los_Angeles")
 
-# Playbook v1.0 palette.
-BACKGROUND, SURFACE, WHITE, GRAY = "#0B1220", "#17243A", "#FFFFFF", "#A8B4C7"
-LIME, CYAN, SLATE = "#C7F36B", "#36D6E7", "#304158"
+# Alpha's bold deal-image palette.
+BACKGROUND, GLOW, GLOW_2, WHITE, GRAY, MUTED = "#07101F", "#1450C8", "#0E2A66", "#FFFFFF", "#B6C2D6", "#8A94A6"
+YELLOW, RED, RED_DARK, PANEL, PANEL_EDGE = "#FACC15", "#E11D2E", "#7F0A14", "#050B16", "#3A4A66"
 REFERENCE_LABELS = {"Best Buy": "Comparable value", "Amazon": "List price", "Macy's": "Original price"}
 _fonts = {}
 
@@ -173,108 +176,174 @@ def ink_height(face):
     return box[3] - box[1]
 
 
+def background(size):
+    """Deep navy with a blue spotlight, as in Alpha's deal images."""
+    w, h = size
+    base = Image.new("RGB", size, BACKGROUND)
+    for box, colour, strength, blur in (((w * 0.25, h * 0.12, w * 1.25, h * 0.75), GLOW, 150, 160),
+                                        ((-w * 0.4, h * 0.55, w * 0.5, h * 1.2), GLOW_2, 90, 140)):
+        mask = Image.new("L", size, 0)
+        ImageDraw.Draw(mask).ellipse(box, fill=strength)
+        base = Image.composite(Image.new("RGB", size, colour), base, mask.filter(ImageFilter.GaussianBlur(blur)))
+    return base.convert("RGBA")
+
+
+def cart_icon(draw, x, y, s, colour):
+    draw.line((x, y, x + s * 0.18, y), fill=colour, width=int(s * 0.08))
+    draw.polygon([(x + s * 0.16, y + s * 0.12), (x + s, y + s * 0.12), (x + s * 0.88, y + s * 0.58),
+                  (x + s * 0.28, y + s * 0.58)], outline=colour, width=int(s * 0.08))
+    for cx in (x + s * 0.36, x + s * 0.8):
+        draw.ellipse((cx - s * 0.09, y + s * 0.72, cx + s * 0.09, y + s * 0.9), fill=colour)
+
+
+def brush(size, colour, seed):
+    """A red paint-brush stroke with ragged edges; deterministic for a given seed."""
+    w, h = size
+    rnd = random.Random(seed)
+    img = Image.new("RGBA", size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    top = [(w * 0.04 + w * 0.92 * i / 40, h * 0.12 + rnd.uniform(-h * 0.08, h * 0.06)) for i in range(41)]
+    bottom = [(w * 0.96 - w * 0.92 * i / 40, h * 0.88 + rnd.uniform(-h * 0.06, h * 0.08)) for i in range(41)]
+    draw.polygon(top + [(w * 0.98, h * 0.5)] + bottom + [(0, h * 0.5)], fill=colour)
+    for _ in range(14):  # dry-brush streaks at both ends
+        y, length = rnd.uniform(h * 0.15, h * 0.85), rnd.uniform(w * 0.03, w * 0.1)
+        x = w * 0.02 if rnd.random() < 0.5 else w * 0.95 - length
+        draw.rectangle((x, y, x + length, y + rnd.uniform(3, 9)), fill=colour)
+    return img
+
+
+def slanted(text, face, fill, stroke=0, stroke_fill=None, shear=0.18):
+    """Text sheared to look italic (the bundled Inter has no italic)."""
+    box = ImageDraw.Draw(Image.new("RGBA", (1, 1))).textbbox((0, 0), text, font=face, stroke_width=stroke)
+    w, h = box[2] - box[0] + 20, box[3] - box[1] + 20
+    img = Image.new("RGBA", (w + int(h * shear), h), (0, 0, 0, 0))
+    ImageDraw.Draw(img).text((10 - box[0] + int(h * shear), 10 - box[1]), text, font=face, fill=fill,
+                             stroke_width=stroke, stroke_fill=stroke_fill)
+    return img.transform(img.size, Image.AFFINE, (1, shear, 0, 0, 1, 0), Image.BICUBIC)
+
+
+def fact_rows(deal, facts):
+    """Check rows built only from what the deal record says."""
+    rows = []
+    seller = str(deal.get("seller") or "").strip()
+    if seller and seller.lower() != "unverified":
+        rows.append((f"Sold by {seller}", "Checked on the store's own page"))
+    if "stock" in str(deal.get("availability") or "").lower():
+        rows.append(("In stock online", "At the time of the price check"))
+    if facts["as_of"]:
+        rows.append(("Price checked", facts["as_of"]))
+    return rows
+
+
 def render_card(deal, kind="feed"):
-    """Playbook v1.0 layout. The square version keeps the same hierarchy at a smaller scale."""
+    """Alpha's bold deal-image style, drawn from the deal record only (owner's choice, 2026-10-14)."""
     facts = card_facts(deal)
     photo_path = authorized_photo(deal)
     w, h = SIZES[kind]
-    k = 1.0 if kind == "feed" else 0.8  # proportional scale for the square card
-    canvas = Image.new("RGB", (w, h), BACKGROUND)
+    k = 1.0 if kind == "feed" else 0.84
+    canvas = background((w, h))
     draw = ImageDraw.Draw(canvas)
-    margin = 60
+    margin = 48
 
-    # Header: wordmark left, retailer name (plain text, no logo) right.
-    top = 56 * k + 4
-    draw.text((margin, top), "BESTDEALHUNTER", font=font(42 * k, 700), fill=WHITE)
-    store_face = fit(draw, facts["store"].upper(), 700, int(32 * k), w / 2 - margin)
-    draw.text((w - margin, top + 42 * k), facts["store"].upper(), font=store_face, fill=GRAY, anchor="rs")
-    rule = top + 42 * k + 30 * k
-    draw.line((margin, rule, w - margin, rule), fill=SLATE, width=2)
+    # Header: cart icon, wordmark, tagline; the store name as plain text on a yellow corner tag (no logo).
+    cart_icon(draw, margin, 40, 80 * k, YELLOW)
+    x = margin + 100 * k
+    mark_face = font(66 * k, 800)
+    for word, colour in (("Best", WHITE), ("Deal", YELLOW), ("Hunter", WHITE)):
+        draw.text((x, 34), word, font=mark_face, fill=colour)
+        x += text_width(draw, word, mark_face)
+    draw.line((margin + 100 * k, 34 + 82 * k, x, 34 + 82 * k), fill=YELLOW, width=4)
+    draw.text((margin + 100 * k, 34 + 96 * k), "VERIFIED 50%+ DEALS  •  PRICE CHECKED", font=font(22 * k, 700),
+              fill=GRAY)
+    store = facts["store"].upper()
+    store_face = fit(draw, store, 800, int(46 * k), w - x - 140)
+    tag_w = text_width(draw, store, store_face)
+    draw.polygon([(w - tag_w - 110, 0), (w, 0), (w, 150 * k), (w - tag_w - 60, 150 * k)], fill=YELLOW)
+    draw.text((w - 36, 75 * k), store, font=store_face, fill=BACKGROUND, anchor="rm")
 
-    # Footer (bottom up): disclosure for affiliate links only, then price time, then the website.
-    foot_face, site_face = font(24 * k + 2, 400), font(30 * k, 500)
-    y = h - 44 * k
+    # Bottom up: footer, price panel + button, then the brush badge; the title and rows fill the top.
+    foot = f"{SITE}  ·  Price as of {facts['as_of']}  ·  Prices may change" if facts["as_of"] else \
+        f"{SITE}  ·  Prices may change"
+    y = h - 40 * k
     if is_affiliate_link(deal.get("url")):
-        draw.text((w / 2, y), disclosure(deal)[0], font=foot_face, fill=GRAY, anchor="ms")
-        y -= 38 * k
-    as_of = f"Price as of {facts['as_of']} · Prices may change" if facts["as_of"] else "Prices may change"
-    draw.text((w / 2, y), as_of, font=fit(draw, as_of, 400, foot_face.size, w - 2 * margin), fill=GRAY, anchor="ms")
-    y -= 44 * k
-    draw.text((w / 2, y), SITE, font=site_face, fill=WHITE, anchor="ms")
-    panel_bottom = y - site_face.size - 28 * k
+        draw.text((w / 2, y), disclosure(deal)[0], font=font(24 * k, 500), fill=GRAY, anchor="ms")
+        y -= 36 * k
+    draw.text((w / 2, y), foot, font=fit(draw, foot, 500, int(25 * k), w - 2 * margin), fill=GRAY, anchor="ms")
 
-    # Card surface.
-    panel = (margin, rule + 34 * k, w - margin, panel_bottom)
-    draw.rounded_rectangle(panel, radius=int(40 * k), fill=SURFACE, outline=SLATE, width=2)
-    inner_l, inner_r = panel[0] + 48 * k, panel[2] - 48 * k
-    inner_w = inner_r - inner_l
-    y = panel[1] + 48 * k
+    panel = (margin, y - 260 * k, w * 0.66, y - 70 * k)
+    draw.rounded_rectangle(panel, radius=26, fill=PANEL, outline=PANEL_EDGE, width=3)
+    mid = margin + (panel[2] - margin) * 0.42
+    draw.line((mid, panel[1] + 30 * k, mid, panel[3] - 30 * k), fill=PANEL_EDGE, width=3)
+    ref_face = fit(draw, facts["reference"], 800, int(54 * k), mid - margin - 50)
+    draw.text((margin + 30, panel[1] + 95 * k), facts["reference"], font=ref_face, fill=MUTED, anchor="ls")
+    ref_w = text_width(draw, facts["reference"], ref_face)
+    draw.line((margin + 26, panel[1] + 80 * k, margin + 34 + ref_w, panel[1] + 62 * k), fill=RED, width=6)
+    draw.text((margin + 30, panel[1] + 145 * k), facts["reference_label"],
+              font=fit(draw, facts["reference_label"], 700, int(28 * k), mid - margin - 50), fill=GRAY, anchor="ls")
+    dollars, _, cents = facts["price"].partition(".")
+    cents_face = font(56 * k, 800)
+    room = panel[2] - mid - 40 - (text_width(draw, "." + cents, cents_face) if cents else 0)
+    price_face = fit(draw, dollars, 800, int(130 * k), room)
+    total = text_width(draw, dollars, price_face) + (text_width(draw, "." + cents, cents_face) if cents else 0)
+    px = (mid + panel[2]) / 2 - total / 2
+    base = panel[1] + 120 * k
+    draw.text((px, base), dollars, font=price_face, fill=YELLOW, anchor="ls")
+    if cents:
+        draw.text((px + text_width(draw, dollars, price_face) + 2, base - ink_height(price_face) * 0.42), "." + cents,
+                  font=cents_face, fill=YELLOW, anchor="ls")
+    draw.text(((mid + panel[2]) / 2, panel[1] + 176 * k), "Sale Price", font=font(28 * k, 700), fill=WHITE,
+              anchor="ms")
+    button = (w * 0.66 + 24, panel[1] + 20 * k, w - margin, panel[3] - 20 * k)
+    draw.rounded_rectangle(button, radius=24, fill=YELLOW)
+    centre = ((button[0] + button[2]) / 2, (button[1] + button[3]) / 2)
+    draw.text((centre[0], centre[1] - 22 * k), "SEE DEAL", font=font(40 * k, 800), fill=BACKGROUND, anchor="mm")
+    draw.text((centre[0], centre[1] + 24 * k), "LINK IN BIO ›", font=font(28 * k, 800), fill=BACKGROUND, anchor="mm")
 
-    # Discount badge: the strongest element.
-    badge_text = f"{facts['percent']}% OFF"
-    badge_face = fit(draw, badge_text, 800, int(100 * k), inner_w - 2 * 44 * k)
-    pad_x, pad_y = 44 * k, 26 * k
-    cap = ink_height(badge_face)
-    badge = (inner_l, y, inner_l + text_width(draw, badge_text, badge_face) + 2 * pad_x, y + cap + 2 * pad_y)
-    draw.rounded_rectangle(badge, radius=int((badge[3] - badge[1]) / 2), fill=LIME)
-    draw.text((badge[0] + pad_x, badge[3] - pad_y), badge_text, font=badge_face, fill=BACKGROUND, anchor="ls")
-    y = badge[3] + 44 * k
+    badge_top = panel[1] - 340 * k
+    stroke = brush((int(700 * k), int(220 * k)), RED, facts["percent"]).rotate(4, expand=True,
+                                                                               resample=Image.BICUBIC)
+    canvas.alpha_composite(stroke, (int(margin - 20), int(badge_top)))
+    pct = slanted(f"{facts['percent']}% OFF", font(128 * k, 800), WHITE, stroke=3, stroke_fill=RED_DARK)
+    pct = pct.rotate(4, expand=True, resample=Image.BICUBIC)
+    canvas.alpha_composite(pct, (int(margin - 20 + (stroke.width - pct.width) / 2),
+                                 int(badge_top + (stroke.height - pct.height) / 2 - 6 * k)))
+    strip = Image.new("RGBA", (int(380 * k), int(78 * k)), YELLOW)
+    save_text = f"SAVE {facts['savings']}"
+    ImageDraw.Draw(strip).text((strip.width / 2, strip.height / 2), save_text,
+                               font=fit(draw, save_text, 800, int(46 * k), strip.width - 30), fill=BACKGROUND,
+                               anchor="mm")
+    strip = strip.rotate(4, expand=True, resample=Image.BICUBIC)
+    canvas.alpha_composite(strip, (int(margin + 300 * k), int(badge_top + stroke.height - 40 * k)))
+    draw = ImageDraw.Draw(canvas)
 
-    # Button sits at the bottom of the panel; everything else fills the space above it.
-    button_face = font(40 * k, 800)
-    button_h = 104 * k
-    button = (inner_l, panel[3] - 48 * k - button_h, inner_r, panel[3] - 48 * k)
-
-    # Middle block, centred between the badge and the button: category, product name (up to 3 lines;
-    # 2 on the square card or with a photo), cyan sale price, struck-through reference price with its
-    # honest label, and the savings.
-    cat_face, title_face = font(28 * k, 700), font((60 if kind == "feed" else 52) * k, 700)
-    price_face = fit(draw, facts["price"], 800, int(112 * k), inner_w)
-    label = f"{facts['reference_label']} "
-    label_face, ref_face, save_face = font(34 * k, 500), font(42 * k, 500), font(36 * k, 700)
-    lines = wrap(draw, facts["title"], title_face, inner_w, 3 if kind == "feed" and not photo_path else 2)
-    line_h = title_face.size * 1.18
-    gaps = {"cat": 22 * k, "title": 40 * k, "price": 34 * k, "ref": 30 * k}
-    block = (ink_height(cat_face) + gaps["cat"] if facts["category"] else 0) + len(lines) * line_h + gaps["title"] \
-        + ink_height(price_face) + gaps["price"] + ink_height(ref_face) + gaps["ref"] + ink_height(save_face)
-    room = button[1] - 44 * k - y
-    if photo_path:  # an authorized photo takes the space the text block leaves free
-        photo_h = min(300 * k, room - block - 36 * k)
-        if photo_h < 140 * k:
-            raise CardError("card content does not fit")
-        photo_box = (inner_l, y, inner_r, y + photo_h)
-        draw.rounded_rectangle(photo_box, radius=int(28 * k), fill=WHITE)
+    # Title, check rows and (only with an authorized photo) the product picture, above the badge.
+    y = 200 * k
+    limit = badge_top - 20 * k
+    text_w = (w * 0.55 if photo_path else w) - 2 * margin
+    title_face = font(70 * k, 800)
+    lines = wrap(draw, facts["title"], title_face, text_w, 3 if kind == "feed" else 2)
+    for line in lines:
+        draw.text((margin, y), line, font=title_face, fill=WHITE)
+        y += title_face.size * 1.12
+    y += 26 * k
+    for main, detail in fact_rows(deal, facts):
+        if y + 70 * k > limit:
+            break
+        draw.rounded_rectangle((margin, y, margin + 64 * k, y + 64 * k), radius=14, outline=YELLOW, width=4)
+        draw.text((margin + 32 * k, y + 33 * k), "✓", font=font(40 * k, 800), fill=YELLOW, anchor="mm")
+        draw.text((margin + 90 * k, y + 2), main, font=fit(draw, main, 700, int(32 * k), text_w - 90 * k), fill=WHITE)
+        draw.text((margin + 90 * k, y + 38 * k), detail, font=font(24 * k, 500), fill=GRAY)
+        y += 90 * k
+    if y > limit + 20 * k:
+        raise CardError("card content does not fit")
+    if photo_path:
+        box = (w * 0.58, 200 * k, w - margin, limit)
+        draw.rounded_rectangle(box, radius=28, fill=WHITE)
         with Image.open(photo_path) as src:
             photo = ImageOps.exif_transpose(src).convert("RGB")
-        photo.thumbnail((int(inner_w - 40 * k), int(photo_h - 40 * k)), Image.Resampling.LANCZOS)
-        canvas.paste(photo, (int((w - photo.width) / 2), int((photo_box[1] + photo_box[3] - photo.height) / 2)))
-        y, room = photo_box[3] + 36 * k, room - photo_h - 36 * k
-    if block > room:
-        raise CardError("card content does not fit")  # never draw text over the button
-    y += (room - block) / 2
-    if facts["category"]:
-        y += ink_height(cat_face)
-        draw.text((inner_l, y), facts["category"], font=cat_face, fill=GRAY, anchor="ls")
-        y += gaps["cat"]
-    for line in lines:
-        draw.text((inner_l, y), line, font=title_face, fill=WHITE)
-        y += line_h
-    y += gaps["title"] + ink_height(price_face)
-    draw.text((inner_l, y), facts["price"], font=price_face, fill=CYAN, anchor="ls")
-    y += gaps["price"] + ink_height(ref_face)
-    draw.text((inner_l, y), label, font=label_face, fill=GRAY, anchor="ls")
-    x = inner_l + text_width(draw, label, label_face)
-    draw.text((x, y), facts["reference"], font=ref_face, fill=GRAY, anchor="ls")
-    strike_y = y - ink_height(ref_face) * 0.42
-    draw.line((x, strike_y, x + text_width(draw, facts["reference"], ref_face), strike_y), fill=GRAY,
-              width=max(3, int(4 * k)))
-    y += gaps["ref"] + ink_height(save_face)
-    draw.text((inner_l, y), f"You save {facts['savings']}", font=save_face, fill=LIME, anchor="ls")
-
-    draw.rounded_rectangle(button, radius=int(button_h / 2), fill=WHITE)
-    draw.text(((button[0] + button[2]) / 2, (button[1] + button[3]) / 2 + ink_height(button_face) / 2),
-              "SEE DEAL →", font=button_face, fill=BACKGROUND, anchor="ms")
-    return canvas
+        photo.thumbnail((int(box[2] - box[0] - 40), int(box[3] - box[1] - 40)), Image.Resampling.LANCZOS)
+        canvas.paste(photo, (int((box[0] + box[2] - photo.width) / 2), int((box[1] + box[3] - photo.height) / 2)))
+    return canvas.convert("RGB")
 
 
 def card_id(deal):

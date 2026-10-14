@@ -92,6 +92,8 @@ def check_cards(deals, today):
             expected = f"images/generated/deal-{card_id(deal)}-square.jpg"
             if image != expected:
                 warnings.append(f"{title}: site image is not its branded card ({image or 'none'})")
+            elif deal.get("card_source") == "submitted":
+                pass  # Alpha's image from the deal form; its numbers were confirmed by the submitter
             else:
                 fresh = Path(tmp) / "card.jpg"
                 save(render_card(deal, "square"), fresh)
