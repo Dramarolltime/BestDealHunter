@@ -1,0 +1,47 @@
+{
+  "checked_at": "2026-10-14T17:50:00Z",
+  "publication_eligible": false,
+  "findings": [
+    {
+      "retailer": "Macy's",
+      "retailer_identity": "macys.com official US site",
+      "title": "Haven Assorted Easter Egg-Shaped Appetizer Plates, Set of 4, Multicolor",
+      "retailer_collection_id": "25139901",
+      "url": "https://www.macys.com/shop/product/haven-floral-dinnerware-collection-exclusively-at-macys?ID=25139901",
+      "listed_price": 14.93,
+      "retailer_reference_price": 50,
+      "retailer_advertised_discount_percent": 70,
+      "reference_price_independently_verified": false,
+      "promo_code": null,
+      "promo_note": "No code required; coupon excluded. Last Act final sale; free shipping only with qualifying minimum purchase. Product-page Add To Bag visible in Oct 11 retailer capture, but no cart/checkout confirmation.",
+      "availability": "Add To Bag visible; not independently confirmed at checkout",
+      "expiration": "Not stated",
+      "checkout_total_verified": false,
+      "checkout_blockers": [
+        "Cannot access live cart/checkout to confirm final item price, tax and shipping",
+        "No verified historical reference price",
+        "No explicit expiry",
+        "No GitHub-hosted product graphic checked"
+      ],
+      "status": "research_only"
+    },
+    {
+      "retailer": "Best Buy",
+      "title": "Energizer 3-in-1 15W Charging Station Black",
+      "sku": "6631374",
+      "url": "https://www.bestbuy.com/product/energizer-3-in-1-15w-qi-certified-fast-15w-universal-charging-station-stand-w-rgb-light-for-phones-airpods-apple-watch-black/J36C4YXZVR/sku/6631374",
+      "previous_deal_listing_price": 14.99,
+      "current_product_page_price": 39.99,
+      "reference_price": 39.99,
+      "promo_code": null,
+      "promo_note": "No applicable code confirmed. Former 62%-off Techtober listing no longer matches direct product price.",
+      "status": "rejected_price_reverted"
+    }
+  ],
+  "duplicate_check": "No matching retailer product ID in repository search; Buffer Instagram posts inspected, no matching product in retrieved history",
+  "publication": {
+    "website": "not_published",
+    "instagram": "not_published",
+    "reason": "No checkout-verified eligible deal or verified branded public image"
+  }
+}
