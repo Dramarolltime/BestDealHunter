@@ -1,0 +1,35 @@
+name: eBay key check (one-off, read-only)
+# Reads eBay's Browse API with the new keys and shows which deals WOULD publish. Writes nothing to
+# main, posts nothing, and never prints key values.
+on:
+  push:
+    branches: [claude/ebay-check]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q 'Pillow>=10,<13'
+      - name: Settings present? (names only)
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+          SWITCH: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
+        run: |
+          for n in EBAY_CLIENT_ID EBAY_CLIENT_SECRET; do if [ -n "${!n}" ]; then echo "$n is set"; else echo "$n is NOT set"; fi; done
+          echo "INSTAGRAM_PUBLISH_ENABLED is '${SWITCH}'"
+      - name: eBay deals (read-only)
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+        run: python scripts/ebay_deals.py --out ebay-results.json
+      - name: What would publish (dry run, nothing written)
+        run: |
+          echo '[]' > empty.json
+          python scripts/auto_publish.py empty.json --also-results ebay-results.json --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
