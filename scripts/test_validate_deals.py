@@ -235,9 +235,19 @@ class ConsistencyTests(unittest.TestCase):
             self.assertIn(d.get("category"), RULES["categories"])
 
 
+def evidenced(**changes):
+    """A refresh-source entry carrying verification evidence (required by refresh_deals.valid)."""
+    return dict(sample(), evidence_method="retailer_api", **changes)
+
+
 class RefreshTests(unittest.TestCase):
+    def test_refresh_never_lists_or_reprices_without_verification_evidence(self):
+        old = sample()
+        merged, updates = merge([old], [sample(), dict(sample(), url="https://www.ebay.com/itm/other")])
+        self.assertEqual((merged, updates), ([old], 0))
+
     def test_refresh_accepts_macys(self):
-        d = sample()
+        d = evidenced()
         d["store"], d["url"] = "Macy's", "https://www.macys.com/shop/product/x?ID=1"
         merged, updates = merge([], [d])
         self.assertEqual((len(merged), updates), (1, 1))
@@ -254,8 +264,7 @@ class RefreshTests(unittest.TestCase):
         # The hourly validator and the maintenance monitor flag them instead.
         old = sample()
         old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
-        fresh = sample()
-        fresh["url"] = "https://www.ebay.com/itm/other"
+        fresh = evidenced(url="https://www.ebay.com/itm/other")
         merged, updates = merge([old], [fresh])
         self.assertEqual((len(merged), updates), (2, 1))
         self.assertEqual(merged[0]["verified_date"], old["verified_date"])
@@ -265,15 +274,14 @@ class RefreshTests(unittest.TestCase):
     def test_refresh_ignores_stale_update_for_existing_deal(self):
         old = sample()
         old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
-        stale_update = dict(old, price=40)
+        stale_update = dict(old, price=40, evidence_method="retailer_api")
         merged, updates = merge([old], [stale_update])
         self.assertEqual((merged, updates), ([old], 0))
 
     def test_refresh_updates_matching_url_and_keeps_image(self):
         old = sample()
         old["image"] = "images/generated/card.jpg"
-        new = sample()
-        new["price"] = 40
+        new = evidenced(price=40)
         merged, updates = merge([old], [new])
         self.assertEqual((merged[0]["price"], merged[0]["image"], updates), (40, "images/generated/card.jpg", 1))
 
@@ -335,6 +343,26 @@ class ListingPolicyRequirementTests(unittest.TestCase):
         self.assertIn('d.archived=d.status==="archived"||!!(d.expires_date&&new Date(d.expires_date+"T23:59:59")<new Date());', html)
         self.assertIn("d.unverified=!d.archived&&!(verified>=new Date(today.getTime()-maxVerificationAgeDays*864e5));", html)
         self.assertIn("Price not re-verified", html)
+
+
+class StaleImageTests(unittest.TestCase):
+    """Images printed with a price must never pass for a current offer (PR #24)."""
+
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+
+    def test_unverified_and_ended_deal_images_carry_a_banner(self):
+        self.assertIn("(d.unverified||d.archived?'<div class=\"stale-image\">", self.html)
+        self.assertIn("Old price shown \\u2014 not current", self.html)
+        self.assertIn("Offer ended \\u2014 old price", self.html)
+        self.assertIn("graphic with an old, unverified price", self.html)
+        self.assertIn("graphic with an expired price", self.html)
+
+    def test_old_price_in_the_image_is_unreadable_even_on_hover(self):
+        rule = (".card .stale-image .deal-image,.card .deal-link:hover .stale-image .deal-image"
+                "{filter:grayscale(1) blur(6px);opacity:.45}")
+        self.assertIn(rule, self.html)
+        # declared after the archived and hover rules, so it wins for both
+        self.assertGreater(self.html.index(rule), self.html.index(".card.archived .deal-image{"))
 
 
 class AssociatesDisclosureTests(unittest.TestCase):

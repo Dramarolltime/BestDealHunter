@@ -4,16 +4,15 @@ Main-section deals must be at least 50% off. Affiliate-section deals
 (`section: "affiliate"` or `affiliate_section: true`) may be 20-49% off, but
 still need an `affiliate_disclosure` and the same evidence and freshness.
 
-Archive policy (#1): published deals are never deleted. A deal is *archived* once its
-verification is older than `max_verification_age_days`, its `expires_date` has passed,
-or it has `status: "archived"`. The site keeps archived deals in "Past Deals" labelled
-"Expired · price not verified", with the price shown as the price at time of posting.
+Listing policy (#23): published deals are never deleted. A deal stays listed until its own
+`expires_date` passes or it gets `status: "archived"`; then the site shows it in "Past Deals".
+A price check older than `max_verification_age_days` does not archive the deal: the site labels
+its price "Price not re-verified" (see `price_verified`).
 
-* `validate(deals)` is strict: every deal must be active. Use it for anything new or
-  outgoing (approvals, refreshes, card generation, social posts).
-* `validate_feed(deals)` checks the published feed: active and archived deals need the
-  same structure and evidence, but archived deals may be stale. Verification dates are
-  never refreshed to make a deal look active.
+* `validate(deals)` is strict: every deal must be active AND freshly verified. Use it for anything
+  new or outgoing (approvals, refreshes, card generation, social posts).
+* `validate_feed(deals)` checks the published feed: active, unverified and archived deals need
+  the same structure and evidence. Verification dates are never refreshed to make a deal look current.
 """
 import json
 import re

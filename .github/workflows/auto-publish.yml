@@ -1,0 +1,116 @@
+name: Auto-publish page-verified deals
+# Owner + Alpha policy (2026-10-13): no checkout, no manual approval. A deal is published when the
+# retailer's own product page shows its price, >= 50% off the page's reference price, and stock.
+#   find candidates -> verify product pages -> deals.json -> branded cards -> Cloudinary -> Buffer
+# On main (schedule / manual run) everything is live; INSTAGRAM_PUBLISH_ENABLED stays the owner's
+# on/off switch for Instagram. On a pull request it is an end-to-end test: same steps, but
+# nothing is pushed and Buffer runs as a dry run.
+on:
+  schedule:
+    - cron: '37 */6 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/auto_publish.py'
+      - 'scripts/verify_listings.py'
+      - 'scripts/bestbuy_deals.py'
+      - 'scripts/ebay_deals.py'
+      - 'scripts/links.py'
+      - '.github/workflows/auto-publish.yml'
+permissions:
+  contents: write
+concurrency:
+  group: deal-feed-writer
+  cancel-in-progress: false
+env:
+  LIVE: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'playwright==1.56.0' 'Pillow>=10,<13'
+      - name: Tests (no network)
+        run: python -m unittest discover -s scripts -p 'test_*.py'
+      - name: Which free retailer APIs are configured? (names only, never values)
+        env:
+          BEST_BUY_API_KEY: ${{ secrets.BEST_BUY_API_KEY }}
+          BESTBUY_API_KEY: ${{ secrets.BESTBUY_API_KEY }}
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+        run: |
+          for n in BEST_BUY_API_KEY BESTBUY_API_KEY EBAY_CLIENT_ID EBAY_CLIENT_SECRET; do
+            if [ -n "${!n}" ]; then echo "$n: set"; else echo "$n: not set"; fi
+          done | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Best Buy deals from the official Products API (no page reading)
+        env:
+          BEST_BUY_API_KEY: ${{ secrets.BEST_BUY_API_KEY || secrets.BESTBUY_API_KEY }}
+        run: python scripts/bestbuy_deals.py --out bestbuy-results.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: eBay deals from the official Browse API (no page reading)
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+        run: python scripts/ebay_deals.py --out ebay-results.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Verify product pages (price, >= 50% off its reference, in stock)
+        # Only retailers cleared in deal_rules.json (page_check_allowed_hosts) are read; Amazon never is.
+        run: python scripts/verify_listings.py pending_deals.json deal-review-queue.json
+      - name: Publish verified deals to deals.json
+        run: |
+          python scripts/auto_publish.py verify-results.json pending_deals.json deal-review-queue.json \
+            --also-results bestbuy-results.json --also-results ebay-results.json \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" --apply | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Branded cards for new deals
+        run: python scripts/generate_deal_images.py
+      - name: Host new cards on Cloudinary
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: python scripts/cloudinary_upload.py
+      - name: Validate the feed
+        run: python scripts/validate_deals.py
+      - name: Commit and push (website goes live via GitHub Pages)
+        if: env.LIVE == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deals.json cloudinary-images.json images/generated
+          if git diff --cached --quiet; then echo "No new deals."; exit 0; fi
+          git commit -m "Auto-publish page-verified deals"
+          for attempt in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep $((attempt * 5)); done
+          echo "::error::Could not push"; exit 1
+      - name: Instagram via Buffer (live on main, dry run on pull requests)
+        env:
+          INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_CHANNEL_ID: ${{ vars.BUFFER_CHANNEL_ID }}
+        run: |
+          if [ "$LIVE" != "true" ]; then python scripts/publish_buffer.py; exit 0; fi
+          if [ "$INSTAGRAM_PUBLISH_ENABLED" != "true" ]; then
+            echo "Instagram switch (INSTAGRAM_PUBLISH_ENABLED) is off: dry run only." | tee -a "$GITHUB_STEP_SUMMARY"
+            python scripts/publish_buffer.py; exit 0
+          fi
+          python scripts/publish_buffer.py --live
+      - name: Record Buffer posts
+        if: ${{ env.LIVE == 'true' && !cancelled() }}
+        run: |
+          git add posts.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Record Buffer posts"
+          for attempt in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep $((attempt * 5)); done
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: auto-publish
+          path: |
+            verify-results.json
+            bestbuy-results.json
+            ebay-results.json
+            deals.json
+            cloudinary-images.json
+            images/generated/
+          retention-days: 14

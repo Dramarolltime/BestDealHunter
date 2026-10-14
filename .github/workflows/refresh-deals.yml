@@ -25,14 +25,16 @@ jobs:
         run: python scripts/test_deal_images.py
       - name: Validate retailer-approved deals
         run: python scripts/refresh_deals.py
-      # Do not generate cartoon-like graphics or automatically post them.
-      - name: Upload approved existing photos to Cloudinary
+      # Hosting only: nothing is posted to social media from this workflow.
+      - name: Upload new or changed deal images to Cloudinary
         env:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-        run: python scripts/upload_cloudinary_images.py
+        run: python scripts/cloudinary_upload.py
       - name: Commit refreshed data if changed
+        # Also runs after a partial upload failure so successful uploads are recorded.
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
