@@ -1,0 +1,29 @@
+name: Re-host four regenerated deal cards (one-off)
+# Uploads the four cards whose disclosure line changed (direct, non-affiliate links) and prints
+# each URL with the file's sha256 so cloudinary-images.json can be updated. Hosting only; no posts.
+on:
+  push:
+    branches: [claude/card-reupload]
+permissions:
+  contents: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q 'Pillow>=10,<13'
+      - name: Upload and print URL + sha256
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          for f in images/generated/deal-280ed3c48aff-square.jpg images/generated/deal-280ed3c48aff-feed.jpg \
+                   images/generated/deal-9ace7211bab6-square.jpg images/generated/deal-9ace7211bab6-feed.jpg; do
+            url=$(python scripts/cloudinary_upload.py --image "$f" | tail -1)
+            echo "MAP $f $(sha256sum "$f" | cut -d' ' -f1) ${url//$CLOUDINARY_CLOUD_NAME/CLOUD}"
+          done
