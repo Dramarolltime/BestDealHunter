@@ -302,7 +302,7 @@ def run_checks(site_url, gh, today):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--site-url", default=os.environ.get("SITE_URL") or "https://dramarolltime.github.io/BestDealHunter/")
+    parser.add_argument("--site-url", default=os.environ.get("SITE_URL") or "https://bestdealhunters.com/")
     parser.add_argument("--dry-run", action="store_true", help="report only; never write GitHub issues")
     parser.add_argument("--digest", action="store_true", help="also post the daily digest comment")
     args = parser.parse_args(argv)

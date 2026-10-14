@@ -49,7 +49,7 @@ The job also runs the full unit-test suite first, so a broken monitor or validat
 - Limitation: if GitHub Actions itself is down, nothing runs. An optional free external uptime monitor (e.g. UptimeRobot) can cover that independently.
 
 ### Configuration
-- Optional repository **variable** `SITE_URL` (Settings → Secrets and variables → Actions → Variables). Default: `https://dramarolltime.github.io/BestDealHunter/`.
+- Optional repository **variable** `SITE_URL` (Settings → Secrets and variables → Actions → Variables). Default: `https://bestdealhunters.com/`.
 
 ### Expected first findings once merged
 - `Hourly deal checks` failing on main (Pillow), until PR #2 merges.
