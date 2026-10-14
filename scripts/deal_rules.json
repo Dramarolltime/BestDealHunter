@@ -7,7 +7,8 @@
     "Best Buy",
     "Home Depot",
     "Lowe's",
-    "Macy's"
+    "Macy's",
+    "Dick's Sporting Goods"
   ],
   "categories": [
     "Electronics",
@@ -26,7 +27,8 @@
     "target.com",
     "ebay.com",
     "homedepot.com",
-    "lowes.com"
+    "lowes.com",
+    "dickssportinggoods.com"
   ],
   "min_discount_percent": 50,
   "min_affiliate_discount_percent": 20,

@@ -28,7 +28,15 @@ every 6 h (GitHub Actions, free)
   publish_buffer.py → Instagram (shareNow, lock tag per product+price, price check < 3 h)
           ↓
   maintenance monitor (hourly) → issue #1 alert if anything breaks
+
+any time (a person saw a 50%+ deal on Target, Walmart, Home Depot, Dick's, Macy's, ...)
+  "Submit a deal" issue form (owner/collaborators only, screenshot required)
+          ↓ submit_deal.py: store's own link, ≥ 50% (< 80%), in stock, sold by the store, not listed yet
+  same chain: deals.json → card → Cloudinary → website → Instagram; reply on the issue and close it
 ```
+
+Cards and captions follow Alpha's Creative & Growth Playbook v1.0 (issue #1): Inter fonts, navy/lime/cyan
+palette, "Price as of <time> PT", category hashtag sets. Amazon stays off (Associates price rules).
 
 ## Phases
 

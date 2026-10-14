@@ -10,7 +10,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 TRACKING = re.compile(r"^(utm_.*|tag|linkcode|ascsubtag|ref|ref_|irclickid|irgwc|clickid|cjevent|cjdata|ranmid|raneaid|"
                       r"ransiteid|affid|aff_id|affiliate|affiliate_id|subid|sub_id|gclid|fbclid|msclkid|mc_cid|mc_eid|"
                       r"sharedid|partnerid|camp|creative|creativeasin|linkid|th|psc|smid|sr|qid|sprefix|crid|keywords|"
-                      r"wmlspartner|veh|sourceid|lgeo|afsrc|pd_rd_.*|pf_rd_.*|content-id)$", re.I)
+                      r"wmlspartner|veh|sourceid|lgeo|afsrc|clkid|afid|cpng|adgroup|lnk|pd_rd_.*|pf_rd_.*|content-id)$", re.I)
 AFFILIATE_PARAMS = re.compile(r"^(tag|ascsubtag|irclickid|cjevent|ranmid|raneaid|ransiteid|affid|aff_id|affiliate|"
                               r"affiliate_id|wmlspartner|afsrc)$", re.I)
 # Hosts that exist only to redirect through an affiliate network (no direct product URL to keep).
