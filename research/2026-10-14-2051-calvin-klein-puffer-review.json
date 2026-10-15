@@ -1,0 +1,36 @@
+{
+  "reviewed_at": "2026-10-14T20:51:00-07:00",
+  "status": "research_only",
+  "publication_eligible": false,
+  "store": "Macy's",
+  "retailer_identity": "Macy's official US product page",
+  "product": "Calvin Klein Women's Short Zip Front Puffer Jacket",
+  "retailer_product_id": "24324204",
+  "variant": "Ebony, XS selected on public product page",
+  "url": "https://www.macys.com/shop/product/calvin-klein-womens-short-zip-front-puffer-jacket?ID=24324204",
+  "listed_price_usd": 39.96,
+  "retailer_reference_price_usd": 265,
+  "advertised_discount_percent": 85,
+  "calculated_discount_percent": 84.92,
+  "reference_price_type": "Macy's displayed crossed-out previous price; not independently authenticated as historical selling price",
+  "promo_code": null,
+  "promo_note": "No code required for displayed Last Act price. Macy's states Coupon excluded; do not advertise a promo code. Final sale.",
+  "availability_evidence": "Macy's page captured Oct 14 2026 shows Ebony XS selected, XS and S options, Add To Bag and Buy Now. Does not confirm ZIP-specific stock or successful checkout.",
+  "expiration_date": null,
+  "checkout_total_verified": false,
+  "shipping_terms": "Qualifies for free shipping only with minimum purchase; location-specific exceptions noted for California and Minnesota.",
+  "source_urls": [
+    "https://www.macys.com/shop/product/calvin-klein-womens-short-zip-front-puffer-jacket?ID=24324204",
+    "https://www.macys.com/shop/sale/clearance-closeout?id=54698"
+  ],
+  "duplicate_check": "No matching ID/title in deals.json or deal-review-queue.json; GitHub code search and 20 Buffer channel posts returned no match.",
+  "image_url": null,
+  "blockers": [
+    "Final checkout item price and taxes/shipping not independently verified",
+    "ZIP-specific fulfillment not verified",
+    "Retailer reference price historical legitimacy not independently verified",
+    "Promotion expiration not published",
+    "No product-specific branded graphic hosted on GitHub with publicly tested image URL"
+  ],
+  "editorial_note": "A recent customer review reports sizing issues; final-sale status makes returns unavailable. Keep unpublished pending checks."
+}
