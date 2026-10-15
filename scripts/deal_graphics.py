@@ -50,7 +50,8 @@ BACKGROUND, GLOW, GLOW_2, WHITE, GRAY, MUTED = "#07101F", "#1450C8", "#0E2A66", 
 YELLOW, RED, RED_DARK, PANEL, PANEL_EDGE = "#FACC15", "#E11D2E", "#7F0A14", "#050B16", "#3A4A66"
 AI_KIND = "ai_illustration"  # earlier ai_product_art.py pictures: studio shot inside the card
 LISTING_PHOTO = "listing_photo"  # the retailer listing's own product photo (eBay Browse API), shown unedited
-AI_SCENE = "ai_scene"  # ai_product_art.py lifestyle photos: fill the whole card (Alpha's look)
+AI_SCENE = "ai_scene"
+AI_SCENE_FROM_PHOTO = "ai_scene_from_photo"  # lifestyle scene made by AI from the real listing photo  # ai_product_art.py lifestyle photos: fill the whole card (Alpha's look)
 REFERENCE_LABELS = {"Best Buy": "Comparable value", "Amazon": "List price", "Macy's": "Original price"}
 _fonts = {}
 
@@ -324,7 +325,7 @@ def render_card(deal, kind="feed"):
     photo_path = authorized_photo(deal)
     w, h = SIZES[kind]
     k = 1.0 if kind == "feed" else 0.84
-    scene = bool(photo_path) and deal.get("image_source_kind") == AI_SCENE
+    scene = bool(photo_path) and deal.get("image_source_kind") in (AI_SCENE, AI_SCENE_FROM_PHOTO)
     canvas = scene_background(photo_path, (w, h)) if scene else background((w, h))
     listing = bool(photo_path) and deal.get("image_source_kind") == LISTING_PHOTO
     b = 0.78 if scene or listing else 1.0  # smaller badge, so the product photo stays visible
@@ -424,7 +425,8 @@ def render_card(deal, kind="feed"):
             draw.text((margin, 190 * k + i * title_face.size * 1.12), line, font=title_face, fill=WHITE,
                       stroke_width=2, stroke_fill=BACKGROUND)
         face = font(20 * k, 700)
-        label = "AI ILLUSTRATION"
+        label = ("AI SCENE FROM LISTING PHOTO" if deal.get("image_source_kind") == AI_SCENE_FROM_PHOTO
+                 else "AI ILLUSTRATION")
         top = 190 * k + 2 * title_face.size * 1.12 + 14 * k
         draw.rounded_rectangle((margin, top, margin + text_width(draw, label, face) + 28, top + 34 * k), radius=17,
                                fill=PANEL)

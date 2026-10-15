@@ -46,6 +46,47 @@ def http(request, timeout=120):
         return json.loads(resp.read())
 
 
+EDIT_API = "https://api.openai.com/v1/images/edits"
+SCENE_FROM_PHOTO_PROMPT = (
+    "Place the exact product shown in this photo, completely unchanged (same shape, colors, materials, "
+    "proportions, stitching and details), into a bright, tasteful, realistic lifestyle setting where it is "
+    "normally used. The product is the clear hero, sharp and fully visible in the upper-middle of the frame, soft "
+    "natural window light, premium magazine style, shallow depth of field. Do not redesign, recolor or add to "
+    "the product. Keep the bottom third of the frame calm. Add no text, prices, logos or watermarks.")
+
+
+def multipart(fields, files):
+    """multipart/form-data body for the image edit API."""
+    boundary = "bdh" + base64.b16encode(os.urandom(8)).decode()
+    out = io.BytesIO()
+    for name, value in fields.items():
+        out.write(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n".encode())
+    for name, (filename, data, mime) in files.items():
+        out.write(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"; filename=\"{filename}\"\r\n"
+                  f"Content-Type: {mime}\r\n\r\n".encode())
+        out.write(data)
+        out.write(b"\r\n")
+    out.write(f"--{boundary}--\r\n".encode())
+    return out.getvalue(), f"multipart/form-data; boundary={boundary}"
+
+
+def scene_from_photo(photo_jpeg, api_key, model=DEFAULT_MODEL, transport=http):
+    """JPEG bytes of a lifestyle scene built from the real listing photo (OpenAI image edit)."""
+    body, content_type = multipart(
+        {"model": model, "prompt": SCENE_FROM_PHOTO_PROMPT, "size": "1024x1536", "quality": "medium",
+         "input_fidelity": "high", "n": "1"},
+        {"image": ("product.jpg", photo_jpeg, "image/jpeg")})
+    request = urllib.request.Request(EDIT_API, data=body, method="POST",
+                                     headers={"Authorization": f"Bearer {api_key}", "Content-Type": content_type})
+    item = (transport(request, timeout=180).get("data") or [{}])[0]
+    if not item.get("b64_json"):
+        raise ValueError("no image in the response")
+    with Image.open(io.BytesIO(base64.b64decode(item["b64_json"]))) as img:
+        buf = io.BytesIO()
+        img.convert("RGB").save(buf, "JPEG", quality=90, optimize=True)
+    return buf.getvalue()
+
+
 def generate(deal, api_key, model=DEFAULT_MODEL, transport=http):
     """JPEG bytes of a picture of the deal's product."""
     body = {"model": model, "n": 1, "size": "1024x1536", "quality": "medium",
