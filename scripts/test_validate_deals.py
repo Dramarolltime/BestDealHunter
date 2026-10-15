@@ -346,24 +346,29 @@ class ListingPolicyRequirementTests(unittest.TestCase):
         self.assertIn("Price not re-verified", html)
 
 
-class StaleImageTests(unittest.TestCase):
-    """Images printed with a price must never pass for a current offer (PR #24)."""
+class DealImageTests(unittest.TestCase):
+    """Owner, 2026-10-15: deal images are always shown exactly as made, for current and past deals; ended and
+    unverified deals are told apart by a label outside the image, never by altering the image (replaces PR #24)."""
 
     html = (ROOT / "index.html").read_text(encoding="utf-8")
 
-    def test_unverified_and_ended_deal_images_carry_a_banner(self):
-        self.assertIn("(d.unverified||d.archived?'<div class=\"stale-image\">", self.html)
-        self.assertIn("Old price shown \\u2014 not current", self.html)
-        self.assertIn("Offer ended \\u2014 old price", self.html)
-        self.assertIn("graphic with an old, unverified price", self.html)
-        self.assertIn("graphic with an expired price", self.html)
+    def test_images_are_never_filtered_faded_or_covered(self):
+        css = self.html[self.html.index("<style>"):self.html.index("</style>")]
+        for effect in ("filter:", "opacity:", "blur(", "grayscale", "stale-banner", "stale-image"):
+            self.assertNotIn(effect, css)
+        self.assertNotIn("stale-image", self.html)
 
-    def test_old_price_in_the_image_is_unreadable_even_on_hover(self):
-        rule = (".card .stale-image .deal-image,.card .deal-link:hover .stale-image .deal-image"
-                "{filter:grayscale(1) blur(6px);opacity:.45}")
-        self.assertIn(rule, self.html)
-        # declared after the archived and hover rules, so it wins for both
-        self.assertGreater(self.html.index(rule), self.html.index(".card.archived .deal-image{"))
+    def test_past_and_unverified_deals_carry_a_label_outside_the_image(self):
+        self.assertIn("<span class=\"tag past\">Past Deal</span>", self.html.replace("'", '"'))
+        self.assertIn("Price not re-verified", self.html)
+        self.assertIn("Price when posted", self.html)
+        # labels are in the card body, after the image
+        self.assertIn("'+image(d)+'<div class=\"card-body\">'+labels", self.html)
+
+    def test_past_deals_stay_listed_and_newest_come_first(self):
+        self.assertIn('if(section==="archive")return d.archived;', self.html)
+        self.assertIn("const postedAt=d=>d.published_at||d.auto_published_at||d.verified_date||\"\";", self.html)
+        self.assertIn("newest:(a,b)=>postedAt(b).localeCompare(postedAt(a))", self.html)
 
 
 class AssociatesDisclosureTests(unittest.TestCase):
