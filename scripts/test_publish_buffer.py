@@ -117,6 +117,12 @@ class PlanTests(unittest.TestCase):
         self.assertIn("run limit", skipped[0][1])
         self.assertEqual(ready[0]["channel"], "best_dealhunter")
 
+    def test_ebay_deal_posts_only_with_its_real_listing_photo(self):
+        ebay = dict(deal(), store="eBay", url="https://www.ebay.com/itm/123")
+        check = lambda d: pb.eligibility(d, pb.hosted_urls(HOSTED), set(), TODAY)
+        self.assertIn("real listing photo", check(ebay)[1])
+        self.assertEqual(check(dict(ebay, image_source_kind="listing_photo")), (True, "eligible"))
+
     def test_daily_post_limit(self):
         from datetime import datetime, timezone
         now = datetime(2026, 10, 10, 20, 0, tzinfo=timezone.utc)

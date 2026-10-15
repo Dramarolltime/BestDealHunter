@@ -108,6 +108,8 @@ def eligibility(deal, hosted, posted_keys, today, now=None):
         return False, "not approved for posting (publication_approved is not true)"
     if deal.get("store") == "Amazon" and deal.get("evidence_method") not in AMAZON_PRICE_SOURCES:
         return False, AMAZON_RULE
+    if deal.get("store") == "eBay" and deal.get("image_source_kind") != "listing_photo":
+        return False, "waiting for the real listing photo on its card (owner: the real product must show)"
     image = feed_card(deal)
     if not image:
         return False, "image is not a generated branded card (images/generated/deal-<id>-square/feed.jpg)"
