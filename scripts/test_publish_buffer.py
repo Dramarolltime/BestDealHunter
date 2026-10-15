@@ -160,9 +160,11 @@ class KillSwitchTests(unittest.TestCase):
         with mock.patch("sys.stderr"):
             self.assertEqual(self.run_main({}, ["--live", "--draft-check", "0123456789ab"]), 2)
 
-    def test_post_log_starts_empty(self):
+    def test_post_log_records_are_well_formed(self):
         import json
-        self.assertEqual(json.loads(pb.POSTS.read_text()), [])
+        for post in json.loads(pb.POSTS.read_text()):
+            self.assertRegex(post["key"], r"^[0-9a-f]{16}$")
+            self.assertIn(post["status"], {"reserved", "locked", "sent", "error", "queued", "scheduled", "sending"})
 
 
 class FakeBuffer:

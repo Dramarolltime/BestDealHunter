@@ -102,6 +102,28 @@ class SelectTests(unittest.TestCase):
         self.assertEqual(len(new), 2)
         self.assertTrue(any(m.startswith("LIMIT") for m in logs))
 
+    def test_same_price_reconfirmed_refreshes_the_check_time_only(self):
+        listed = {"url": URL, "price": 19.99, "original_price": 49.99, "approved_by": ap.APPROVED_BY,
+                  "auto_published_at": "2026-10-13T01:00:00+00:00", "verified_date": "2026-10-13"}
+        refreshed = []
+        new = ap.select([row(checked_at="2026-10-14T07:00:00+00:00")], [], [listed], RUN, TODAY, 5,
+                        log=lambda *_: None, refreshed=refreshed)
+        self.assertEqual(new, [])
+        self.assertEqual(len(refreshed), 1)
+        self.assertEqual(listed["auto_published_at"], "2026-10-14T07:00:00+00:00")
+        self.assertEqual(listed["verified_date"], "2026-10-14")
+
+    def test_changed_price_or_manual_deal_is_not_redated(self):
+        for listed in ({"url": URL, "price": 24.99, "original_price": 49.99, "approved_by": ap.APPROVED_BY,
+                        "auto_published_at": "2026-10-13T01:00:00+00:00"},
+                       {"url": URL, "price": 19.99, "original_price": 49.99, "approved_by": "owner deal form: x",
+                        "auto_published_at": "2026-10-13T01:00:00+00:00"}):
+            refreshed = []
+            ap.select([row(checked_at="2026-10-14T07:00:00+00:00")], [], [listed], RUN, TODAY, 5,
+                      log=lambda *_: None, refreshed=refreshed)
+            self.assertEqual(refreshed, [])
+            self.assertEqual(listed["auto_published_at"], "2026-10-13T01:00:00+00:00")
+
 
 class MainTests(unittest.TestCase):
     def test_apply_appends_and_dry_run_does_not(self):
