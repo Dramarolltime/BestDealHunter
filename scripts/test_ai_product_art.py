@@ -235,3 +235,15 @@ class FormDealSceneTests(unittest.TestCase):
         self.assertIn(b"none of the web page", sent[0].data)
         submitted = deal(photo_reference="evidence/deal-issue-7.png", card_source="submitted")
         self.assertEqual(ai.scenes_from_photos([submitted], KEY, 3, transport=ok, log=lambda *_: None), 0)
+
+
+class VariedLookTests(unittest.TestCase):
+    def test_deals_get_different_backgrounds_and_each_deal_keeps_its_own(self):
+        deals = [deal(url=f"https://www.ebay.com/itm/{i}") for i in range(40)]
+        looks = [ai.look(d) for d in deals]
+        self.assertGreater(len(set(looks)), 4)
+        self.assertEqual(looks, [ai.look(d) for d in deals])
+        for template in (ai.SCENE_FROM_PHOTO_PROMPT, ai.SCENE_FROM_SCREENSHOT_PROMPT, ai.PROMPT):
+            text = template.format(look=looks[0], title="x", category="y")
+            self.assertIn(looks[0], text)
+            self.assertNotIn("{", text)

@@ -33,8 +33,8 @@ API = "https://api.openai.com/v1/images/generations"
 DEFAULT_MODEL = "gpt-image-1"
 # Alpha's look (owner, 2026-10-15): a realistic lifestyle photo with the product as the hero, filling the card.
 PROMPT = ("Photorealistic lifestyle product photograph of: {title} ({category}). The product is the clear hero, "
-          "sharp and fully visible in the upper-middle of the frame, shown in a bright, tasteful, real setting "
-          "where it is normally used, soft natural window light, premium magazine style, shallow depth of field. "
+          "sharp and fully visible in the upper-middle of the frame, shown in a real setting "
+          "where it is normally used, {look}, premium magazine style, shallow depth of field. "
           "Show the product exactly as that kind of product normally looks; do not add screens, displays or "
           "parts it would not have. Keep the bottom third of the frame calm and uncluttered. "
           "Absolutely no text, letters, numbers, prices, logos, brand names, labels or watermarks anywhere in "
@@ -49,19 +49,37 @@ def http(request, timeout=120):
 EDIT_API = "https://api.openai.com/v1/images/edits"
 SCENE_FROM_PHOTO_PROMPT = (
     "Place the exact product shown in this photo, completely unchanged (same shape, colors, materials, "
-    "proportions, stitching and details), into a bright, tasteful, realistic lifestyle setting where it is "
-    "normally used. The product is the clear hero, sharp and fully visible, about half the frame's height, "
-    "centered slightly above the middle with generous space around it, soft "
-    "natural window light, premium magazine style, shallow depth of field. Do not redesign, recolor or add to "
+    "proportions, stitching and details), into a realistic lifestyle setting where it is normally used. "
+    "Setting and mood: {look}. The product is the clear hero, sharp and fully visible, about half the frame's "
+    "height, centered slightly above the middle with generous space around it, premium magazine style, shallow "
+    "depth of field. Do not redesign, recolor or add to "
     "the product. Keep the bottom third of the frame calm. Add no text, prices, logos or watermarks.")
+
+# Owner, 2026-10-15: scenes should not all share the same background. Each deal gets one of these looks,
+# picked from its card id, so the feed varies while a deal keeps the same look if its scene is redone.
+LOOKS = (
+    "warm golden-hour sunlight with earthy, natural tones",
+    "cool, crisp morning daylight with whites and soft blues",
+    "cozy evening lamp light with rich, warm wood tones",
+    "bold, colorful modern decor with a saturated accent wall",
+    "outdoors in natural light, with greenery softly blurred behind",
+    "a minimal urban loft with concrete and glass in soft overcast light",
+    "rustic textures of stone, linen and timber in soft daylight",
+    "a clean studio set with a single bold pastel backdrop and soft shadows",
+)
+
+
+def look(deal):
+    """The deal's background look: the same for a deal every time, different across deals."""
+    return LOOKS[int(card_id(deal), 16) % len(LOOKS)]
 
 
 SCENE_FROM_SCREENSHOT_PROMPT = (
     "This is a screenshot of a store's product page. Take the exact product it shows for sale, completely "
-    "unchanged (same shape, colors, materials, proportions and details), and photograph it in a bright, tasteful, "
-    "realistic lifestyle setting where it is normally used. Show only the product in the scene: none of the web "
-    "page, text, prices, buttons or logos. The product is the clear hero, about half the frame's height, centered "
-    "slightly above the middle with generous space around it, soft natural window light, premium magazine style. "
+    "unchanged (same shape, colors, materials, proportions and details), and photograph it in a "
+    "realistic lifestyle setting where it is normally used. Setting and mood: {look}. Show only the product in the "
+    "scene: none of the web page, text, prices, buttons or logos. The product is the clear hero, about half the "
+    "frame's height, centered slightly above the middle with generous space around it, premium magazine style. "
     "Keep the bottom third of the frame calm. Add no text, prices, logos or watermarks.")
 
 
@@ -80,8 +98,9 @@ def multipart(fields, files):
     return out.getvalue(), f"multipart/form-data; boundary={boundary}"
 
 
-def scene_from_photo(photo_jpeg, api_key, model=DEFAULT_MODEL, transport=http, prompt=SCENE_FROM_PHOTO_PROMPT):
+def scene_from_photo(photo_jpeg, api_key, model=DEFAULT_MODEL, transport=http, prompt=None):
     """JPEG bytes of a lifestyle scene built from a real product photo or page screenshot (OpenAI image edit)."""
+    prompt = prompt or SCENE_FROM_PHOTO_PROMPT.format(look=LOOKS[0])
     with Image.open(io.BytesIO(photo_jpeg)) as img:  # screenshots may be PNG/WebP; the API gets a JPEG
         buf = io.BytesIO()
         img.convert("RGB").save(buf, "JPEG", quality=92)
@@ -104,7 +123,8 @@ def scene_from_photo(photo_jpeg, api_key, model=DEFAULT_MODEL, transport=http, p
 def generate(deal, api_key, model=DEFAULT_MODEL, transport=http):
     """JPEG bytes of a picture of the deal's product."""
     body = {"model": model, "n": 1, "size": "1024x1536", "quality": "medium",
-            "prompt": PROMPT.format(title=deal["title"], category=deal.get("category") or "product")}
+            "prompt": PROMPT.format(title=deal["title"], category=deal.get("category") or "product",
+                                    look=look(deal))}
     request = urllib.request.Request(API, data=json.dumps(body).encode(), method="POST",
                                      headers={"Authorization": f"Bearer {api_key}",
                                               "Content-Type": "application/json"})
@@ -188,7 +208,7 @@ def scenes_from_photos(deals, api_key, limit, model=DEFAULT_MODEL, transport=htt
             log(f"LIMIT {deal.get('title')}: {limit} scenes per run; keeps the listing photo for now")
             continue
         try:
-            data = scene_from_photo(source.read_bytes(), api_key, model, transport, prompt)
+            data = scene_from_photo(source.read_bytes(), api_key, model, transport, prompt.format(look=look(deal)))
         except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
             reason = f"HTTP {exc.code}" if isinstance(exc, urllib.error.HTTPError) else type(exc).__name__
             log(f"FAILED scene for {deal.get('title')}: {reason}; keeps its current card")
