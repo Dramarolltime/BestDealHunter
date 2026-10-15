@@ -54,7 +54,7 @@ class ArtTests(unittest.TestCase):
     def test_picture_is_saved_and_linked_to_the_deal(self):
         deals = [deal()]
         self.assertEqual(ai.run(deals, KEY, 3, transport=self.ok, log=lambda *_: None), 1)
-        self.assertEqual(deals[0]["image_source_kind"], g.AI_KIND)
+        self.assertEqual(deals[0]["image_source_kind"], g.AI_SCENE)
         self.assertRegex(deals[0]["image_source"], r"^images/source/ai-[0-9a-f]{12}\.jpg$")
         with Image.open(ai.ROOT / deals[0]["image_source"]) as img:
             self.assertEqual(img.format, "JPEG")

@@ -105,6 +105,8 @@ def refresh(existing, entry, checked_at):
         return False  # a changed price is not silently re-dated; the old one ages into "Price not re-verified"
     existing["auto_published_at"] = checked_at
     existing["verified_date"] = checked_at[:10]
+    if str(existing.get("image", "")).startswith("images/generated/deal-"):
+        existing.pop("image")  # the card prints "Price as of"; generate_deal_images redraws it with the new time
     return True
 
 

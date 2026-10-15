@@ -104,7 +104,8 @@ class SelectTests(unittest.TestCase):
 
     def test_same_price_reconfirmed_refreshes_the_check_time_only(self):
         listed = {"url": URL, "price": 19.99, "original_price": 49.99, "approved_by": ap.APPROVED_BY,
-                  "auto_published_at": "2026-10-13T01:00:00+00:00", "verified_date": "2026-10-13"}
+                  "auto_published_at": "2026-10-13T01:00:00+00:00", "verified_date": "2026-10-13",
+                  "image": "images/generated/deal-0123456789ab-square.jpg"}
         refreshed = []
         new = ap.select([row(checked_at="2026-10-14T07:00:00+00:00")], [], [listed], RUN, TODAY, 5,
                         log=lambda *_: None, refreshed=refreshed)
@@ -112,6 +113,7 @@ class SelectTests(unittest.TestCase):
         self.assertEqual(len(refreshed), 1)
         self.assertEqual(listed["auto_published_at"], "2026-10-14T07:00:00+00:00")
         self.assertEqual(listed["verified_date"], "2026-10-14")
+        self.assertNotIn("image", listed)  # its card is redrawn with the new "Price as of" time
 
     def test_changed_price_or_manual_deal_is_not_redated(self):
         for listed in ({"url": URL, "price": 24.99, "original_price": 49.99, "approved_by": ap.APPROVED_BY,

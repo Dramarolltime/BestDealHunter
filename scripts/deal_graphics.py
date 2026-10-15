@@ -279,7 +279,7 @@ def scene_background(path, size):
     w, h = size
     with Image.open(path) as src:
         photo = ImageOps.fit(ImageOps.exif_transpose(src).convert("RGB"), size, Image.Resampling.LANCZOS,
-                             centering=(0.5, 0.4))
+                             centering=(0.5, 0.75))
     shade = Image.new("L", size, 0)
     draw = ImageDraw.Draw(shade)
     for y in range(h):
@@ -297,6 +297,7 @@ def render_card(deal, kind="feed"):
     k = 1.0 if kind == "feed" else 0.84
     scene = bool(photo_path) and deal.get("image_source_kind") == AI_SCENE
     canvas = scene_background(photo_path, (w, h)) if scene else background((w, h))
+    b = 0.78 if scene else 1.0  # smaller badge over a full photo, so the product stays visible
     draw = ImageDraw.Draw(canvas)
     margin = 48
 
@@ -319,7 +320,7 @@ def render_card(deal, kind="feed"):
     # With a picture (an AI illustration or an authorized photo), it fills the middle under a shorter title,
     # drawn first so the % OFF badge overlaps its lower edge as in Alpha's images.
     foot_y = h - 40 * k - (36 * k if is_affiliate_link(deal.get("url")) else 0)
-    badge_top = foot_y - 260 * k - 340 * k
+    badge_top = foot_y - 260 * k - 340 * k * b
     if photo_path and not scene:
         title_face = font(60 * k, 800)
         lines = wrap(draw, facts["title"], title_face, w - 2 * margin, 2)
@@ -365,20 +366,20 @@ def render_card(deal, kind="feed"):
     draw.text((centre[0], centre[1] - 22 * k), "SEE DEAL", font=font(40 * k, 800), fill=BACKGROUND, anchor="mm")
     draw.text((centre[0], centre[1] + 24 * k), "LINK IN BIO ›", font=font(28 * k, 800), fill=BACKGROUND, anchor="mm")
 
-    stroke = brush((int(700 * k), int(220 * k)), RED, facts["percent"]).rotate(4, expand=True,
+    stroke = brush((int(700 * k * b), int(220 * k * b)), RED, facts["percent"]).rotate(4, expand=True,
                                                                                resample=Image.BICUBIC)
     canvas.alpha_composite(stroke, (int(margin - 20), int(badge_top)))
-    pct = slanted(f"{facts['percent']}% OFF", font(128 * k, 800), WHITE, stroke=3, stroke_fill=RED_DARK)
+    pct = slanted(f"{facts['percent']}% OFF", font(128 * k * b, 800), WHITE, stroke=3, stroke_fill=RED_DARK)
     pct = pct.rotate(4, expand=True, resample=Image.BICUBIC)
     canvas.alpha_composite(pct, (int(margin - 20 + (stroke.width - pct.width) / 2),
                                  int(badge_top + (stroke.height - pct.height) / 2 - 6 * k)))
-    strip = Image.new("RGBA", (int(380 * k), int(78 * k)), YELLOW)
+    strip = Image.new("RGBA", (int(380 * k * b), int(78 * k * b)), YELLOW)
     save_text = f"SAVE {facts['savings']}"
     ImageDraw.Draw(strip).text((strip.width / 2, strip.height / 2), save_text,
-                               font=fit(draw, save_text, 800, int(46 * k), strip.width - 30), fill=BACKGROUND,
+                               font=fit(draw, save_text, 800, int(46 * k * b), strip.width - 30), fill=BACKGROUND,
                                anchor="mm")
     strip = strip.rotate(4, expand=True, resample=Image.BICUBIC)
-    canvas.alpha_composite(strip, (int(margin + 300 * k), int(badge_top + stroke.height - 40 * k)))
+    canvas.alpha_composite(strip, (int(margin + 300 * k * b), int(badge_top + stroke.height - 40 * k * b)))
     draw = ImageDraw.Draw(canvas)
 
     # Title, then (without a picture) check rows, above the badge.
