@@ -46,10 +46,19 @@ class ArtTests(unittest.TestCase):
         self.requests.append(request)
         return {"data": [{"b64_json": png()}]}
 
-    def test_dormant_without_key(self):
+    def test_no_ai_call_without_key_and_nothing_written_offline(self):
         def boom(*a, **k):
-            raise AssertionError("no network without a key")
-        self.assertEqual(ai.main([], env={}, transport=boom), 0)
+            raise AssertionError("no AI call without a key")
+        feed = ai.ROOT / "deals.json"
+        feed.write_text(json.dumps([deal(listing_photo_url="https://i.ebayimg.com/x/s-l1600.jpg")]))
+        saved, ai.FEED = ai.FEED, feed
+        try:
+            def offline(*a, **k):
+                raise urllib.error.URLError("offline")
+            self.assertEqual(ai.main([], env={}, transport=boom, opener=offline), 0)
+        finally:
+            ai.FEED = saved
+        self.assertNotIn("image_source", json.loads(feed.read_text())[0])
 
     def test_picture_is_saved_and_linked_to_the_deal(self):
         deals = [deal()]
