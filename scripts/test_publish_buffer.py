@@ -97,6 +97,18 @@ class CaptionTests(unittest.TestCase):
         for tags in pb.HASHTAGS.values():
             self.assertTrue(5 <= tags.count("#") <= 8, tags)
 
+    def test_hashtags_name_the_brand_and_product_and_vary(self):
+        tags = pb.hashtags(deal(store="eBay", category="Fashion", title="adidas men Supernova Ease Running Sneakers",
+                                url="https://www.ebay.com/itm/1"))
+        for tag in ("#Adidas", "#SneakerDeals", "#FashionDeals", "#eBayFinds", "#BestDealHunter"):
+            self.assertIn(tag, tags)
+        self.assertEqual(pb.brand_tag("Levi's Men's 505 Jeans"), "#Levis")
+        self.assertEqual(pb.brand_tag("Mens Under Armour UA Rival Fleece"), "#UnderArmour")
+        self.assertIsNone(pb.brand_tag("Generic Fleece Throw"))
+        mixes = {pb.hashtags(deal(category="Fashion", url=f"https://www.ebay.com/itm/{i}")) for i in range(12)}
+        self.assertGreater(len(mixes), 3)
+        self.assertTrue(all(t.count("#") <= 10 for t in mixes))
+
     def test_opening_line_varies_but_numbers_do_not(self):
         texts = {pb.caption(deal(url=f"https://www.bestbuy.com/site/test-{i}")).split("\n")[0] for i in range(12)}
         self.assertGreater(len(texts), 1)

@@ -146,13 +146,79 @@ KITCHEN = re.compile(r"kitchen|cook|bak(e|ing)|blender|mixer|air fryer|coffee|es
 OPENERS = ("🔥 {percent}% OFF — {title}", "🔥 {percent}% OFF: {title}", "🔥 Deal alert: {percent}% OFF — {title}")
 
 
+# Owner, 2026-10-15: hashtags should name the brand and what the product is, so posts don't all look alike.
+BRANDS = ("adidas", "Nike", "Puma", "Reebok", "Converse", "Skechers", "New Balance", "Under Armour", "Crocs",
+          "Timberland", "Cole Haan", "Levi's", "Calvin Klein", "Columbia", "The North Face", "Carhartt", "Hanes",
+          "Champion", "Oakley", "Ray-Ban", "Sperry", "Clarks", "Fila", "Diadora", "Airwalk", "Muck", "Rocky",
+          "Georgia Boot", "Bates", "Blundstone", "Dr. Martens", "UGG", "Vans", "Hurley", "Malbon", "Goodfellow",
+          "Evelyn & Bobbie", "Bose", "Sony", "Samsung", "Apple", "JBL", "Klipsch", "Beats", "LG", "Insignia",
+          "KitchenAid", "Ninja", "Instant Pot", "Cuisinart", "Keurig", "Dyson", "Shark", "iRobot", "Vornado",
+          "Westinghouse", "Rockville", "Delsey", "Samsonite", "Pokémon", "LEGO", "Threshold")
+PRODUCT_TAGS = (
+    (r"sneaker|running|trainer|court|racer|gazelle", "#SneakerDeals #Sneakers"),
+    (r"\bboots?\b", "#BootDeals #Boots"),
+    (r"\bclogs?\b|\bclg\b", "#Clogs #ComfyShoes"),
+    (r"oxford|wingtip|dress shoe|loafer", "#DressShoes #MensStyle"),
+    (r"slipper", "#Slippers #CozyVibes"),
+    (r"jeans|denim", "#DenimDeals #Jeans"),
+    (r"hoodie|sweatshirt|fleece|quarter zip", "#HoodieSeason #Loungewear"),
+    (r"jacket|coat|blazer|sportcoat", "#JacketDeals #Outerwear"),
+    (r"\bpants\b|shorts|joggers|track", "#Activewear #AthleisureStyle"),
+    (r"\bbra\b|boxer|underwear|brief", "#Basics #Essentials"),
+    (r"wallet|passcase", "#WalletDeals #EDC"),
+    (r"speaker|headphone|earbud|soundbar", "#AudioDeals #Speakers"),
+    (r"car audio|amp |\bawg\b|coaxial", "#CarAudio #CarMods"),
+    (r"\btv\b|television", "#TVDeals #HomeTheater"),
+    (r"heater", "#SpaceHeater #StayWarm"),
+    (r"dehumidifier|humidifier|air purifier", "#HomeComfort #Dehumidifier"),
+    (r"blanket|sheet set|comforter|duvet|pillow", "#BeddingDeals #CozyHome"),
+    (r"wall art|framed|decor", "#HomeDecor #WallArt"),
+    (r"perlite|soil|garden|planter", "#GardenDeals #PlantParent"),
+    (r"luggage|carry-on|duffel|suitcase", "#TravelDeals #Luggage"),
+    (r"kids|toddler|youth", "#KidsDeals #KidsStyle"),
+)
+# Larger pools per category; each post takes the main tag plus two more, picked from the post, so they vary.
+HASHTAGS = {
+    "Tech": "#TechDeals #ElectronicsDeals #GadgetDeals #TechSavings #GadgetLovers #TechFinds #ShoppingDeals #DealFinder",
+    "Home": "#HomeDeals #HomeSavings #HomeEssentials #HomeFinds #BudgetHome #DiscountDeals #HomeUpgrade #NestingSeason",
+    "Kitchen": "#KitchenDeals #KitchenFinds #CookingEssentials #KitchenSavings #HomeCooking #ShoppingDeals",
+    "Fashion": "#FashionDeals #StyleOnABudget #ClothingDeals #FashionFinds #WardrobeDeals #DealAlerts #OOTD #StyleSteal",
+    "Sports": "#SportsDeals #FitnessDeals #OutdoorDeals #ActiveLifestyle #SportsGear #DiscountFinds #GymGear",
+    "Beauty": "#BeautyDeals #BeautyFinds #SkincareDeals #MakeupDeals #BeautySavings #ShoppingFinds",
+    "Other": "#DealAlerts #ShoppingDeals #DealFinder #DiscountDeals #SaveMoney #FrugalFinds",
+}
+STORE_TAGS = {"eBay": "#eBayFinds", "Best Buy": "#BestBuyDeals", "Walmart": "#WalmartFinds", "Target": "#TargetFinds",
+              "Amazon": "#AmazonFinds", "Home Depot": "#HomeDepotDeals", "Lowe's": "#LowesDeals",
+              "Macy's": "#MacysDeals", "Dick's Sporting Goods": "#DicksSportingGoods"}
+
+
+def brand_tag(title):
+    """'#Adidas', '#UnderArmour', '#Levis' for a known brand named in the title, else None."""
+    for brand in BRANDS:
+        if re.search(r"(?<![\w])" + re.escape(brand) + r"(?![\w])", title, re.I):
+            return "#" + re.sub(r"[^A-Za-z0-9]", "", "".join(w[:1].upper() + w[1:] for w in brand.split()))
+    return None
+
+
 def hashtags(deal):
+    title = str(deal.get("title", ""))
     category = deal.get("category") or "Other"
     if category == "Electronics":
         category = "Tech"
-    elif category == "Home" and KITCHEN.search(str(deal.get("title", ""))):
+    elif category == "Home" and KITCHEN.search(title):
         category = "Kitchen"
-    return HASHTAGS.get(category, HASHTAGS["Other"])
+    pool = HASHTAGS.get(category, HASHTAGS["Other"]).split()
+    seed = int(post_key(deal), 16)
+    extra = [pool[1 + (seed + i * 3) % (len(pool) - 1)] for i in range(2)]
+    tags = [brand_tag(title)]
+    tags += next((t.split() for rx, t in PRODUCT_TAGS if re.search(rx, title, re.I)), [])
+    tags += [pool[0], *extra, STORE_TAGS.get(deal.get("store")), "#BestDealHunter"]
+    seen, out = set(), []
+    for tag in tags:
+        if tag and tag.lower() not in seen:
+            seen.add(tag.lower())
+            out.append(tag)
+    return " ".join(out[:10])
 
 
 def checked_at(deal):
