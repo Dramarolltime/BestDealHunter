@@ -1,8 +1,182 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BestDealHunter | Deals from US stores</title><style>
-:root{font-family:system-ui,sans-serif;color:#182230;background:#f7f9fc}*{box-sizing:border-box}body{margin:0}header{background:#101828;color:white;padding:20px 5%;font-weight:800;font-size:23px}header span{color:#6ee7b7}main{max-width:1100px;margin:auto;padding:30px 20px}.hero{background:linear-gradient(120deg,#172554,#0f766e);color:white;padding:40px 30px;border-radius:22px}.hero h1{font-size:clamp(22px,3.5vw,42px);line-height:1.15}.hero p{max-width:650px;line-height:1.6}.search{display:flex;gap:10px;flex-wrap:wrap}.search input{flex:1;min-width:170px;padding:15px;border:0;border-radius:10px;font-size:16px}.search button{padding:15px 25px;border:0;border-radius:10px;background:#fbbf24;font-weight:800}.notice{background:#fff7ed;border:1px solid #fed7aa;padding:18px;border-radius:14px;margin:22px 0}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.filters button{padding:10px 15px;border:1px solid #cbd5e1;background:white;border-radius:30px}.filters button.active{background:#101828;color:white}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:16px}.grid .card{width:100%;min-width:0}.grid .deal-image{max-height:240px}.card{background:white;border:1px solid #e5e7eb;border-radius:16px;padding:22px}.card h3{margin:12px 0}.deal-image{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:12px;background:#f1f5f9;display:block;margin-bottom:12px}.pill{background:#dcfce7;color:#166534;border-radius:8px;padding:6px 9px;font-size:13px;font-weight:800}.pill.expired{background:#fee2e2;color:#991b1b}.pill.unverified{background:#fef3c7;color:#92400e}.card.archived{background:#f8fafc}.card.archived .deal-image{filter:grayscale(1);opacity:.55}.stale-image{position:relative;overflow:hidden;border-radius:12px;margin-bottom:12px}.stale-image .deal-image{margin-bottom:0}.card .stale-image .deal-image,.card .deal-link:hover .stale-image .deal-image{filter:grayscale(1) blur(6px);opacity:.45}.stale-banner{position:absolute;left:8px;right:8px;top:8px;z-index:1;background:#92400e;color:#fff;font-weight:800;font-size:13px;text-align:center;padding:7px 8px;border-radius:8px}.card.archived h3{color:#475569}.card .deal-link{display:block;color:inherit;text-decoration:none}.card .deal-link:hover h3,.card .deal-link:focus-visible h3{text-decoration:underline}.card .deal-link:hover .deal-image{opacity:.88}.card .deal-link:focus-visible{outline:3px solid #0f766e;outline-offset:3px;border-radius:8px}.card a:not(.deal-link){display:block;background:#101828;color:white;text-align:center;text-decoration:none;padding:12px;border-radius:9px;margin-top:16px}.muted{color:#667085}.promo{margin:10px 0;padding:12px;border:1px dashed #0f766e;border-radius:10px;background:#ecfdf5}.copy-code{margin-left:8px;padding:6px 10px;border:0;border-radius:6px;background:#0f766e;color:white;cursor:pointer}.section-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 10px}.section-tabs button{padding:13px 18px;border:1px solid #cbd5e1;border-radius:12px;background:white;font-weight:750;cursor:pointer}.section-tabs button.active{background:#101828;color:white;border-color:#101828}footer{text-align:center;padding:30px;color:#667085;font-size:13px}.brand-post{max-width:420px;margin:34px auto 10px;text-align:center}.brand-post a{color:inherit}.brand-post img{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 8px 28px rgba(16,24,40,.18)}.brand-post p{margin:12px 0 0;font-weight:700}</style></head><body>
-<header>⚡ BestDeal<span>Hunter</span></header><main><div style="font-size:12px;color:#667085;margin-bottom:10px">Impact-Site-Verification: 506e7ba6-e633-41f0-9624-0b84a7102cec</div><section class="hero"><div>YOUR NEXT GREAT FIND STARTS HERE</div><h1>Big discounts. Less searching.</h1><form class="search" id="search"><input id="q" placeholder="Search deals, brands, categories..." aria-label="Search deals"><button>Find deals →</button></form></section><nav class="section-tabs" aria-label="Deal sections"><button id="tab-main" class="active" type="button" aria-pressed="true">Explore Deals</button><button id="tab-affiliate" type="button" aria-pressed="false">More Deals &amp; Promo Codes</button><button id="tab-archive" type="button" aria-pressed="false">Past Deals (expired)</button></nav><h2 id="section-heading">Explore Deals</h2><p class="muted" id="section-description"></p><div class="filters" id="tiers" aria-label="Deal sections"></div><div class="filters" id="categories"></div><div class="filters" id="stores"></div><div class="grid" id="grid" aria-live="polite"></div><section class="brand-post" id="brand-post" hidden><a id="brand-post-link" href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer"><img id="brand-post-image" src="images/brand/bestdealhunter-logo-1080.jpg" width="1080" height="1080" alt="BestDealHunter logo. Opens our Instagram post" loading="lazy"></a><p><a id="brand-post-caption" href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer">See this post on Instagram @best_dealhunter</a></p></section><section><h2>How it works</h2><p>Deals are only published from authorized sources with a valid price comparison. Prices and availability may change; confirm the final price at the retailer.</p></section></main><footer>Disclosure: BestDealHunter may earn commissions from qualifying purchases through affiliate links, at no additional cost to you. As an Amazon Associate I earn from qualifying purchases.<br>© <span id="year"></span> BestDealHunter.</footer>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BestDealHunter | Deals from US stores</title>
+<meta name="description" content="Big discounts. Less searching. 50%+ deals from US stores, checked against the retailer's own listing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0b1a33;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--bg:#f5f6f8;--yellow:#fbbf24;--red:#e11d2e;--green-bg:#dcfce7;--green:#15803d;--amber-bg:#fef3c7;--amber:#92400e;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg)}
+a{color:inherit}
+.wrap{max-width:1440px;margin:0 auto;padding:0 16px}
+/* Header */
+.site-header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.site-header .wrap{display:flex;align-items:center;gap:18px 28px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;flex:none}
+.brand svg{width:40px;height:40px;flex:none}
+.brand-name{font-weight:800;font-size:25px;letter-spacing:-.02em;line-height:1}
+.brand-name span{color:var(--yellow)}
+.brand-tag{font-size:13px;font-weight:500;color:#dbe3f0;margin-top:3px}
+.search{flex:1 1 320px;max-width:560px;display:flex;align-items:center;background:#fff;border-radius:10px;padding:0 12px;order:2}
+.search svg{width:18px;height:18px;flex:none;color:#6b7280}
+.search input{flex:1;min-width:0;border:0;outline:0;padding:12px 10px;font:inherit;font-size:15px;color:var(--ink);background:transparent}
+.search:focus-within{box-shadow:0 0 0 3px rgba(251,191,36,.6)}
+.top-nav{display:flex;gap:4px;margin-left:auto;order:3}
+.top-nav button{background:none;border:0;color:#fff;font:inherit;font-weight:700;font-size:15px;padding:10px 12px;cursor:pointer;border-bottom:3px solid transparent}
+.top-nav button.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+@media (max-width:760px){.search{order:4;flex-basis:100%;max-width:none}.top-nav{margin-left:auto}.brand-tag{display:none}}
+@media (max-width:420px){.brand-name{font-size:21px}.top-nav button{padding:8px 7px;font-size:14px}}
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 6px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-weight:700;font-size:14px;padding:9px 18px;border-radius:999px;cursor:pointer}
+.chips button.active{background:var(--yellow);border-color:var(--yellow)}
+.selects{display:flex;gap:8px;flex:none}
+.selects select{min-width:0;font:inherit;font-weight:600;font-size:14px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+@media (max-width:760px){.selects{flex:1 1 100%;min-width:0}.selects select{flex:1 1 0;width:0}}
+.section-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:10px 0 2px}
+.section-head h1{font-size:20px;margin:0}
+.count{color:var(--muted);font-size:14px;font-weight:500}
+.section-note{color:var(--muted);font-size:13px;margin:4px 0 14px;max-width:900px;line-height:1.5}
+/* Grid: 2 per row on phones, up to 5 on wide screens */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width:640px){.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+@media (min-width:960px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:1200px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+/* Card: the deal image is always shown exactly as made, with no overlay or filter */
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:box-shadow .15s,transform .15s}
+.card:hover{box-shadow:0 8px 24px rgba(17,24,39,.12);transform:translateY(-2px)}
+.deal-link{display:flex;flex-direction:column;flex:1;text-decoration:none;color:inherit}
+.deal-link:focus-visible{outline:3px solid var(--yellow);outline-offset:-3px}
+.deal-image{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#eef1f5}
+.no-image{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;background:#eef1f5;color:var(--muted);font-weight:700}
+.card-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.labels{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.store{font-size:12px;font-weight:800;color:#374151;background:#f3f4f6;border-radius:6px;padding:3px 8px}
+.tag{font-size:12px;font-weight:700;border-radius:6px;padding:3px 8px}
+.tag.past{background:#eef2f7;color:#475569}
+.tag.unverified{background:var(--amber-bg);color:var(--amber)}
+.card h3{font-size:15px;line-height:1.3;margin:2px 0 0;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.deal-link:hover h3{text-decoration:underline}
+.prices{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px}
+.price{font-size:24px;font-weight:800;color:var(--red);letter-spacing:-.01em}
+.card.is-past .price,.card.is-unverified .price{color:var(--ink)}
+.was{color:var(--muted);text-decoration:line-through;font-size:15px;font-weight:500}
+.pill{align-self:flex-start;background:var(--green-bg);color:var(--green);font-weight:800;font-size:13px;border-radius:6px;padding:4px 9px}
+.meta{color:var(--muted);font-size:12.5px;margin:auto 0 0;padding-top:4px;line-height:1.45}
+.promo{margin:0 14px 14px;padding:10px;border:1px dashed #0f766e;border-radius:10px;background:#ecfdf5;font-size:14px}
+.copy-code{margin-left:6px;padding:5px 9px;border:0;border-radius:6px;background:#0f766e;color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.empty{grid-column:1/-1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:30px;text-align:center;color:var(--muted)}
+/* Lower page */
+.info{margin:40px 0 10px;color:#374151;font-size:14px;line-height:1.6;max-width:900px}
+.info h2{font-size:17px;margin:0 0 6px;color:var(--ink)}
+.brand-post{max-width:380px;margin:34px auto 10px;text-align:center}
+.brand-post img{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 8px 28px rgba(16,24,40,.18)}
+.brand-post p{margin:12px 0 0;font-weight:700}
+footer{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px;line-height:1.6}
+.verify{font-size:11px;margin-top:8px}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="BestDealHunter home">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 9h7l5 21h22l5-15H14" fill="none" stroke="#fbbf24" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="39" r="3.6" fill="#fbbf24"/><circle cx="35" cy="39" r="3.6" fill="#fbbf24"/></svg>
+      <span><span class="brand-name">Best<span>Deal</span>Hunter</span><span class="brand-tag" style="display:block">Big discounts. Less searching.</span></span>
+    </a>
+    <form class="search" id="search" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Search deals, brands, categories..." aria-label="Search deals">
+    </form>
+    <nav class="top-nav" aria-label="Deal sections">
+      <button id="tab-main" class="active" type="button" aria-pressed="true">Deals</button>
+      <button id="tab-affiliate" type="button" aria-pressed="false">Promo Codes</button>
+      <button id="tab-archive" type="button" aria-pressed="false">Past Deals</button>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <div class="toolbar">
+    <div class="chips" id="chips" aria-label="Filter deals"></div>
+    <div class="selects">
+      <select id="store" aria-label="Store"></select>
+      <select id="sort" aria-label="Sort deals">
+        <option value="newest">Sort: Newest</option>
+        <option value="discount">Sort: Biggest discount</option>
+        <option value="price">Sort: Lowest price</option>
+      </select>
+    </div>
+  </div>
+  <div class="section-head"><h1 id="section-heading">Deals</h1><span class="count" id="count"></span></div>
+  <p class="section-note" id="section-description"></p>
+  <div class="grid" id="grid" aria-live="polite"></div>
+  <section class="brand-post" id="brand-post" hidden><a id="brand-post-link" href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer"><img id="brand-post-image" src="images/brand/bestdealhunter-logo-1080.jpg" width="1080" height="1080" alt="BestDealHunter logo. Opens our Instagram post" loading="lazy"></a><p><a id="brand-post-caption" href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer">See this post on Instagram @best_dealhunter</a></p></section>
+  <section class="info"><h2>How it works</h2><p>Deals are only published from authorized sources with a valid price comparison. Prices and availability may change; confirm the final price at the retailer. Past Deals show the price recorded when each deal was posted.</p></section>
+</main>
+<footer>Disclosure: BestDealHunter may earn commissions from qualifying purchases through affiliate links, at no additional cost to you. As an Amazon Associate I earn from qualifying purchases.<br>© <span id="year"></span> BestDealHunter. · Follow <a href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer">@best_dealhunter</a>
+<div class="verify">Impact-Site-Verification: 506e7ba6-e633-41f0-9624-0b84a7102cec</div></footer>
 <script>
-const allowedStores=["Amazon","eBay","Walmart","Target","Best Buy","Home Depot","Lowe\u0027s","Macy\u0027s","Dick\u0027s Sporting Goods"];const categories=["All","Electronics","Home","Fashion","Beauty","Sports","Other"];const maxVerificationAgeDays=2;let deals=[],cat="All",store="All",tier="50%+ off",query="",section="main";const el=id=>document.getElementById(id);const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));function buttons(id,values,selected,change){el(id).innerHTML=values.map(v=>'<button class="'+(v===selected?'active':'')+'" data-value="'+esc(v)+'">'+esc(v)+'</button>').join("");el(id).querySelectorAll("button").forEach(b=>b.onclick=()=>change(b.dataset.value))}
-function render(){["main","affiliate","archive"].forEach(t=>{el("tab-"+t).classList.toggle("active",section===t);el("tab-"+t).setAttribute("aria-pressed",String(section===t))});el("section-heading").textContent={main:"Explore Deals",affiliate:"More Deals & Promo Codes",archive:"Past Deals (expired)"}[section];el("section-description").textContent={main:"50%+ discounts from verified retailer listings. Deals stay listed until their offer ends; a price not re-checked in the last 2 days is labelled \u201cPrice not re-verified\u201d.",affiliate:"Additional verified discounts and promo codes from approved affiliate partners.",archive:"Deals whose offer has ended, kept for reference. Prices shown are from when each deal was posted and are not verified now."}[section];el("tiers").style.display=section==="main"?"flex":"none";buttons("tiers",["50%+ off","Other deals (20–49% off)","All deals"],tier,v=>{tier=v;render()});buttons("categories",categories,cat,v=>{cat=v;render()});buttons("stores",["All",...allowedStores],store,v=>{store=v;render()});const list=deals.filter(d=>(section==="archive"?d.archived:!d.archived&&(section==="affiliate"?(d.section==="affiliate"||d.affiliate_section===true):(d.section!=="affiliate"&&d.affiliate_section!==true&&(tier==="All deals"||(tier==="50%+ off"?d.discount_percent>=50:d.discount_percent>=20&&d.discount_percent<50)))))&&(cat==="All"||d.category===cat)&&(store==="All"||d.store===store)&&(d.title+" "+d.store+" "+d.category).toLowerCase().includes(query));el("grid").innerHTML=list.length?[...list].sort((a,b)=>(b.published_at||b.verified_date||"").localeCompare(a.published_at||a.verified_date||"")||(a._feed_index-b._feed_index)).map(d=>'<article class="card'+(d.archived?' archived':'')+'"><a class="deal-link" href="'+esc(d.url)+'" target="_blank" rel="noopener noreferrer sponsored" aria-label="'+(d.archived?'Check current price of ':'View ')+esc(d.title)+' at '+esc(d.store)+'">'+(d.image&&/^images\/(?:generated\/)?[A-Za-z0-9_.-]+\.(?:png|jpe?g|webp)$/i.test(d.image)?(d.unverified||d.archived?'<div class="stale-image"><span class="stale-banner">'+(d.archived?'Offer ended \u2014 old price':'Old price shown \u2014 not current')+'</span>':'')+'<img class="deal-image" src="'+esc((d.image_url||new URL(d.image,document.baseURI).href))+'" alt="'+esc(d.title)+(d.archived?' graphic with an expired price':d.unverified?' graphic with an old, unverified price':' promotional graphic')+'" loading="lazy">'+(d.unverified||d.archived?'</div>':''):'')+'<h3>'+esc(d.title)+'</h3></a><div class="muted">'+esc(d.store)+'</div>'+(d.archived?'<span class="pill expired">Expired · price not verified</span><p>Price at time of posting: $'+d.price.toFixed(2)+' · reference $'+d.original_price.toFixed(2)+'</p>':(d.unverified?'<span class="pill unverified">Price not re-verified</span><p>$'+d.price.toFixed(2)+' · reference $'+d.original_price.toFixed(2)+' <span class="muted">(at last check: '+d.discount_percent+'% off)</span></p>':'<span class="pill">'+d.discount_percent+'% OFF</span><p>$'+d.price.toFixed(2)+' · reference $'+d.original_price.toFixed(2)+'</p>'))+(d.promo_code&&!d.archived?'<div class="promo">Use code <strong>'+esc(d.promo_code)+'</strong> <button type="button" class="copy-code" data-code="'+esc(d.promo_code)+'">Copy code</button>'+(d.promo_note?'<div class="muted">'+esc(d.promo_note)+'</div>':'')+'</div>':'')+(d.archived?'<p class="muted">Last verified '+esc(d.verified_date)+(d.expires_date?' · Offer ended '+esc(d.expires_date):'')+'. This offer may no longer be available; check the retailer for the current price.</p>':'<p class="muted">'+(d.unverified?'Price last checked '+esc(d.verified_date)+'; it may have changed. Confirm at the retailer.':'Checked '+esc(d.verified_date))+(d.expires_date?' · Offer ends '+esc(d.expires_date):'')+'</p>')+'</article>').join(""):'<div class="card">'+(section==="archive"?'No past deals yet.':'No verified deals in this section yet. Check back after authorized retailer feeds are connected.')+'</div>';el("grid").querySelectorAll(".copy-code").forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.code);b.textContent="Copied!"}catch(e){b.textContent="Select code to copy"}})}
-el("tab-main").onclick=()=>{section="main";render()};el("tab-affiliate").onclick=()=>{section="affiliate";render()};el("tab-archive").onclick=()=>{section="archive";render()};el("search").onsubmit=e=>{e.preventDefault();query=el("q").value.trim().toLowerCase();render();el("grid").scrollIntoView({behavior:"smooth"})};el("year").textContent=new Date().getFullYear();fetch("./brand-post.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(b=>{const u=b&&b.instagram_url;if(typeof u!=="string"||!/^https:\/\/www\.instagram\.com\/(?:p|reel)\/[A-Za-z0-9_-]+\/?$/.test(u))return;el("brand-post-link").href=u;el("brand-post-caption").href=u;el("brand-post").hidden=false}).catch(()=>{});Promise.all([fetch("./deals.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("No feed");return r.json()}),fetch("./cloudinary-images.json",{cache:"no-store"}).then(r=>r.ok?r.json():[]).catch(()=>[])]).then(([data,hosted])=>{const hostedImages=new Map((Array.isArray(hosted)?hosted:[]).filter(x=>typeof x.image==="string"&&typeof x.cloudinary_url==="string"&&x.cloudinary_url.startsWith("https://res.cloudinary.com/j9g6uest/image/upload/")).map(x=>[x.image,x.cloudinary_url]));if(!Array.isArray(data))throw Error("Invalid feed");deals=data.map((d,i)=>({...d,image_url:hostedImages.get(d.image)||"",_feed_index:i})).filter(d=>{if(!d||!allowedStores.includes(d.store)||typeof d.title!=="string"||typeof d.category!=="string"||typeof d.url!=="string"||!/^https:\/\//.test(d.url)||!Number.isFinite(d.price)||!Number.isFinite(d.original_price)||d.price<=0||d.original_price<=d.price||typeof d.verified_date!=="string")return false;const today=new Date();today.setHours(0,0,0,0);const verified=new Date(d.verified_date+"T00:00:00");d.archived=d.status==="archived"||!!(d.expires_date&&new Date(d.expires_date+"T23:59:59")<new Date());d.unverified=!d.archived&&!(verified>=new Date(today.getTime()-maxVerificationAgeDays*864e5));const pct=Math.floor(100*(d.original_price-d.price)/d.original_price);if(pct<20&&d.section!=="affiliate"&&d.affiliate_section!==true)return false;d.discount_percent=pct;return true});render()}).catch(()=>{render()});
-</script></body></html>
+const allowedStores=["Amazon","eBay","Walmart","Target","Best Buy","Home Depot","Lowe's","Macy's","Dick's Sporting Goods"];const categories=["All","Electronics","Home","Fashion","Beauty","Sports","Other"];const maxVerificationAgeDays=2;
+let deals=[],cat="All",store="All",tier="All Deals",query="",sort="newest",section=location.hash==="#past"?"archive":location.hash==="#promo"?"affiliate":"main";
+const el=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=n=>"$"+n.toFixed(2);
+const day=s=>{const d=new Date(String(s).slice(0,10)+"T00:00:00Z");return isNaN(d)?esc(s):d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"})};
+const postedAt=d=>d.published_at||d.auto_published_at||d.verified_date||"";
+const sorters={newest:(a,b)=>postedAt(b).localeCompare(postedAt(a))||(a._feed_index-b._feed_index),discount:(a,b)=>b.discount_percent-a.discount_percent||postedAt(b).localeCompare(postedAt(a)),price:(a,b)=>a.price-b.price};
+const chipValues=()=>section==="main"?["All Deals","50%+ Off",...categories.slice(1)]:categories.map(c=>c==="All"?"All Deals":c);
+function inSection(d){
+  if(section==="archive")return d.archived;
+  if(d.archived)return false;
+  const affiliate=d.section==="affiliate"||d.affiliate_section===true;
+  if(section==="affiliate")return affiliate;
+  return !affiliate&&(tier!=="50%+ Off"||d.discount_percent>=50);
+}
+function image(d){
+  // Shown exactly as made: no overlay, blur, grayscale or fading, for current and past deals alike.
+  if(!(d.image&&/^images\/(?:generated\/)?[A-Za-z0-9_.-]+\.(?:png|jpe?g|webp)$/i.test(d.image)))return '<div class="no-image">'+esc(d.store)+'</div>';
+  return '<img class="deal-image" src="'+esc(d.image_url||new URL(d.image,document.baseURI).href)+'" alt="'+esc(d.title)+' deal graphic" loading="lazy">';
+}
+function card(d){
+  const past=d.archived,stale=!past&&d.unverified;
+  const labels='<div class="labels"><span class="store">'+esc(d.store)+'</span>'+(past?'<span class="tag past">Past Deal</span>':stale?'<span class="tag unverified">Price not re-verified</span>':'')+'</div>';
+  const prices='<div class="prices"><span class="price">'+money(d.price)+'</span><span class="was">'+money(d.original_price)+'</span></div>';
+  const pill='<span class="pill">'+d.discount_percent+'% OFF</span>';
+  const stock=/^in stock/i.test(d.availability||"")?" · In stock":"";
+  const meta=past?'Price when posted · last verified '+day(d.verified_date)+(d.expires_date?' · Offer ended '+day(d.expires_date):'')+'. Check the retailer for the current price.'
+    :stale?'Price last checked '+day(d.verified_date)+'; it may have changed. Confirm at the retailer.'
+    :'Verified '+day(d.verified_date)+stock+(d.expires_date?' · Ends '+day(d.expires_date):'');
+  const promo=d.promo_code&&!past?'<div class="promo">Use code <strong>'+esc(d.promo_code)+'</strong> <button type="button" class="copy-code" data-code="'+esc(d.promo_code)+'">Copy code</button>'+(d.promo_note?'<div class="meta">'+esc(d.promo_note)+'</div>':'')+'</div>':'';
+  return '<article class="card'+(past?' is-past':'')+(stale?' is-unverified':'')+'"><a class="deal-link" href="'+esc(d.url)+'" target="_blank" rel="noopener noreferrer sponsored" aria-label="'+(past?'Check current price of ':'View ')+esc(d.title)+' at '+esc(d.store)+'">'+image(d)+'<div class="card-body">'+labels+'<h3>'+esc(d.title)+'</h3>'+prices+pill+'<p class="meta">'+meta+'</p></div></a>'+promo+'</article>';
+}
+function render(){
+  ["main","affiliate","archive"].forEach(t=>{el("tab-"+t).classList.toggle("active",section===t);el("tab-"+t).setAttribute("aria-pressed",String(section===t))});
+  el("section-heading").textContent={main:"Deals",affiliate:"Promo Codes",archive:"Past Deals"}[section];
+  el("section-description").textContent={main:"Discounts from verified retailer listings, newest first. A price not re-checked in the last 2 days is labelled “Price not re-verified”.",affiliate:"Additional verified discounts and promo codes from approved affiliate partners.",archive:"Deals whose offer has ended, kept for reference. Each shows the price recorded when it was posted; it is not verified now."}[section];
+  const values=chipValues();if(!values.includes(tier)&&!values.includes(cat))tier="All Deals";
+  const selected=cat!=="All"?cat:tier;
+  el("chips").innerHTML=values.map(v=>'<button type="button" class="'+(v===selected?'active':'')+'" aria-pressed="'+(v===selected)+'" data-value="'+esc(v)+'">'+esc(v)+'</button>').join("");
+  el("chips").querySelectorAll("button").forEach(b=>b.onclick=()=>{const v=b.dataset.value;if(categories.includes(v)){cat=v;tier="All Deals"}else{cat="All";tier=v}render()});
+  const list=deals.filter(d=>inSection(d)&&(cat==="All"||d.category===cat)&&(store==="All"||d.store===store)&&(d.title+" "+d.store+" "+d.category).toLowerCase().includes(query)).sort(sorters[sort]);
+  el("count").textContent=list.length+(list.length===1?" deal":" deals");
+  el("grid").innerHTML=list.length?list.map(card).join(""):'<div class="empty">'+(section==="archive"?"No past deals yet.":"No deals match right now. Check back soon — new deals are added every hour.")+'</div>';
+  el("grid").querySelectorAll(".copy-code").forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.code);b.textContent="Copied!"}catch(e){b.textContent="Select code to copy"}});
+}
+function go(s){section=s;history.replaceState(null,"",s==="archive"?"#past":s==="affiliate"?"#promo":location.pathname);render()}
+el("tab-main").onclick=()=>go("main");el("tab-affiliate").onclick=()=>go("affiliate");el("tab-archive").onclick=()=>go("archive");
+el("store").innerHTML=["All",...allowedStores].map(s=>'<option value="'+esc(s)+'">'+(s==="All"?"All stores":esc(s))+'</option>').join("");
+el("store").onchange=e=>{store=e.target.value;render()};el("sort").onchange=e=>{sort=e.target.value;render()};
+el("q").oninput=e=>{query=e.target.value.trim().toLowerCase();render()};
+el("search").onsubmit=e=>{e.preventDefault();query=el("q").value.trim().toLowerCase();render();el("grid").scrollIntoView({behavior:"smooth"})};
+el("year").textContent=new Date().getFullYear();
+fetch("./brand-post.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(b=>{const u=b&&b.instagram_url;if(typeof u!=="string"||!/^https:\/\/www\.instagram\.com\/(?:p|reel)\/[A-Za-z0-9_-]+\/?$/.test(u))return;el("brand-post-link").href=u;el("brand-post-caption").href=u;el("brand-post").hidden=false}).catch(()=>{});
+Promise.all([fetch("./deals.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("No feed");return r.json()}),fetch("./cloudinary-images.json",{cache:"no-store"}).then(r=>r.ok?r.json():[]).catch(()=>[])]).then(([data,hosted])=>{const hostedImages=new Map((Array.isArray(hosted)?hosted:[]).filter(x=>typeof x.image==="string"&&typeof x.cloudinary_url==="string"&&x.cloudinary_url.startsWith("https://res.cloudinary.com/j9g6uest/image/upload/")).map(x=>[x.image,x.cloudinary_url]));if(!Array.isArray(data))throw Error("Invalid feed");deals=data.map((d,i)=>({...d,image_url:hostedImages.get(d.image)||"",_feed_index:i})).filter(d=>{if(!d||!allowedStores.includes(d.store)||typeof d.title!=="string"||typeof d.category!=="string"||typeof d.url!=="string"||!/^https:\/\//.test(d.url)||!Number.isFinite(d.price)||!Number.isFinite(d.original_price)||d.price<=0||d.original_price<=d.price||typeof d.verified_date!=="string")return false;const today=new Date();today.setHours(0,0,0,0);const verified=new Date(d.verified_date+"T00:00:00");d.archived=d.status==="archived"||!!(d.expires_date&&new Date(d.expires_date+"T23:59:59")<new Date());d.unverified=!d.archived&&!(verified>=new Date(today.getTime()-maxVerificationAgeDays*864e5));const pct=Math.floor(100*(d.original_price-d.price)/d.original_price);if(pct<20&&d.section!=="affiliate"&&d.affiliate_section!==true)return false;d.discount_percent=pct;return true});render()}).catch(()=>{render()});
+</script>
+</body>
+</html>
