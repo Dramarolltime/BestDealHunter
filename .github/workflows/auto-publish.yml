@@ -72,6 +72,7 @@ jobs:
             --also-results bestbuy-results.json --also-results ebay-results.json \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" --apply | tee -a "$GITHUB_STEP_SUMMARY"
       - name: AI product pictures (only when the OPENAI_API_KEY secret is set)
+        if: env.LIVE == 'true'  # pull-request test runs don't spend OpenAI credits
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
