@@ -32,7 +32,8 @@ from validate_deals import RULES, deal_status, price_verified, validate
 ROOT = Path(__file__).resolve().parents[1]
 
 
-NOTHING_FRESH = "no listed deal has a price check from the last 2 days and a branded card"
+NOTHING_FRESH = ("no listed deal has a price check from the last 2 days, a hosted branded card and no "
+                 "post yet")
 
 
 class StepFailed(Exception):
@@ -45,14 +46,29 @@ def jpeg(card):
     return buf.getvalue()
 
 
-def pick_deal(deals, wanted, today):
+def ready_for_test(deal, posts, mapping):
+    """Not yet posted, and its committed cards are the hosted ones: a deal already posted, or whose redrawn
+    card waits for the next live run's upload, is mid-pipeline rather than a test candidate."""
+    from publish_buffer import post_key
+    if post_key(deal) in {p.get("key") for p in posts if isinstance(p, dict)}:
+        return False
+    hosted = {m.get("image"): m.get("sha256") for m in mapping if isinstance(m, dict)}
+    for image in (deal.get("image"), feed_card(deal)):
+        path = ROOT / str(image)
+        if not image or not path.is_file() or hosted.get(image) != hashlib.sha256(path.read_bytes()).hexdigest():
+            return False
+    return True
+
+
+def pick_deal(deals, wanted, today, posts=(), mapping=()):
     for deal in deals:
         if not isinstance(deal, dict):
             continue
         if wanted and card_id(deal) != wanted:
             continue
         if not wanted and (deal_status(deal, today) != "active" or not price_verified(deal, today)
-                           or not str(deal.get("image", "")).startswith("images/generated/deal-")):
+                           or not str(deal.get("image", "")).startswith("images/generated/deal-")
+                           or not ready_for_test(deal, posts, mapping)):
             continue
         return deal
     raise StepFailed(f"no deal found for {wanted!r}" if wanted else NOTHING_FRESH)
@@ -145,7 +161,8 @@ class _FakeBuffer:
 
 def step_buffer(deal, deals, mapping, posts, today):
     cid = card_id(deal)
-    approved = apply_dry_run_approval(deals, {cid})
+    # plan this deal on its own: other deals queued ahead of it would take the 1-post-per-run slot
+    approved = [d for d in apply_dry_run_approval(deals, {cid}) if card_id(d) == cid]
     ready, skipped = plan(approved, mapping, posts, today)
     mine = [p for p in ready if p["deal_url"] == deal["url"]]
     if not mine:
@@ -180,7 +197,7 @@ def run(wanted=None, verify_urls=False, today=None):
     posts = json.loads((ROOT / "posts.json").read_text(encoding="utf-8"))
     rows, post = [], None
     try:
-        deal = pick_deal(deals, wanted, today)
+        deal = pick_deal(deals, wanted, today, posts, mapping)
     except StepFailed as exc:
         return [("Pick deal", False, str(exc))], None, None
     steps = [

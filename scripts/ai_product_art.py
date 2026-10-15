@@ -3,7 +3,7 @@
 
 For each newly published deal that has no card yet, ask OpenAI for a studio-style picture of the
 product (no text, prices, logos or brand names), save it as images/source/ai-<card id>.jpg, and point
-the deal's `image_source` at it with `image_source_kind: "ai_illustration"`. The card generator then
+the deal's `image_source` at it with `image_source_kind: "ai_scene"`. The card generator then
 lays out the bold card around the picture, labelled "ILLUSTRATION", and prints every number from the
 verified deal itself; the AI never draws a price.
 
@@ -24,17 +24,19 @@ from pathlib import Path
 
 from PIL import Image
 
-from deal_graphics import AI_KIND, card_id
+from deal_graphics import AI_SCENE, card_id
 
 ROOT = Path(__file__).resolve().parents[1]
 FEED = ROOT / "deals.json"
 SOURCE = ROOT / "images" / "source"
 API = "https://api.openai.com/v1/images/generations"
 DEFAULT_MODEL = "gpt-image-1"
-PROMPT = ("Photorealistic studio product photo of: {title} ({category}). One product, centered, fully visible, "
-          "on a dark navy blue background with a soft blue spotlight glow behind it, clean premium lighting. "
+# Alpha's look (owner, 2026-10-15): a realistic lifestyle photo with the product as the hero, filling the card.
+PROMPT = ("Photorealistic lifestyle product photograph of: {title} ({category}). The product is the clear hero, "
+          "sharp and fully visible in the upper-middle of the frame, shown in a bright, tasteful, real setting "
+          "where it is normally used, soft natural window light, premium magazine style, shallow depth of field. "
           "Show the product exactly as that kind of product normally looks; do not add screens, displays or "
-          "parts it would not have. "
+          "parts it would not have. Keep the bottom third of the frame calm and uncluttered. "
           "Absolutely no text, letters, numbers, prices, logos, brand names, labels or watermarks anywhere in "
           "the image.")
 
@@ -46,7 +48,7 @@ def http(request, timeout=120):
 
 def generate(deal, api_key, model=DEFAULT_MODEL, transport=http):
     """JPEG bytes of a picture of the deal's product."""
-    body = {"model": model, "n": 1, "size": "1024x1024", "quality": "medium",
+    body = {"model": model, "n": 1, "size": "1024x1536", "quality": "medium",
             "prompt": PROMPT.format(title=deal["title"], category=deal.get("category") or "product")}
     request = urllib.request.Request(API, data=json.dumps(body).encode(), method="POST",
                                      headers={"Authorization": f"Bearer {api_key}",
@@ -86,7 +88,7 @@ def run(deals, api_key, limit, model=DEFAULT_MODEL, transport=http, log=print):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         deal["image_source"] = str(path.relative_to(ROOT))
-        deal["image_source_kind"] = AI_KIND
+        deal["image_source_kind"] = AI_SCENE
         made += 1
         log(f"PICTURE {deal.get('title')}: {deal['image_source']}")
     return made
