@@ -20,5 +20,16 @@
     "reserved_at": "2026-10-15T00:33:54+00:00",
     "buffer_post_id": "6ad01f7429c470dd80b7717e",
     "buffer_status": "sent"
+  },
+  {
+    "key": "f2e1f3e27cd72b53",
+    "deal_url": "https://www.ebay.com/itm/198630350504",
+    "title": "Westinghouse Electric Blanket Soft Plush Sherpa Dark Grey, King Size, 100\" X 90\"",
+    "price": 49.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792026762/bestdealhunter/52c12481f0037de789c1b5c7.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-15T03:03:13+00:00",
+    "buffer_post_id": "6ad042735f62d3c5af186306",
+    "buffer_status": "sending"
   }
 ]
