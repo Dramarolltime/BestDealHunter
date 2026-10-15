@@ -121,6 +121,14 @@ class SheetTests(unittest.TestCase):
         self.assertEqual(si.main([], env={}, opener=boom), 0)
         self.assertEqual(si.main([], env={"DEALS_SHEET_CSV_URL": "https://evil.example.com/x.csv"}, opener=boom), 1)
 
+    def test_share_link_becomes_the_csv_export(self):
+        sid = "1OExDVOjUYZP5eDucyDv-tsJAMXeHZexmzVePnkKmuMw"
+        self.assertEqual(si.csv_url(f"https://docs.google.com/spreadsheets/d/{sid}/edit"),
+                         f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv")
+        self.assertEqual(si.csv_url(f"https://docs.google.com/spreadsheets/d/{sid}/edit?usp=sharing#gid=123"),
+                         f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv&gid=123")
+        self.assertIsNone(si.csv_url("https://evil.example.com/spreadsheets/d/x"))
+
     def test_drive_links_and_times(self):
         self.assertIsNone(si.drive_download_url("https://example.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWx/view"))
         self.assertEqual(si.checked_time("10/15/2026 9:30:00").utcoffset().total_seconds(), -7 * 3600)
