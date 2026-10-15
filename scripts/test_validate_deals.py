@@ -227,7 +227,8 @@ class ConsistencyTests(unittest.TestCase):
         deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
         if deals:
             newest = max(date.fromisoformat(d["verified_date"]) for d in deals)
-            self.assertEqual(validate(deals, today=newest), len(deals))
+            active, archived = validate_feed(deals, today=newest)  # older deals may be stale or archived
+            self.assertEqual(active + archived, len(deals))
 
     def test_queued_categories_are_known(self):
         pending = json.loads((ROOT / "pending_deals.json").read_text(encoding="utf-8"))

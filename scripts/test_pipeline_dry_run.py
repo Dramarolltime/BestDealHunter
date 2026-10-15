@@ -38,7 +38,9 @@ class PipelineTests(unittest.TestCase):
 
     @unittest.skipUnless(LIVE, "needs live deals")
     def test_card_out_of_date_with_price_change_fails(self):
-        changed = [dict(LIVE[0], price=round(LIVE[0]["original_price"] * 0.3, 2))] + LIVE[1:]
+        i = next(n for n, d in enumerate(LIVE) if d["verified_date"] == TODAY.isoformat() and
+                 str(d.get("image", "")).startswith("images/generated/"))  # a fresh deal with a card
+        changed = LIVE[:i] + [dict(LIVE[i], price=round(LIVE[i]["original_price"] * 0.3, 2))] + LIVE[i + 1:]
         result = by_name(pdr.run(today=TODAY, env={}, root_deals=changed))["Branded cards"]
         self.assertEqual(result["status"], pdr.FAIL)
         self.assertIn("out of date", " ".join(result["details"]))

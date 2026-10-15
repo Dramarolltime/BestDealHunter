@@ -91,7 +91,24 @@ def page_check_allowed(url):
     return any(host == h or host.endswith("." + h) for h in RULES.get("page_check_allowed_hosts", []))
 
 
-def select(results, candidates, deals, run_url, today, limit, log=print):
+def refresh(existing, entry, checked_at):
+    """The retailer re-confirmed an auto-published deal at the same prices: record the new check time, so it
+    stays current on the site and can still be posted to Instagram (posts need a check under 3 hours old)."""
+    if not str(existing.get("approved_by", "")).startswith("automatic"):
+        return False
+    try:
+        same = abs(float(existing["price"]) - float(entry["price"])) <= 0.005 and \
+            abs(float(existing["original_price"]) - float(entry["original_price"])) <= 0.005
+    except (KeyError, TypeError, ValueError):
+        return False
+    if not same:
+        return False  # a changed price is not silently re-dated; the old one ages into "Price not re-verified"
+    existing["auto_published_at"] = checked_at
+    existing["verified_date"] = checked_at[:10]
+    return True
+
+
+def select(results, candidates, deals, run_url, today, limit, log=print, refreshed=None):
     """Return the new deals.json entries for every verified page (up to limit), logging every skip."""
     by_url = {c["url"]: c for c in candidates if isinstance(c, dict) and c.get("url")}
     urls = {d.get("url") for d in deals if isinstance(d, dict)}
@@ -111,8 +128,17 @@ def select(results, candidates, deals, run_url, today, limit, log=print):
                 not page_check_allowed(candidate.get("url") or row["url"]):
             log(f"SKIP {row['url']}: automated page reading is not cleared for this retailer's terms")
             continue
+        rec = record(row, candidate, run_url)
+        existing = next((d for d in deals if isinstance(d, dict) and product_id(d) == product_id(rec)), None)
+        if existing is not None:
+            if refreshed is not None and refresh(existing, rec, row["checked_at"]):
+                refreshed.append(existing.get("title"))
+                log(f"REFRESH {existing.get('title')}: same price re-confirmed at {row['checked_at']}")
+            else:
+                log(f"SKIP {row['url']}: product already listed ({product_id(rec)})")
+            continue
         try:
-            entry = check(record(row, candidate, run_url), today, urls)
+            entry = check(rec, today, urls)
         except (Rejected, ValueError) as exc:
             log(f"SKIP {row['url']}: {exc}")
             continue
@@ -160,13 +186,15 @@ def main(argv=None, today=None):
         candidates += data if isinstance(data, list) else []
     feed = ROOT / "deals.json"
     deals = json.loads(feed.read_text(encoding="utf-8"))
-    new = select(results, candidates, deals, args.run_url, today, args.max)
+    refreshed = []
+    new = select(results, candidates, deals, args.run_url, today, args.max, refreshed=refreshed)
     print(f"{len(new)} page-verified deal(s) ready; verdicts: "
           + json.dumps({v: sum(r.get('verdict') == v for r in results) for v in sorted({r.get('verdict') for r in results})}))
-    if new and args.apply:
+    if (new or refreshed) and args.apply:
         feed.write_text(json.dumps(deals + new, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-        print(f"Published {len(new)} deal(s) to deals.json (publication_approved true).")
-    elif new:
+        print(f"Published {len(new)} deal(s) to deals.json (publication_approved true); "
+              f"re-confirmed {len(refreshed)} listed deal(s).")
+    elif new or refreshed:
         print("Dry run: deals.json unchanged (use --apply).")
     return 0
 
