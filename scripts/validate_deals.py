@@ -106,6 +106,11 @@ def validate(data, today=None, allow_archived=False):
         if key in seen:
             raise ValueError(f"Deal {i}: duplicate product URL")
         seen.add(key)
+        if deal.get("affiliate_url") is not None:
+            aff = urlparse(str(deal["affiliate_url"]))
+            if not (deal["affiliate_url"].startswith(url.split("?")[0] + "?") and aff.hostname == "www.ebay.com"
+                    and parse_qs(aff.query).get("campid")):
+                raise ValueError(f"Deal {i}: affiliate_url must be an eBay Partner Network link to the same item")
         price, original = deal.get("price"), deal.get("original_price")
         if type(price) not in (int, float) or type(original) not in (int, float) or not (0 < price < original):
             raise ValueError(f"Deal {i}: invalid prices")

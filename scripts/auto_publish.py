@@ -22,7 +22,7 @@ from datetime import date
 from pathlib import Path
 
 from add_verified_deals import Rejected, check
-from links import direct_url
+from links import direct_url, ebay_affiliate_url, ebay_campaign_id
 from publish_buffer import product_id
 from validate_deals import RULES
 
@@ -156,6 +156,9 @@ def select(results, candidates, deals, run_url, today, limit, log=print, refresh
         entry.update(publication_approved=True, approved_by=APPROVED_BY, auto_published_at=row["checked_at"])
         if row.get("photo_url"):
             entry["listing_photo_url"] = row["photo_url"]
+        affiliate = ebay_affiliate_url(entry["url"], ebay_campaign_id()) if entry["store"] == "eBay" else None
+        if affiliate:
+            entry["affiliate_url"] = affiliate  # card and caption then carry the #ad commission disclosure
         if candidate.get("asin"):
             entry["asin"] = candidate["asin"]
         if len(new) >= limit:

@@ -33,7 +33,7 @@ from zoneinfo import ZoneInfo
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageOps
 
-from links import disclosure, is_affiliate_link
+from links import disclosure, is_affiliate_link, link
 
 ROOT = Path(__file__).resolve().parents[1]
 FONTS = ROOT / "assets" / "fonts"
@@ -348,7 +348,7 @@ def render_card(deal, kind="feed"):
     listing = bool(photo_path) and deal.get("image_source_kind") == LISTING_PHOTO
     b = 0.78 if scene or listing else 1.0  # smaller badge, so the product photo stays visible
     if deal.get("image_source_kind") == AI_SCENE_FROM_PHOTO and photo_path:
-        top_of_badge = h - 40 * k - (36 * k if is_affiliate_link(deal.get("url")) else 0) - 260 * k - 340 * k * b
+        top_of_badge = h - 40 * k - (36 * k if is_affiliate_link(link(deal)) else 0) - 260 * k - 340 * k * b
         canvas = scene_band(photo_path, (w, h), top_of_badge + 110 * k)
     elif scene:
         canvas = scene_background(photo_path, (w, h))
@@ -375,7 +375,7 @@ def render_card(deal, kind="feed"):
 
     # With a picture (an AI illustration or an authorized photo), it fills the middle under a shorter title,
     # drawn first so the % OFF badge overlaps its lower edge as in Alpha's images.
-    foot_y = h - 40 * k - (36 * k if is_affiliate_link(deal.get("url")) else 0)
+    foot_y = h - 40 * k - (36 * k if is_affiliate_link(link(deal)) else 0)
     badge_top = foot_y - 260 * k - 340 * k * b
     if photo_path and not scene:
         title_face = font(60 * k, 800)
@@ -393,7 +393,7 @@ def render_card(deal, kind="feed"):
     foot = f"{SITE}  ·  Price as of {facts['as_of']}  ·  Prices may change" if facts["as_of"] else \
         f"{SITE}  ·  Prices may change"
     y = h - 40 * k
-    if is_affiliate_link(deal.get("url")):
+    if is_affiliate_link(link(deal)):
         draw.text((w / 2, y), disclosure(deal)[0], font=font(24 * k, 500), fill=GRAY, anchor="ms")
         y -= 36 * k
     draw.text((w / 2, y), foot, font=fit(draw, foot, 500, int(25 * k), w - 2 * margin), fill=GRAY, anchor="ms")

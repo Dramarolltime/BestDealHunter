@@ -35,7 +35,7 @@ from datetime import date
 from pathlib import Path
 
 from deal_graphics import CardError, as_of_text, card_facts
-from links import disclosure, is_affiliate_link
+from links import disclosure, is_affiliate_link, link
 from validate_deals import validate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -180,7 +180,7 @@ def caption(deal):
         "",
         hashtags(deal),
     ]
-    if is_affiliate_link(deal.get("url")):
+    if is_affiliate_link(link(deal)):
         lines += ["", *disclosure(deal)[1]]
     text = "\n".join(lines)
     if len(text) > CAPTION_LIMIT or text.count("#") > HASHTAG_LIMIT:

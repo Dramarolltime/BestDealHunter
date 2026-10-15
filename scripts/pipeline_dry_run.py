@@ -145,8 +145,8 @@ def check_publishing(deals, today, env):
             violations.append(f"{post['title']}: archived deal planned for posting")
         if deal.get("publication_approved") is not True:
             violations.append(f"{post['title']}: unapproved deal planned for posting")
-        from links import is_affiliate_link
-        if is_affiliate_link(deal.get("url")) and "#ad" not in post["text"]:
+        from links import is_affiliate_link, link
+        if is_affiliate_link(link(deal)) and "#ad" not in post["text"]:
             violations.append(f"{post['title']}: caption missing #ad disclosure")
     switch = "ON" if env.get("INSTAGRAM_PUBLISH_ENABLED") == "true" else "OFF"
     details = [f"Kill switch INSTAGRAM_PUBLISH_ENABLED: {switch}"] + \
