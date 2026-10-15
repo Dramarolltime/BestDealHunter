@@ -72,6 +72,28 @@ a{color:inherit}
 .meta{color:var(--muted);font-size:12.5px;margin:auto 0 0;padding-top:4px;line-height:1.45}
 .promo{margin:0 14px 14px;padding:10px;border:1px dashed #0f766e;border-radius:10px;background:#ecfdf5;font-size:14px}
 .copy-code{margin-left:6px;padding:5px 9px;border:0;border-radius:6px;background:#0f766e;color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.rail-head{display:flex;align-items:baseline;gap:10px;margin:14px 0 8px}
+.rail-head h2{font-size:20px;margin:0;white-space:nowrap}
+.rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(160px,42%);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 12px;scrollbar-width:thin}
+@media (min-width:640px){.rail{grid-auto-columns:220px}}
+.rail .card{scroll-snap-align:start}
+.rail .card h3{font-size:14px}
+.rail .price{font-size:20px}
+.rail .meta{display:none}
+.tag.new{background:#fee2e2;color:#b91c1c}
+.posted{color:var(--muted);font-size:12px}
+/* Phones: latest deals as a list, small photo on the left (like a deals app) */
+@media (max-width:639px){
+  .grid{grid-template-columns:1fr;gap:0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .grid .card{border:0;border-bottom:1px solid var(--line);border-radius:0}
+  .grid .card:hover{transform:none;box-shadow:none}
+  .grid .deal-link{flex-direction:row;align-items:flex-start;gap:12px;padding:12px}
+  .grid .deal-image,.grid .no-image{width:104px;flex:none;border-radius:10px}
+  .grid .card-body{padding:0;gap:4px}
+  .grid .price{font-size:20px}
+  .grid .pill{font-size:12px;padding:2px 7px}
+  .grid .promo{margin:0 12px 12px}
+}
 .empty{grid-column:1/-1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:30px;text-align:center;color:var(--muted)}
 /* Lower page */
 .info{margin:40px 0 10px;color:#374151;font-size:14px;line-height:1.6;max-width:900px}
@@ -113,6 +135,7 @@ footer{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px;lin
       </select>
     </div>
   </div>
+  <section id="top-deals" hidden><div class="rail-head"><h2>Top Deals</h2><span class="count">biggest discounts now · swipe →</span></div><div class="rail" id="rail"></div></section>
   <div class="section-head"><h1 id="section-heading">Deals</h1><span class="count" id="count"></span></div>
   <p class="section-note" id="section-description"></p>
   <div class="grid" id="grid" aria-live="polite"></div>
@@ -143,9 +166,11 @@ function image(d){
   if(!(d.image&&/^images\/(?:generated\/)?[A-Za-z0-9_.-]+\.(?:png|jpe?g|webp)$/i.test(d.image)))return '<div class="no-image">'+esc(d.store)+'</div>';
   return '<img class="deal-image" src="'+esc(d.image_url||new URL(d.image,document.baseURI).href)+'" alt="'+esc(d.title)+' deal graphic" loading="lazy">';
 }
+const posted=d=>{const s=postedAt(d);if(s.length<=10)return day(s);const t=new Date(s);if(isNaN(t))return "";const now=new Date(),y=new Date(now);y.setDate(now.getDate()-1);const time=t.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});return t.toDateString()===now.toDateString()?"Today "+time:t.toDateString()===y.toDateString()?"Yesterday "+time:t.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" "+time};
+const isNew=d=>{const t=new Date(postedAt(d));return postedAt(d).length>10&&!isNaN(t)&&Date.now()-t<864e5};
 function card(d){
   const past=d.archived,stale=!past&&d.unverified;
-  const labels='<div class="labels"><span class="store">'+esc(d.store)+'</span>'+(past?'<span class="tag past">Past Deal</span>':stale?'<span class="tag unverified">Price not re-verified</span>':'')+'</div>';
+  const labels='<div class="labels"><span class="store">'+esc(d.store)+'</span>'+(past?'<span class="tag past">Past Deal</span>':stale?'<span class="tag unverified">Price not re-verified</span>':isNew(d)?'<span class="tag new">New</span>':'')+(past?'':'<span class="posted">'+posted(d)+'</span>')+'</div>';
   const prices='<div class="prices"><span class="price">'+money(d.price)+'</span><span class="was">'+money(d.original_price)+'</span></div>';
   const pill='<span class="pill">'+d.discount_percent+'% OFF</span>';
   const stock=/^in stock/i.test(d.availability||"")?" · In stock":"";
@@ -166,7 +191,10 @@ function render(){
   const list=deals.filter(d=>inSection(d)&&(cat==="All"||d.category===cat)&&(store==="All"||d.store===store)&&(d.title+" "+d.store+" "+d.category).toLowerCase().includes(query)).sort(sorters[sort]);
   el("count").textContent=list.length+(list.length===1?" deal":" deals");
   el("grid").innerHTML=list.length?list.map(card).join(""):'<div class="empty">'+(section==="archive"?"No past deals yet.":"No deals match right now. Check back soon — new deals are added every hour.")+'</div>';
-  el("grid").querySelectorAll(".copy-code").forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.code);b.textContent="Copied!"}catch(e){b.textContent="Select code to copy"}});
+  const top=section==="main"&&!query&&cat==="All"&&store==="All"&&sort==="newest"?deals.filter(d=>!d.archived&&!d.unverified&&d.section!=="affiliate"&&d.affiliate_section!==true&&d.discount_percent>=50).sort(sorters.discount).slice(0,10):[];
+  el("top-deals").hidden=top.length<3;el("rail").innerHTML=top.length<3?"":top.map(card).join("");
+  if(section==="main")el("section-heading").textContent="Latest Deals";
+  document.querySelectorAll(".copy-code").forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.code);b.textContent="Copied!"}catch(e){b.textContent="Select code to copy"}});
 }
 function go(s){section=s;history.replaceState(null,"",s==="archive"?"#past":s==="affiliate"?"#promo":location.pathname);render()}
 el("tab-main").onclick=()=>go("main");el("tab-affiliate").onclick=()=>go("affiliate");el("tab-archive").onclick=()=>go("archive");
