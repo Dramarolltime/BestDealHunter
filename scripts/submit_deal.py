@@ -162,7 +162,8 @@ def submit(issue, deals, now, fetch=fetch_screenshot, fetch_card=fetch_card_imag
         path.unlink(missing_ok=True)
         raise
     entry.update(publication_approved=True, approved_by=f"owner deal form: {issue.get('html_url')}",
-                 price_checked_at=rec["evidence"]["checked_at"])
+                 price_checked_at=rec["evidence"]["checked_at"],
+                 photo_reference=rec["evidence"]["source"])  # the screenshot shows the real product
     f = fields(issue.get("body"))
     art = SCREENSHOT.search(f.get("Alpha's image", ""))
     confirmed = any(IMAGE_CONFIRMED in line.lower() for line in f.get("Image check", "").splitlines()

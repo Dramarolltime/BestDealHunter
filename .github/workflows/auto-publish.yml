@@ -76,7 +76,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
-        run: python scripts/ai_product_art.py --max 3
+        run: python scripts/ai_product_art.py --max 5
       - name: Branded cards for new deals
         run: python scripts/generate_deal_images.py
       - name: Host new cards on Cloudinary

@@ -56,6 +56,15 @@ SCENE_FROM_PHOTO_PROMPT = (
     "the product. Keep the bottom third of the frame calm. Add no text, prices, logos or watermarks.")
 
 
+SCENE_FROM_SCREENSHOT_PROMPT = (
+    "This is a screenshot of a store's product page. Take the exact product it shows for sale, completely "
+    "unchanged (same shape, colors, materials, proportions and details), and photograph it in a bright, tasteful, "
+    "realistic lifestyle setting where it is normally used. Show only the product in the scene: none of the web "
+    "page, text, prices, buttons or logos. The product is the clear hero, about half the frame's height, centered "
+    "slightly above the middle with generous space around it, soft natural window light, premium magazine style. "
+    "Keep the bottom third of the frame calm. Add no text, prices, logos or watermarks.")
+
+
 def multipart(fields, files):
     """multipart/form-data body for the image edit API."""
     boundary = "bdh" + base64.b16encode(os.urandom(8)).decode()
@@ -71,10 +80,14 @@ def multipart(fields, files):
     return out.getvalue(), f"multipart/form-data; boundary={boundary}"
 
 
-def scene_from_photo(photo_jpeg, api_key, model=DEFAULT_MODEL, transport=http):
-    """JPEG bytes of a lifestyle scene built from the real listing photo (OpenAI image edit)."""
+def scene_from_photo(photo_jpeg, api_key, model=DEFAULT_MODEL, transport=http, prompt=SCENE_FROM_PHOTO_PROMPT):
+    """JPEG bytes of a lifestyle scene built from a real product photo or page screenshot (OpenAI image edit)."""
+    with Image.open(io.BytesIO(photo_jpeg)) as img:  # screenshots may be PNG/WebP; the API gets a JPEG
+        buf = io.BytesIO()
+        img.convert("RGB").save(buf, "JPEG", quality=92)
+        photo_jpeg = buf.getvalue()
     body, content_type = multipart(
-        {"model": model, "prompt": SCENE_FROM_PHOTO_PROMPT, "size": "1024x1536", "quality": "medium",
+        {"model": model, "prompt": prompt, "size": "1024x1536", "quality": "medium",
          "input_fidelity": "high", "n": "1"},
         {"image": ("product.jpg", photo_jpeg, "image/jpeg")})
     request = urllib.request.Request(EDIT_API, data=body, method="POST",
@@ -108,7 +121,8 @@ def generate(deal, api_key, model=DEFAULT_MODEL, transport=http):
 def needs_art(deal):
     """Newly published deals still waiting for their first card, with no picture and no listing photo."""
     return (isinstance(deal, dict) and deal.get("publication_approved") is True and not deal.get("image")
-            and not deal.get("image_source") and not deal.get("listing_photo_url") and deal.get("store") != "Amazon")
+            and not deal.get("image_source") and not deal.get("listing_photo_url") and not deal.get("photo_reference")
+            and deal.get("store") != "Amazon")
 
 
 IMAGE_MAGIC = (b"\xff\xd8\xff", b"\x89PNG", b"RIFF")
@@ -161,19 +175,26 @@ def scenes_from_photos(deals, api_key, limit, model=DEFAULT_MODEL, transport=htt
     website and Instagram. A deal keeps its real listing photo card when the AI call fails or the budget runs out."""
     made = 0
     for deal in deals:
-        if not isinstance(deal, dict) or deal.get("image_source_kind") != LISTING_PHOTO:
+        if not isinstance(deal, dict) or deal.get("card_source") == "submitted":
             continue
-        source = ROOT / str(deal.get("listing_photo_source") or deal.get("image_source"))
+        if deal.get("image_source_kind") == LISTING_PHOTO:
+            source, prompt = ROOT / str(deal.get("listing_photo_source") or deal.get("image_source")), \
+                SCENE_FROM_PHOTO_PROMPT
+        elif deal.get("photo_reference") and not deal.get("image_source"):
+            source, prompt = ROOT / str(deal["photo_reference"]), SCENE_FROM_SCREENSHOT_PROMPT  # form deals
+        else:
+            continue
         if made >= limit:
             log(f"LIMIT {deal.get('title')}: {limit} scenes per run; keeps the listing photo for now")
             continue
         try:
-            data = scene_from_photo(source.read_bytes(), api_key, model, transport)
+            data = scene_from_photo(source.read_bytes(), api_key, model, transport, prompt)
         except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
             reason = f"HTTP {exc.code}" if isinstance(exc, urllib.error.HTTPError) else type(exc).__name__
-            log(f"FAILED scene for {deal.get('title')}: {reason}; keeps the listing photo")
+            log(f"FAILED scene for {deal.get('title')}: {reason}; keeps its current card")
             continue
         path = SOURCE / f"scene-{card_id(deal)}.jpg"
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         deal["image_source"], deal["image_source_kind"] = str(path.relative_to(ROOT)), AI_SCENE_FROM_PHOTO
         if str(deal.get("image", "")).startswith("images/generated/deal-"):
