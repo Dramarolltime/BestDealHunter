@@ -27,9 +27,20 @@
     "title": "Westinghouse Electric Blanket Soft Plush Sherpa Dark Grey, King Size, 100\" X 90\"",
     "price": 49.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792026762/bestdealhunter/52c12481f0037de789c1b5c7.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-15T03:03:13+00:00",
     "buffer_post_id": "6ad042735f62d3c5af186306",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
+  },
+  {
+    "key": "69b7a0f858771218",
+    "deal_url": "https://www.ebay.com/itm/198571327985",
+    "title": "Westinghouse Electric Blanket with 10 Heat Settings, Auto-Off, Queen, 84\" x 90\"",
+    "price": 49.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792035512/bestdealhunter/921cd38f5861f65ee3d1da26.jpg",
+    "status": "sent",
+    "reserved_at": "2026-10-15T03:39:09+00:00",
+    "buffer_post_id": "6ad04adf0d0df6a75bc1aa3a",
+    "buffer_status": "sent"
   }
 ]
