@@ -49,6 +49,7 @@ PACIFIC = ZoneInfo("America/Los_Angeles")
 BACKGROUND, GLOW, GLOW_2, WHITE, GRAY, MUTED = "#07101F", "#1450C8", "#0E2A66", "#FFFFFF", "#B6C2D6", "#8A94A6"
 YELLOW, RED, RED_DARK, PANEL, PANEL_EDGE = "#FACC15", "#E11D2E", "#7F0A14", "#050B16", "#3A4A66"
 AI_KIND = "ai_illustration"  # earlier ai_product_art.py pictures: studio shot inside the card
+LISTING_PHOTO = "listing_photo"  # the retailer listing's own product photo (eBay Browse API), shown unedited
 AI_SCENE = "ai_scene"  # ai_product_art.py lifestyle photos: fill the whole card (Alpha's look)
 REFERENCE_LABELS = {"Best Buy": "Comparable value", "Amazon": "List price", "Macy's": "Original price"}
 _fonts = {}
@@ -249,6 +250,21 @@ def trim(art, threshold=40, pad=0.08):
     return art.crop((max(0, box[0] - px), max(0, box[1] - py), min(art.width, box[2] + px), min(art.height, box[3] + py)))
 
 
+def draw_listing_photo(canvas, path, box, credit):
+    """The real product photo, unedited (only resized), on a white panel, with its source credited."""
+    x0, y0, x1, y1 = (int(v) for v in box)
+    with Image.open(path) as src:
+        photo = ImageOps.exif_transpose(src).convert("RGB")
+    pad = 24
+    photo = ImageOps.contain(photo, (x1 - x0 - 2 * pad, y1 - y0 - 2 * pad - 30), Image.Resampling.LANCZOS)
+    pw, ph = photo.width + 2 * pad, photo.height + 2 * pad
+    left, top = x0 + (x1 - x0 - pw) // 2, y0 + (y1 - y0 - 30 - ph) // 2
+    draw = ImageDraw.Draw(canvas)
+    draw.rounded_rectangle((left, top, left + pw, top + ph), radius=28, fill=WHITE)
+    canvas.paste(photo, (left + pad, top + pad))
+    draw.text((left + pw / 2, top + ph + 26), credit, font=font(20, 700), fill=GRAY, anchor="ms")
+
+
 def draw_art(canvas, path, box, illustration):
     """The product picture, scaled to fit the box (never cropped), its edges faded into the background.
     AI pictures carry an "Illustration" label: they show the kind of product, not the exact item."""
@@ -297,7 +313,8 @@ def render_card(deal, kind="feed"):
     k = 1.0 if kind == "feed" else 0.84
     scene = bool(photo_path) and deal.get("image_source_kind") == AI_SCENE
     canvas = scene_background(photo_path, (w, h)) if scene else background((w, h))
-    b = 0.78 if scene else 1.0  # smaller badge over a full photo, so the product stays visible
+    listing = bool(photo_path) and deal.get("image_source_kind") == LISTING_PHOTO
+    b = 0.78 if scene or listing else 1.0  # smaller badge, so the product photo stays visible
     draw = ImageDraw.Draw(canvas)
     margin = 48
 
@@ -324,8 +341,12 @@ def render_card(deal, kind="feed"):
     if photo_path and not scene:
         title_face = font(60 * k, 800)
         lines = wrap(draw, facts["title"], title_face, w - 2 * margin, 2)
-        art_box = (margin, 190 * k + len(lines) * title_face.size * 1.12 + 12 * k, w - margin, badge_top + 120 * k)
-        draw_art(canvas, photo_path, art_box, illustration=deal.get("image_source_kind") == AI_KIND)
+        art_box = (margin, 190 * k + len(lines) * title_face.size * 1.12 + 12 * k, w - margin,
+                   badge_top + (14 if listing else 120) * k)
+        if deal.get("image_source_kind") == LISTING_PHOTO:
+            draw_listing_photo(canvas, photo_path, art_box, f"PHOTO: {facts['store'].upper()} LISTING")
+        else:
+            draw_art(canvas, photo_path, art_box, illustration=deal.get("image_source_kind") == AI_KIND)
         draw = ImageDraw.Draw(canvas)
 
     # Bottom up: footer, price panel + button, then the brush badge; the title and rows fill the top.

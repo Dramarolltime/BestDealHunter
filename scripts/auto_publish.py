@@ -133,6 +133,8 @@ def select(results, candidates, deals, run_url, today, limit, log=print, refresh
         rec = record(row, candidate, run_url)
         existing = next((d for d in deals if isinstance(d, dict) and product_id(d) == product_id(rec)), None)
         if existing is not None:
+            if row.get("photo_url") and not existing.get("listing_photo_url") and existing.get("store") == "eBay":
+                existing["listing_photo_url"] = row["photo_url"]  # the real product photo replaces any AI picture
             if refreshed is not None and refresh(existing, rec, row["checked_at"]):
                 refreshed.append(existing.get("title"))
                 log(f"REFRESH {existing.get('title')}: same price re-confirmed at {row['checked_at']}")
@@ -152,6 +154,8 @@ def select(results, candidates, deals, run_url, today, limit, log=print, refresh
             log(f"SKIP {row['url']}: product already listed ({product_id(entry)})")
             continue
         entry.update(publication_approved=True, approved_by=APPROVED_BY, auto_published_at=row["checked_at"])
+        if row.get("photo_url"):
+            entry["listing_photo_url"] = row["photo_url"]
         if candidate.get("asin"):
             entry["asin"] = candidate["asin"]
         if len(new) >= limit:

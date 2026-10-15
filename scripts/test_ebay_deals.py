@@ -30,6 +30,11 @@ class RowTests(unittest.TestCase):
         self.assertEqual(r["url"], "https://www.ebay.com/itm/123456789012")
         self.assertEqual((r["store"], r["evidence_method"], r["category_hint"]), ("eBay", "retailer_api", "Home"))
 
+    def test_listing_photo_is_taken_only_from_ebay_at_full_size(self):
+        row = eb.row_for(item(image={"imageUrl": "https://i.ebayimg.com/images/g/abc/s-l225.jpg"}), "2026-10-15T00:00:00Z")
+        self.assertEqual(row["photo_url"], "https://i.ebayimg.com/images/g/abc/s-l1600.jpg")
+        self.assertIsNone(eb.row_for(item(image={"imageUrl": "http://elsewhere.com/x.jpg"}), "t")["photo_url"])
+
     def test_rejections(self):
         mp = item()["marketingPrice"]
         cases = {

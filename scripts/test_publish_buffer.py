@@ -117,6 +117,15 @@ class PlanTests(unittest.TestCase):
         self.assertIn("run limit", skipped[0][1])
         self.assertEqual(ready[0]["channel"], "best_dealhunter")
 
+    def test_daily_post_limit(self):
+        from datetime import datetime, timezone
+        now = datetime(2026, 10, 10, 20, 0, tzinfo=timezone.utc)
+        posts = [{"key": f"{i:016x}", "status": "sent", "reserved_at": f"2026-10-10T{8 + i % 12:02d}:00:00+00:00"}
+                 for i in range(pb.MAX_POSTS_PER_DAY)]
+        ready, skipped = pb.plan([deal()], HOSTED, posts, TODAY, now=now)
+        self.assertEqual(ready, [])
+        self.assertIn("daily limit", skipped[0][1])
+
     def test_already_posted_deal_is_skipped(self):
         ready, skipped = pb.plan([deal()], HOSTED, [{"key": pb.post_key(deal()), "status": "sent"}], TODAY)
         self.assertEqual(ready, [])

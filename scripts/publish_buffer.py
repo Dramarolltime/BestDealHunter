@@ -46,6 +46,7 @@ CHANNEL = "best_dealhunter"  # existing Buffer-connected Instagram channel (per 
 CARD = re.compile(r"images/generated/deal-([0-9a-f]{12})-(?:feed|square)\.jpg")
 CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 30
 MAX_POSTS_PER_RUN = 1
+MAX_POSTS_PER_DAY = 12  # hourly runs: at most 12 Instagram posts in any 24 hours
 MAX_POST_AGE_HOURS = 3  # an auto-published deal is posted only while its page check is this fresh
 # Amazon Associates Program Policies (read 2026-10-13): "your Site may only show prices and availability if:
 # (a) we serve the link in which that price and availability data are displayed, or (b) you obtain Product
@@ -186,6 +187,17 @@ def plan(deals, mapping, posts, today, now=None):
     hosted = hosted_urls(mapping)
     posted_keys = {p.get("key") for p in posts if isinstance(p, dict)}
     ready, skipped = [], []
+    if now is not None:
+        from datetime import datetime, timedelta
+        def stamp(p):
+            try:
+                return datetime.fromisoformat(str(p.get("reserved_at", "")).replace("Z", "+00:00"))
+            except ValueError:
+                return None
+        recent = [p for p in posts if isinstance(p, dict) and stamp(p) and now - stamp(p) < timedelta(hours=24)]
+        if len(recent) >= MAX_POSTS_PER_DAY:
+            return [], [(d.get("title", "Untitled"), f"daily limit of {MAX_POSTS_PER_DAY} posts reached")
+                        for d in deals if isinstance(d, dict)]
     for deal in deals:
         if not isinstance(deal, dict):
             continue
