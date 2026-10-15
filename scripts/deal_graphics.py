@@ -50,8 +50,8 @@ BACKGROUND, GLOW, GLOW_2, WHITE, GRAY, MUTED = "#07101F", "#1450C8", "#0E2A66", 
 YELLOW, RED, RED_DARK, PANEL, PANEL_EDGE = "#FACC15", "#E11D2E", "#7F0A14", "#050B16", "#3A4A66"
 AI_KIND = "ai_illustration"  # earlier ai_product_art.py pictures: studio shot inside the card
 LISTING_PHOTO = "listing_photo"  # the retailer listing's own product photo (eBay Browse API), shown unedited
-AI_SCENE = "ai_scene"
-AI_SCENE_FROM_PHOTO = "ai_scene_from_photo"  # lifestyle scene made by AI from the real listing photo  # ai_product_art.py lifestyle photos: fill the whole card (Alpha's look)
+AI_SCENE = "ai_scene"  # AI lifestyle photo from the product name only (fills the card)
+AI_SCENE_FROM_PHOTO = "ai_scene_from_photo"  # lifestyle scene made by AI from the real listing photo
 REFERENCE_LABELS = {"Best Buy": "Comparable value", "Amazon": "List price", "Macy's": "Original price"}
 _fonts = {}
 
@@ -304,12 +304,12 @@ def draw_art(canvas, path, box, illustration):
         draw.text((right - 14, top_y + 19), label, font=face, fill=GRAY, anchor="rm")
 
 
-def scene_background(path, size):
+def scene_background(path, size, vertical=0.75):
     """A lifestyle photo filling the card, darkened at the top (header, title) and bottom (badge, prices)."""
     w, h = size
     with Image.open(path) as src:
         photo = ImageOps.fit(ImageOps.exif_transpose(src).convert("RGB"), size, Image.Resampling.LANCZOS,
-                             centering=(0.5, 0.75))
+                             centering=(0.5, vertical))
     shade = Image.new("L", size, 0)
     draw = ImageDraw.Draw(shade)
     for y in range(h):
@@ -326,7 +326,8 @@ def render_card(deal, kind="feed"):
     w, h = SIZES[kind]
     k = 1.0 if kind == "feed" else 0.84
     scene = bool(photo_path) and deal.get("image_source_kind") in (AI_SCENE, AI_SCENE_FROM_PHOTO)
-    canvas = scene_background(photo_path, (w, h)) if scene else background((w, h))
+    canvas = scene_background(photo_path, (w, h), 0.6 if deal.get("image_source_kind") == AI_SCENE_FROM_PHOTO
+                              else 0.75) if scene else background((w, h))
     listing = bool(photo_path) and deal.get("image_source_kind") == LISTING_PHOTO
     b = 0.78 if scene or listing else 1.0  # smaller badge, so the product photo stays visible
     draw = ImageDraw.Draw(canvas)

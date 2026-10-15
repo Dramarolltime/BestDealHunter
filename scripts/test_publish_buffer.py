@@ -122,6 +122,8 @@ class PlanTests(unittest.TestCase):
         check = lambda d: pb.eligibility(d, pb.hosted_urls(HOSTED), set(), TODAY)
         self.assertIn("real listing photo", check(ebay)[1])
         self.assertEqual(check(dict(ebay, image_source_kind="listing_photo")), (True, "eligible"))
+        self.assertEqual(check(dict(ebay, image_source_kind="ai_scene_from_photo")), (True, "eligible"))
+        self.assertIn("real listing photo", check(dict(ebay, image_source_kind="ai_scene"))[1])
 
     def test_daily_post_limit(self):
         from datetime import datetime, timezone
