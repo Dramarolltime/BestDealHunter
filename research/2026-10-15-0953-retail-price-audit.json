@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-10-15T09:53:00-07:00",
+  "publication_eligible": false,
+  "deals": [
+    {
+      "product": "T Tahari Ribbed Sleeve Top",
+      "retailer": "Macys",
+      "product_id": "23527716",
+      "url": "https://www.macys.com/shop/product/t-tahari-womens-ribbed-faux-leather-sleeve-top?ID=23527716",
+      "listed_price": 26.36,
+      "reference_price": 88,
+      "listed_discount_percent": 70,
+      "promo_code": null,
+      "promo_note": "Coupons excluded. Final sale.",
+      "checkout_verified": false,
+      "availability_verified": false,
+      "expiration_verified": false,
+      "publication_eligible": false
+    },
+    {
+      "product": "INC Oversized Blazer",
+      "retailer": "Macys",
+      "product_id": "24709072",
+      "url": "https://www.macys.com/shop/product/i.n.c.-international-concepts-womens-oversized-one-button-blazer-macys-exclusive?ID=24709072",
+      "promo_code": null,
+      "promo_note": "Direct product page currently says unavailable.",
+      "publication_eligible": false
+    }
+  ],
+  "new_website_posts": 0,
+  "new_instagram_posts": 0
+}
