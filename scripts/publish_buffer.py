@@ -46,6 +46,8 @@ CHANNEL = "best_dealhunter"  # existing Buffer-connected Instagram channel (per 
 CARD = re.compile(r"images/generated/deal-([0-9a-f]{12})-(?:feed|square)\.jpg")
 CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 30
 MAX_POSTS_PER_RUN = 1
+# Pictures that show the real product: the listing photo, or an AI scene built from it / from the page screenshot.
+REAL_PRODUCT_KINDS = ("listing_photo", "ai_scene_from_photo")
 MAX_POSTS_PER_DAY = 12  # hourly runs: at most 12 Instagram posts in any 24 hours
 MAX_POST_AGE_HOURS = 3  # an auto-published deal is posted only while its page check is this fresh
 # Amazon Associates Program Policies (read 2026-10-13): "your Site may only show prices and availability if:
@@ -108,7 +110,8 @@ def eligibility(deal, hosted, posted_keys, today, now=None):
         return False, "not approved for posting (publication_approved is not true)"
     if deal.get("store") == "Amazon" and deal.get("evidence_method") not in AMAZON_PRICE_SOURCES:
         return False, AMAZON_RULE
-    if deal.get("store") == "eBay" and deal.get("image_source_kind") != "listing_photo":
+    found = str(deal.get("approved_by", "")).startswith(("automatic", "owner deal form"))  # pipeline deals
+    if found and deal.get("image_source_kind") not in REAL_PRODUCT_KINDS and deal.get("card_source") != "submitted":
         return False, "waiting for the real listing photo on its card (owner: the real product must show)"
     image = feed_card(deal)
     if not image:

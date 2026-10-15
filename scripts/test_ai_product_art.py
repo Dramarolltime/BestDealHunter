@@ -161,3 +161,77 @@ class ListingPhotoTests(unittest.TestCase):
             d = deal(listing_photo_url=url)
             self.assertEqual(ai.listing_photos([d], opener=self.opener(data), log=lambda *_: None), 0)
             self.assertNotIn("image_source", d)
+
+
+class SceneFromPhotoTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.saved = (ai.ROOT, ai.SOURCE)
+        ai.ROOT, ai.SOURCE = Path(self.tmp.name), Path(self.tmp.name) / "images" / "source"
+        ai.SOURCE.mkdir(parents=True)
+        Image.new("RGB", (400, 400), "#ffffff").save(ai.SOURCE / "listing-x.jpg")
+        self.requests = []
+
+    def tearDown(self):
+        ai.ROOT, ai.SOURCE = self.saved
+        self.tmp.cleanup()
+
+    def listed(self, **over):
+        d = deal(store="eBay", image="images/generated/deal-0123456789ab-square.jpg",
+                 image_source="images/source/listing-x.jpg", image_source_kind=g.LISTING_PHOTO,
+                 listing_photo_source="images/source/listing-x.jpg")
+        d.update(over)
+        return d
+
+    def test_scene_is_built_from_the_real_photo_and_replaces_it_on_the_card(self):
+        def ok(request, timeout=180):
+            self.requests.append(request)
+            return {"data": [{"b64_json": png()}]}
+        d = self.listed()
+        self.assertEqual(ai.scenes_from_photos([d], KEY, 3, transport=ok, log=lambda *_: None), 1)
+        self.assertEqual(d["image_source_kind"], g.AI_SCENE_FROM_PHOTO)
+        self.assertNotIn("image", d)
+        self.assertEqual(d["listing_photo_source"], "images/source/listing-x.jpg")  # kept for reference
+        req = self.requests[0]
+        self.assertEqual(req.full_url, ai.EDIT_API)
+        self.assertIn(b'name="image"; filename="product.jpg"', req.data)
+        self.assertIn(b"completely unchanged", req.data)
+        self.assertIn(b"no text, prices, logos", req.data.lower())
+
+    def test_failure_or_limit_keeps_the_listing_photo(self):
+        def fail(request, timeout=180):
+            raise urllib.error.HTTPError(ai.EDIT_API, 429, "quota", {}, None)
+        d = self.listed()
+        self.assertEqual(ai.scenes_from_photos([d], KEY, 3, transport=fail, log=lambda *_: None), 0)
+        self.assertEqual(d["image_source_kind"], g.LISTING_PHOTO)
+        e = self.listed()
+        self.assertEqual(ai.scenes_from_photos([e], KEY, 0, transport=fail, log=lambda *_: None), 0)
+        self.assertEqual(e["image_source_kind"], g.LISTING_PHOTO)
+
+
+class FormDealSceneTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.saved = (ai.ROOT, ai.SOURCE)
+        ai.ROOT, ai.SOURCE = Path(self.tmp.name), Path(self.tmp.name) / "images" / "source"
+        (ai.ROOT / "evidence").mkdir(parents=True)
+        Image.new("RGB", (390, 844), "#ffffff").save(ai.ROOT / "evidence" / "deal-issue-7.png")
+
+    def tearDown(self):
+        ai.ROOT, ai.SOURCE = self.saved
+        self.tmp.cleanup()
+
+    def test_form_deal_scene_is_built_from_its_store_page_screenshot(self):
+        sent = []
+
+        def ok(request, timeout=180):
+            sent.append(request)
+            return {"data": [{"b64_json": png()}]}
+        d = deal(store="Target", photo_reference="evidence/deal-issue-7.png")
+        self.assertFalse(ai.needs_art(d))  # never a name-only AI picture for a deal with a real photo
+        self.assertEqual(ai.scenes_from_photos([d], KEY, 3, transport=ok, log=lambda *_: None), 1)
+        self.assertEqual(d["image_source_kind"], g.AI_SCENE_FROM_PHOTO)
+        self.assertIn(b"screenshot of a store's product page", sent[0].data)
+        self.assertIn(b"none of the web page", sent[0].data)
+        submitted = deal(photo_reference="evidence/deal-issue-7.png", card_source="submitted")
+        self.assertEqual(ai.scenes_from_photos([submitted], KEY, 3, transport=ok, log=lambda *_: None), 0)

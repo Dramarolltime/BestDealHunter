@@ -50,8 +50,10 @@ def ready_for_test(deal, posts, mapping):
     """Not yet posted, and its committed cards are the hosted ones: a deal already posted, or whose redrawn
     card waits for the next live run's upload, is mid-pipeline rather than a test candidate."""
     from publish_buffer import post_key
-    if deal.get("store") == "eBay" and deal.get("image_source_kind") != "listing_photo":
-        return False  # still waiting for its real listing photo
+    if str(deal.get("approved_by", "")).startswith(("automatic", "owner deal form")) and \
+            deal.get("image_source_kind") not in ("listing_photo", "ai_scene_from_photo") and \
+            deal.get("card_source") != "submitted":
+        return False  # still waiting for a picture of the real product
     if post_key(deal) in {p.get("key") for p in posts if isinstance(p, dict)}:
         return False
     hosted = {m.get("image"): m.get("sha256") for m in mapping if isinstance(m, dict)}

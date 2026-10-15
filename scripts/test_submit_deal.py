@@ -74,6 +74,7 @@ class SubmitTests(unittest.TestCase):
         self.assertTrue(d["publication_approved"])
         self.assertEqual(d["evidence_method"], "human_browser_check")
         self.assertEqual(d["evidence_source"], "evidence/deal-issue-42.png")
+        self.assertEqual(d["photo_reference"], "evidence/deal-issue-42.png")  # scene source: the real product
         self.assertEqual(d["price_checked_at"], "2026-10-14T16:50:00+00:00")
         validate([d], NOW.date())
 

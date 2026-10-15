@@ -24,7 +24,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from deal_graphics import AI_SCENE, LISTING_PHOTO, card_id
+from deal_graphics import AI_SCENE, AI_SCENE_FROM_PHOTO, LISTING_PHOTO, card_id
 
 ROOT = Path(__file__).resolve().parents[1]
 FEED = ROOT / "deals.json"
@@ -44,6 +44,61 @@ PROMPT = ("Photorealistic lifestyle product photograph of: {title} ({category}).
 def http(request, timeout=120):
     with urllib.request.urlopen(request, timeout=timeout) as resp:
         return json.loads(resp.read())
+
+
+EDIT_API = "https://api.openai.com/v1/images/edits"
+SCENE_FROM_PHOTO_PROMPT = (
+    "Place the exact product shown in this photo, completely unchanged (same shape, colors, materials, "
+    "proportions, stitching and details), into a bright, tasteful, realistic lifestyle setting where it is "
+    "normally used. The product is the clear hero, sharp and fully visible, about half the frame's height, "
+    "centered slightly above the middle with generous space around it, soft "
+    "natural window light, premium magazine style, shallow depth of field. Do not redesign, recolor or add to "
+    "the product. Keep the bottom third of the frame calm. Add no text, prices, logos or watermarks.")
+
+
+SCENE_FROM_SCREENSHOT_PROMPT = (
+    "This is a screenshot of a store's product page. Take the exact product it shows for sale, completely "
+    "unchanged (same shape, colors, materials, proportions and details), and photograph it in a bright, tasteful, "
+    "realistic lifestyle setting where it is normally used. Show only the product in the scene: none of the web "
+    "page, text, prices, buttons or logos. The product is the clear hero, about half the frame's height, centered "
+    "slightly above the middle with generous space around it, soft natural window light, premium magazine style. "
+    "Keep the bottom third of the frame calm. Add no text, prices, logos or watermarks.")
+
+
+def multipart(fields, files):
+    """multipart/form-data body for the image edit API."""
+    boundary = "bdh" + base64.b16encode(os.urandom(8)).decode()
+    out = io.BytesIO()
+    for name, value in fields.items():
+        out.write(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n".encode())
+    for name, (filename, data, mime) in files.items():
+        out.write(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"; filename=\"{filename}\"\r\n"
+                  f"Content-Type: {mime}\r\n\r\n".encode())
+        out.write(data)
+        out.write(b"\r\n")
+    out.write(f"--{boundary}--\r\n".encode())
+    return out.getvalue(), f"multipart/form-data; boundary={boundary}"
+
+
+def scene_from_photo(photo_jpeg, api_key, model=DEFAULT_MODEL, transport=http, prompt=SCENE_FROM_PHOTO_PROMPT):
+    """JPEG bytes of a lifestyle scene built from a real product photo or page screenshot (OpenAI image edit)."""
+    with Image.open(io.BytesIO(photo_jpeg)) as img:  # screenshots may be PNG/WebP; the API gets a JPEG
+        buf = io.BytesIO()
+        img.convert("RGB").save(buf, "JPEG", quality=92)
+        photo_jpeg = buf.getvalue()
+    body, content_type = multipart(
+        {"model": model, "prompt": prompt, "size": "1024x1536", "quality": "medium",
+         "input_fidelity": "high", "n": "1"},
+        {"image": ("product.jpg", photo_jpeg, "image/jpeg")})
+    request = urllib.request.Request(EDIT_API, data=body, method="POST",
+                                     headers={"Authorization": f"Bearer {api_key}", "Content-Type": content_type})
+    item = (transport(request, timeout=180).get("data") or [{}])[0]
+    if not item.get("b64_json"):
+        raise ValueError("no image in the response")
+    with Image.open(io.BytesIO(base64.b64decode(item["b64_json"]))) as img:
+        buf = io.BytesIO()
+        img.convert("RGB").save(buf, "JPEG", quality=90, optimize=True)
+    return buf.getvalue()
 
 
 def generate(deal, api_key, model=DEFAULT_MODEL, transport=http):
@@ -66,7 +121,8 @@ def generate(deal, api_key, model=DEFAULT_MODEL, transport=http):
 def needs_art(deal):
     """Newly published deals still waiting for their first card, with no picture and no listing photo."""
     return (isinstance(deal, dict) and deal.get("publication_approved") is True and not deal.get("image")
-            and not deal.get("image_source") and not deal.get("listing_photo_url") and deal.get("store") != "Amazon")
+            and not deal.get("image_source") and not deal.get("listing_photo_url") and not deal.get("photo_reference")
+            and deal.get("store") != "Amazon")
 
 
 IMAGE_MAGIC = (b"\xff\xd8\xff", b"\x89PNG", b"RIFF")
@@ -93,7 +149,9 @@ def listing_photos(deals, limit=10, opener=urllib.request.urlopen, log=print):
     made = 0
     for deal in deals:
         url = deal.get("listing_photo_url") if isinstance(deal, dict) else None
-        if not url or deal.get("image_source_kind") == LISTING_PHOTO or made >= limit:
+        if url and not deal.get("listing_photo_source") and deal.get("image_source_kind") == LISTING_PHOTO:
+            deal["listing_photo_source"] = deal["image_source"]  # fetched before this field existed
+        if not url or deal.get("listing_photo_source") or made >= limit:
             continue
         try:
             data = fetch_photo(url, opener)
@@ -104,10 +162,45 @@ def listing_photos(deals, limit=10, opener=urllib.request.urlopen, log=print):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         deal["image_source"], deal["image_source_kind"] = str(path.relative_to(ROOT)), LISTING_PHOTO
+        deal["listing_photo_source"] = deal["image_source"]
         if str(deal.get("image", "")).startswith("images/generated/deal-"):
             deal.pop("image")  # redraw the card with the real photo
         made += 1
         log(f"LISTING PHOTO {deal.get('title')}: {deal['image_source']}")
+    return made
+
+
+def scenes_from_photos(deals, api_key, limit, model=DEFAULT_MODEL, transport=http, log=print):
+    """Owner's choice (2026-10-15, option B): a lifestyle scene built by AI from the real listing photo, on the
+    website and Instagram. A deal keeps its real listing photo card when the AI call fails or the budget runs out."""
+    made = 0
+    for deal in deals:
+        if not isinstance(deal, dict) or deal.get("card_source") == "submitted":
+            continue
+        if deal.get("image_source_kind") == LISTING_PHOTO:
+            source, prompt = ROOT / str(deal.get("listing_photo_source") or deal.get("image_source")), \
+                SCENE_FROM_PHOTO_PROMPT
+        elif deal.get("photo_reference") and not deal.get("image_source"):
+            source, prompt = ROOT / str(deal["photo_reference"]), SCENE_FROM_SCREENSHOT_PROMPT  # form deals
+        else:
+            continue
+        if made >= limit:
+            log(f"LIMIT {deal.get('title')}: {limit} scenes per run; keeps the listing photo for now")
+            continue
+        try:
+            data = scene_from_photo(source.read_bytes(), api_key, model, transport, prompt)
+        except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
+            reason = f"HTTP {exc.code}" if isinstance(exc, urllib.error.HTTPError) else type(exc).__name__
+            log(f"FAILED scene for {deal.get('title')}: {reason}; keeps its current card")
+            continue
+        path = SOURCE / f"scene-{card_id(deal)}.jpg"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        deal["image_source"], deal["image_source_kind"] = str(path.relative_to(ROOT)), AI_SCENE_FROM_PHOTO
+        if str(deal.get("image", "")).startswith("images/generated/deal-"):
+            deal.pop("image")  # redraw the card with the scene
+        made += 1
+        log(f"SCENE {deal.get('title')}: {deal['image_source']}")
     return made
 
 
@@ -144,14 +237,16 @@ def main(argv=None, env=None, transport=http, opener=urllib.request.urlopen):
     deals = json.loads(FEED.read_text(encoding="utf-8"))
     photos = listing_photos(deals, opener=opener)
     key = env.get("OPENAI_API_KEY", "").strip()
-    made = 0
+    made = scenes = 0
     if key:
-        made = run(deals, key, args.max, env.get("OPENAI_IMAGE_MODEL") or DEFAULT_MODEL, transport)
+        model = env.get("OPENAI_IMAGE_MODEL") or DEFAULT_MODEL
+        scenes = scenes_from_photos(deals, key, args.max, model, transport)
+        made = run(deals, key, args.max, model, transport)
     else:
-        print("OPENAI_API_KEY not set: no AI pictures; deals without a listing photo use the standard card.")
-    if photos or made:
+        print("OPENAI_API_KEY not set: no AI pictures; deals show their listing photo or the standard card.")
+    if photos or made or scenes or any(d.get("listing_photo_source") for d in deals if isinstance(d, dict)):
         FEED.write_text(json.dumps(deals, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Listing photos: {photos}; AI pictures made: {made}")
+    print(f"Listing photos: {photos}; scenes from listing photos: {scenes}; AI pictures made: {made}")
     return 0
 
 

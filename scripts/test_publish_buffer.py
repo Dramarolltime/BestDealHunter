@@ -117,11 +117,17 @@ class PlanTests(unittest.TestCase):
         self.assertIn("run limit", skipped[0][1])
         self.assertEqual(ready[0]["channel"], "best_dealhunter")
 
-    def test_ebay_deal_posts_only_with_its_real_listing_photo(self):
-        ebay = dict(deal(), store="eBay", url="https://www.ebay.com/itm/123")
+    def test_found_deals_post_only_with_a_picture_of_the_real_product(self):
+        ebay = dict(deal(), store="eBay", url="https://www.ebay.com/itm/123", approved_by="automatic: eBay API")
+        form = dict(deal(), approved_by="owner deal form: https://github.com/o/r/issues/1")
+        self.assertIn("real listing photo", pb.eligibility(form, pb.hosted_urls(HOSTED), set(), TODAY)[1])
+        self.assertEqual(pb.eligibility(dict(form, card_source="submitted"), pb.hosted_urls(HOSTED), set(), TODAY),
+                         (True, "eligible"))  # Alpha's image, numbers confirmed by the submitter
         check = lambda d: pb.eligibility(d, pb.hosted_urls(HOSTED), set(), TODAY)
         self.assertIn("real listing photo", check(ebay)[1])
         self.assertEqual(check(dict(ebay, image_source_kind="listing_photo")), (True, "eligible"))
+        self.assertEqual(check(dict(ebay, image_source_kind="ai_scene_from_photo")), (True, "eligible"))
+        self.assertIn("real listing photo", check(dict(ebay, image_source_kind="ai_scene"))[1])
 
     def test_daily_post_limit(self):
         from datetime import datetime, timezone
@@ -300,7 +306,8 @@ class DuplicateAndFreshnessTests(unittest.TestCase):
     def test_auto_published_deal_needs_a_price_check_within_3_hours(self):
         from datetime import datetime, timezone
         now = datetime(2026, 10, 10, 20, 0, tzinfo=timezone.utc)
-        auto = deal(approved_by="automatic: retailer product page check", auto_published_at="2026-10-10T18:30:00+00:00")
+        auto = deal(approved_by="automatic: retailer product page check", auto_published_at="2026-10-10T18:30:00+00:00",
+                    image_source_kind="ai_scene_from_photo")
         self.assertEqual(pb.eligibility(auto, pb.hosted_urls(HOSTED), set(), TODAY, now), (True, "eligible"))
         stale = dict(auto, auto_published_at="2026-10-10T16:00:00+00:00")
         ok, reason = pb.eligibility(stale, pb.hosted_urls(HOSTED), set(), TODAY, now)
