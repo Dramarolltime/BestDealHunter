@@ -180,7 +180,7 @@
     "notes": "Research only. Mixed quality reviews, especially damaged pieces; not recommended for publication without editorial review and verification."
   },
   {
-    "status": "needs_checkout_verification",
+    "status": "expired",
     "publication_eligible": false,
     "store": "Best Buy",
     "title": "It Takes Two — PlayStation 5 / PlayStation 4 (physical edition)",
@@ -198,9 +198,10 @@
       "Final checkout total including taxes, delivery fees and location-specific availability not verified",
       "Historical legitimacy of $39.99 comparable value not independently established",
       "Exact promotion end time and timezone unverified",
-      "No product-specific branded GitHub-hosted graphic and publicly accessible URL verified"
+      "No product-specific branded GitHub-hosted graphic and publicly accessible URL verified",
+      "Promotion expired 2026-10-12; do not publish"
     ],
-    "notes": "Research candidate only; do not publish to website or Instagram until checkout and image checks pass."
+    "notes": "Expired October 12, 2026. Original promotional price no longer current; exclude from all publication workflows. Previously unverified checkout and reference price."
   },
   {
     "status": "needs_checkout_verification",
