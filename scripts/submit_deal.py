@@ -148,32 +148,37 @@ def submitted_cards(source, deal):
 
 def submit(issue, deals, now, fetch=fetch_screenshot, fetch_card=fetch_card_image):
     """Return (deals.json entry, note) for the issue, or raise Rejected."""
-
-
     rec, shot = record(issue, now)
+    f = fields(issue.get("body"))
+    art = SCREENSHOT.search(f.get("Alpha's image", ""))
+    confirmed = any(IMAGE_CONFIRMED in line.lower() for line in f.get("Image check", "").splitlines()
+                    if line.lower().startswith("- [x]"))
+    return accept(rec, shot, art.group(0) if art else None, confirmed, issue.get("number"),
+                  f"owner deal form: {issue.get('html_url')}", deals, now, fetch, fetch_card)
+
+
+def accept(rec, shot, art, confirmed, ref, approved_by, deals, now, fetch=fetch_screenshot, fetch_card=fetch_card_image):
+    """Shared by the issue form and Alpha's deal sheet: the same checks, screenshot evidence and Alpha's image.
+    `fetch(url, ref)` / `fetch_card(url, ref)` save the screenshot / Alpha's image. Returns (entry, note)."""
     products = {product_id(d) for d in deals if isinstance(d, dict)}
     if product_id(rec) in products:
         raise Rejected("this product is already listed")
-    path = fetch(shot, issue.get("number"))
+    path = fetch(shot, ref)
     rec["evidence"]["source"] = str(path.relative_to(ROOT))
     try:
         entry = check(rec, now.date(), {d.get("url") for d in deals if isinstance(d, dict)})
     except (Rejected, ValueError):
         path.unlink(missing_ok=True)
         raise
-    entry.update(publication_approved=True, approved_by=f"owner deal form: {issue.get('html_url')}",
+    entry.update(publication_approved=True, approved_by=approved_by,
                  price_checked_at=rec["evidence"]["checked_at"],
                  photo_reference=rec["evidence"]["source"])  # the screenshot shows the real product
     from deal_graphics import theme_for
     entry["card_theme"] = theme_for(entry)  # owner: new cards don't all share one background colour
-    f = fields(issue.get("body"))
-    art = SCREENSHOT.search(f.get("Alpha's image", ""))
-    confirmed = any(IMAGE_CONFIRMED in line.lower() for line in f.get("Image check", "").splitlines()
-                    if line.lower().startswith("- [x]"))
     note = ""
     if art and confirmed:
         try:
-            source = fetch_card(art.group(0), issue.get("number"))
+            source = fetch_card(art, ref)
             square = submitted_cards(source, entry)["square"]
         except (Rejected, OSError, ValueError) as exc:  # the deal still posts, with the standard card
             note = f" Alpha's image could not be used ({exc}); the standard card is used."
