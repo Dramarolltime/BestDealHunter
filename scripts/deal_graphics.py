@@ -319,6 +319,25 @@ def scene_background(path, size, vertical=0.75):
     return Image.composite(Image.new("RGB", size, BACKGROUND), photo, shade).convert("RGBA")
 
 
+def scene_band(path, size, band_bottom):
+    """A scene from a real product photo, fitted into the visible band above the price area (so the product is
+    never hidden behind the badge or prices), darkened behind the header and faded into navy at its lower edge."""
+    w, h = size
+    band = int(band_bottom)
+    with Image.open(path) as src:
+        photo = ImageOps.fit(ImageOps.exif_transpose(src).convert("RGB"), (w, band), Image.Resampling.LANCZOS,
+                             centering=(0.5, 0.45))
+    canvas = background(size)
+    shade = Image.new("L", (w, band), 0)
+    draw = ImageDraw.Draw(shade)
+    for y in range(band):
+        top = 215 * max(0.0, 1 - y / (h * 0.30)) ** 1.2
+        bottom = 255 * max(0.0, (y - (band - 230)) / 230) ** 1.3
+        draw.line((0, y, w, y), fill=int(min(255, top + bottom)))
+    canvas.paste(photo, (0, 0), Image.eval(shade, lambda v: 255 - v))
+    return canvas
+
+
 def render_card(deal, kind="feed"):
     """Alpha's bold deal-image style, drawn from the deal record only (owner's choice, 2026-10-14)."""
     facts = card_facts(deal)
@@ -326,10 +345,15 @@ def render_card(deal, kind="feed"):
     w, h = SIZES[kind]
     k = 1.0 if kind == "feed" else 0.84
     scene = bool(photo_path) and deal.get("image_source_kind") in (AI_SCENE, AI_SCENE_FROM_PHOTO)
-    canvas = scene_background(photo_path, (w, h), 0.6 if deal.get("image_source_kind") == AI_SCENE_FROM_PHOTO
-                              else 0.75) if scene else background((w, h))
     listing = bool(photo_path) and deal.get("image_source_kind") == LISTING_PHOTO
     b = 0.78 if scene or listing else 1.0  # smaller badge, so the product photo stays visible
+    if deal.get("image_source_kind") == AI_SCENE_FROM_PHOTO and photo_path:
+        top_of_badge = h - 40 * k - (36 * k if is_affiliate_link(deal.get("url")) else 0) - 260 * k - 340 * k * b
+        canvas = scene_band(photo_path, (w, h), top_of_badge + 110 * k)
+    elif scene:
+        canvas = scene_background(photo_path, (w, h))
+    else:
+        canvas = background((w, h))
     draw = ImageDraw.Draw(canvas)
     margin = 48
 
