@@ -22,6 +22,7 @@ from datetime import date
 from pathlib import Path
 
 from add_verified_deals import Rejected, check
+from deal_graphics import theme_for
 from links import direct_url, ebay_affiliate_url, ebay_campaign_id
 from publish_buffer import product_id
 from validate_deals import RULES
@@ -154,6 +155,7 @@ def select(results, candidates, deals, run_url, today, limit, log=print, refresh
             log(f"SKIP {row['url']}: product already listed ({product_id(entry)})")
             continue
         entry.update(publication_approved=True, approved_by=APPROVED_BY, auto_published_at=row["checked_at"])
+        entry["card_theme"] = theme_for(entry)  # owner: new cards don't all share one background colour
         if row.get("photo_url"):
             entry["listing_photo_url"] = row["photo_url"]
         affiliate = ebay_affiliate_url(entry["url"], ebay_campaign_id()) if entry["store"] == "eBay" else None
