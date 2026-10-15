@@ -7,7 +7,7 @@ name: Auto-publish page-verified deals
 # nothing is pushed and Buffer runs as a dry run.
 on:
   schedule:
-    - cron: '37 */6 * * *'
+    - cron: '37 * * * *'  # hourly (owner, 2026-10-15)
   workflow_dispatch:
   pull_request:
     paths:
@@ -71,7 +71,7 @@ jobs:
           python scripts/auto_publish.py verify-results.json pending_deals.json deal-review-queue.json \
             --also-results bestbuy-results.json --also-results ebay-results.json \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" --apply | tee -a "$GITHUB_STEP_SUMMARY"
-      - name: AI product pictures (only when the OPENAI_API_KEY secret is set)
+      - name: Product pictures (real eBay listing photos; AI pictures only for deals without one)
         if: env.LIVE == 'true'  # pull-request test runs don't spend OpenAI credits
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

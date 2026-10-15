@@ -115,3 +115,40 @@ class CardWithPictureTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ListingPhotoTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.saved = (ai.ROOT, ai.SOURCE)
+        ai.ROOT, ai.SOURCE = Path(self.tmp.name), Path(self.tmp.name) / "images" / "source"
+
+    def tearDown(self):
+        ai.ROOT, ai.SOURCE = self.saved
+        self.tmp.cleanup()
+
+    @staticmethod
+    def opener(data):
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+            def read(self, n): return data[:n]
+        return lambda req, timeout=30: Resp()
+
+    def test_real_listing_photo_replaces_ai_picture_and_needs_no_key(self):
+        buf = io.BytesIO()
+        Image.new("RGB", (500, 500), "#ffffff").save(buf, "JPEG")
+        d = deal(listing_photo_url="https://i.ebayimg.com/images/g/abc/s-l1600.jpg",
+                 image="images/generated/deal-0123456789ab-square.jpg", image_source="images/source/ai-x.jpg",
+                 image_source_kind=g.AI_SCENE)
+        self.assertEqual(ai.listing_photos([d], opener=self.opener(buf.getvalue()), log=lambda *_: None), 1)
+        self.assertEqual(d["image_source_kind"], g.LISTING_PHOTO)
+        self.assertNotIn("image", d)  # card is redrawn with the real photo
+        self.assertFalse(ai.needs_art(dict(d, image_source=None)))  # never an AI picture when a listing photo exists
+
+    def test_only_ebay_image_host_and_real_images(self):
+        for url, data in (("https://evil.example.com/x.jpg", b"\xff\xd8\xff"),
+                          ("https://i.ebayimg.com/x.jpg", b"<html>")):
+            d = deal(listing_photo_url=url)
+            self.assertEqual(ai.listing_photos([d], opener=self.opener(data), log=lambda *_: None), 0)
+            self.assertNotIn("image_source", d)

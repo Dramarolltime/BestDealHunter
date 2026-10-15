@@ -16,6 +16,7 @@ Without both secrets it writes an empty list and says so (dormant).
 import argparse
 import base64
 import json
+import re
 import os
 import sys
 import time
@@ -55,6 +56,16 @@ def item_url(item):
     return str(item.get("itemWebUrl") or "").split("?")[0]
 
 
+def listing_photo(item):
+    """The listing's main photo as eBay serves it (i.ebayimg.com), at eBay's 1600px size; None otherwise."""
+    from urllib.parse import urlparse
+    url = str(((item.get("image") or {}).get("imageUrl")) or "")
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not (parsed.hostname or "").endswith("ebayimg.com"):
+        return None
+    return re.sub(r"/s-l\d+\.(jpg|jpeg|png|webp)$", r"/s-l1600.\1", url)
+
+
 def row_for(item, checked_at, category=""):
     price = cents(item.get("price"))
     marketing = item.get("marketingPrice") or {}
@@ -86,6 +97,7 @@ def row_for(item, checked_at, category=""):
         "evidence_detail": (f"eBay Browse API item {item.get('itemId')} ({marketing.get('priceTreatment')}), "
                             f"seller {seller.get('username')} {feedback_pct}% / {feedback_score}"),
         "category_hint": category,
+        "photo_url": listing_photo(item),
         "page": {"price": price / 100 if price else None, "reference": original / 100 if original else None,
                  "reference_label": label, "discount": pct, "buyable": True,
                  "seller": f"eBay seller {seller.get('username')}" if seller.get("username") else None},

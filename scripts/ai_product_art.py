@@ -24,7 +24,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from deal_graphics import AI_SCENE, card_id
+from deal_graphics import AI_SCENE, LISTING_PHOTO, card_id
 
 ROOT = Path(__file__).resolve().parents[1]
 FEED = ROOT / "deals.json"
@@ -64,9 +64,51 @@ def generate(deal, api_key, model=DEFAULT_MODEL, transport=http):
 
 
 def needs_art(deal):
-    """Newly published deals still waiting for their first card, with no picture yet."""
+    """Newly published deals still waiting for their first card, with no picture and no listing photo."""
     return (isinstance(deal, dict) and deal.get("publication_approved") is True and not deal.get("image")
-            and not deal.get("image_source") and deal.get("store") != "Amazon")
+            and not deal.get("image_source") and not deal.get("listing_photo_url") and deal.get("store") != "Amazon")
+
+
+IMAGE_MAGIC = (b"\xff\xd8\xff", b"\x89PNG", b"RIFF")
+
+
+def fetch_photo(url, opener=urllib.request.urlopen):
+    """JPEG bytes of a listing photo from eBay's image host (re-encoded only; the picture is not edited)."""
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not (parsed.hostname or "").endswith("ebayimg.com"):
+        raise ValueError("not an eBay image URL")
+    with opener(urllib.request.Request(url, headers={"User-Agent": "BestDealHunter"}), timeout=30) as resp:
+        data = resp.read(10 * 1024 * 1024 + 1)
+    if len(data) > 10 * 1024 * 1024 or not data.startswith(IMAGE_MAGIC):
+        raise ValueError("not an image")
+    with Image.open(io.BytesIO(data)) as img:
+        buf = io.BytesIO()
+        img.convert("RGB").save(buf, "JPEG", quality=92, optimize=True)
+    return buf.getvalue()
+
+
+def listing_photos(deals, limit=10, opener=urllib.request.urlopen, log=print):
+    """Use the real listing photo for every deal that has one and isn't showing it yet (replacing AI pictures)."""
+    made = 0
+    for deal in deals:
+        url = deal.get("listing_photo_url") if isinstance(deal, dict) else None
+        if not url or deal.get("image_source_kind") == LISTING_PHOTO or made >= limit:
+            continue
+        try:
+            data = fetch_photo(url, opener)
+        except (urllib.error.URLError, OSError, ValueError) as exc:
+            log(f"FAILED listing photo for {deal.get('title')}: {type(exc).__name__}; keeps its current card")
+            continue
+        path = SOURCE / f"listing-{card_id(deal)}.jpg"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        deal["image_source"], deal["image_source_kind"] = str(path.relative_to(ROOT)), LISTING_PHOTO
+        if str(deal.get("image", "")).startswith("images/generated/deal-"):
+            deal.pop("image")  # redraw the card with the real photo
+        made += 1
+        log(f"LISTING PHOTO {deal.get('title')}: {deal['image_source']}")
+    return made
 
 
 def run(deals, api_key, limit, model=DEFAULT_MODEL, transport=http, log=print):
@@ -94,20 +136,22 @@ def run(deals, api_key, limit, model=DEFAULT_MODEL, transport=http, log=print):
     return made
 
 
-def main(argv=None, env=None, transport=http):
+def main(argv=None, env=None, transport=http, opener=urllib.request.urlopen):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--max", type=int, default=3, help="pictures per run (default 3)")
     args = parser.parse_args(argv)
     env = os.environ if env is None else env
-    key = env.get("OPENAI_API_KEY", "").strip()
-    if not key:
-        print("OPENAI_API_KEY not set: no AI pictures; deals use the standard card.")
-        return 0
     deals = json.loads(FEED.read_text(encoding="utf-8"))
-    made = run(deals, key, args.max, env.get("OPENAI_IMAGE_MODEL") or DEFAULT_MODEL, transport)
-    if made:
+    photos = listing_photos(deals, opener=opener)
+    key = env.get("OPENAI_API_KEY", "").strip()
+    made = 0
+    if key:
+        made = run(deals, key, args.max, env.get("OPENAI_IMAGE_MODEL") or DEFAULT_MODEL, transport)
+    else:
+        print("OPENAI_API_KEY not set: no AI pictures; deals without a listing photo use the standard card.")
+    if photos or made:
         FEED.write_text(json.dumps(deals, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"AI pictures made: {made}")
+    print(f"Listing photos: {photos}; AI pictures made: {made}")
     return 0
 
 
