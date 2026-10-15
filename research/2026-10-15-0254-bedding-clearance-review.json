@@ -1,0 +1,78 @@
+{
+  "checked_at": "2026-10-15T02:54:47-07:00",
+  "purpose": "Research only; never ingest as publication-ready",
+  "duplicates_checked": {
+    "published_deals_count": 55,
+    "review_queue_count": 13,
+    "buffer_posts_count": 26,
+    "matching_product_ids": []
+  },
+  "candidates": [
+    {
+      "status": "research_only",
+      "publication_eligible": false,
+      "store": "Macy's",
+      "title": "Hotel Collection Refraction Duvet Cover Set — Full/Queen, Dusty Agate",
+      "product_id": "21324799",
+      "url": "https://www.macys.com/shop/product/hotel-collection-refraction-duvet-cover-sets-exclusively-at-macys?ID=21324799",
+      "listed_price": 142.43,
+      "retailer_reference_price": 475,
+      "advertised_discount_percent": 70,
+      "promo_code": null,
+      "promo_note": "Macy's listing says coupon excluded. No code needed for displayed price. Last Act final sale.",
+      "retailer_identity": "Macy's exclusive product sold on macys.com",
+      "availability_evidence": "Add To Bag and Buy Now displayed in retailer page capture; not proof of current ZIP-specific fulfillment",
+      "reference_price_evidence": "Macy's displayed $475.00 comparison; no independent historical selling price confirmed",
+      "expiration": "Not stated",
+      "checked_at": "2026-10-15T02:54:47-07:00",
+      "sources": [
+        "https://www.macys.com/shop/product/hotel-collection-refraction-duvet-cover-sets-exclusively-at-macys?ID=21324799"
+      ],
+      "blockers": [
+        "Retailer page content indexed from last month; current price not confirmed live at checkout",
+        "Checkout total including shipping and taxes unverified",
+        "ZIP-specific inventory and expiration unverified",
+        "Legitimate historical reference price not independently confirmed",
+        "No product-specific branded GitHub image with publicly validated URL"
+      ]
+    },
+    {
+      "status": "research_only",
+      "publication_eligible": false,
+      "store": "Macy's",
+      "title": "Hotel Collection Italian Percale 3-Pc. Duvet Cover Set — Full/Queen, White",
+      "product_id": "16230544",
+      "url": "https://www.macys.com/shop/product/hotel-collection-italian-percale-3-pc.-duvet-cover-set-full-queen-exclusively-at-macys?ID=16230544&swatchColor=White",
+      "listed_price": 142.43,
+      "retailer_reference_price": 475,
+      "advertised_discount_percent": 70,
+      "promo_code": null,
+      "promo_note": "Coupon excluded, no promo code needed. Last Act final sale.",
+      "retailer_identity": "Macy's exclusive product sold on macys.com",
+      "availability_evidence": "Add To Bag and Buy Now displayed in retailer page capture; not live checkout verification",
+      "reference_price_evidence": "Macy's listed $475.00 previous price; not independently validated",
+      "expiration": "Not stated",
+      "checked_at": "2026-10-15T02:54:47-07:00",
+      "sources": [
+        "https://www.macys.com/shop/product/hotel-collection-italian-percale-3-pc.-duvet-cover-set-full-queen-exclusively-at-macys?ID=16230544&swatchColor=White"
+      ],
+      "blockers": [
+        "Current checkout and inventory unverified",
+        "Shipping/tax and delivery ZIP unverified",
+        "Historical reference-price legitimacy unverified",
+        "Expiration unspecified",
+        "No product-specific branded GitHub image verified"
+      ]
+    }
+  ],
+  "rejected": [
+    {
+      "store": "Best Buy",
+      "title": "Belkin Convertible Magnetic Charging Stand 15W — Black",
+      "model": "WIA008ttBK",
+      "url": "https://www.bestbuy.com/product/belkin-convertible-magnetic-charging-stand-15w-magsafe-compatible-fast-qi2-charger-apple-iphone-airpods-more-black/JX5329TRSR",
+      "reason": "Recent retailer category captures advertised $24.99 vs $59.99, but direct product page fetched October 15 displays marketplace seller EP Holdings at $64.89, not the same retailer-direct $24.99 offer. No checkout-valid >=50% discount verified; exclude."
+    }
+  ],
+  "summary": "Zero checkout-verified deals. No website/Instagram publishing authorized. Research records only."
+}
