@@ -137,7 +137,7 @@ def check_publishing(deals, today, env):
     ready, skipped = plan(deals, mapping, posts, today)
     by_url = {d.get("url"): d for d in deals if isinstance(d, dict)}
     violations = []
-    for post in ready:
+    for post in [dict(i, text=p["text"]) for p in ready for i in p.get("items", [p])]:  # every slide of a roundup
         deal = by_url.get(post["deal_url"], {})
         if deal.get("store") == "Amazon":
             violations.append(f"{post['title']}: Amazon deal planned for posting")

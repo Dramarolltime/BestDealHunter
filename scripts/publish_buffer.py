@@ -36,7 +36,7 @@ from pathlib import Path
 
 from deal_graphics import CardError, as_of_text, card_facts
 from links import disclosure, is_affiliate_link, link
-from validate_deals import validate
+from validate_deals import RULES, validate
 
 ROOT = Path(__file__).resolve().parents[1]
 POSTS = ROOT / "posts.json"
@@ -57,6 +57,11 @@ AMAZON_PRICE_SOURCES = {"amazon_creators_api", "amazon_pa_api"}
 AMAZON_RULE = ("Amazon prices may only come from Amazon's Creators API / PA API (Associates Program Policies); "
                "this deal's price came from somewhere else")
 ASIN = re.compile(r"/(?:dp|gp/product)/([A-Z0-9]{10})")
+# Owner, 2026-10-15: roundup carousels ("Today's Top N Deals", one deal per slide) instead of one deal per post,
+# so more of the feed reaches Instagram within the daily limit. On only when deal_rules.json "instagram_roundups"
+# is true, which is set after a Buffer draft check proves Buffer accepts the multi-image post.
+ROUNDUP_MIN, ROUNDUP_MAX = 3, 8
+NUMBERS = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
 LOCK_PREFIX = "deal-post/"  # git tags on GitHub: a durable one-post-per-key lock across runs
 
 
@@ -254,7 +259,56 @@ def caption(deal):
     return text
 
 
-def plan(deals, mapping, posts, today, now=None):
+def roundups_enabled():
+    return RULES.get("instagram_roundups") is True
+
+
+def short(title, limit=48):
+    title = re.sub(r"\s+", " ", str(title)).strip()
+    return title if len(title) <= limit else title[:limit].rsplit(" ", 1)[0].rstrip(",;:-") + "…"
+
+
+def roundup_caption(deals):
+    """Caption for a carousel: one numbered line per slide, with every slide's verified numbers."""
+    lines = [f"🔥 Today's Top {len(deals)} Deals: swipe ➡️", ""]
+    for number, deal in zip(NUMBERS, deals):
+        f = card_facts(deal)
+        lines.append(f"{number} {short(f['title'])} · {f['store']}: {f['price']} "
+                     f"({f['reference_label']} {f['reference']}, {f['percent']}% OFF)")
+    times = [checked_at(d) for d in deals if checked_at(d)]
+    lines += ["", "🛒 Every deal at bestdealhunters.com", "🔗 Link in bio",
+              f"⏰ Prices as of {min(times) if times else 'the verification time'} or later",
+              "⚠️ Prices may change. Availability may vary. The price at checkout applies.", ""]
+    tags = []
+    for deal in deals:
+        tags += hashtags(deal).split()[:2]  # brand and product type of each slide
+    tags += ["#DealRoundup", "#DealAlerts", *(STORE_TAGS.get(d.get("store")) for d in deals), "#BestDealHunter"]
+    seen, out = set(), []
+    for tag in tags:
+        if tag and tag.lower() not in seen:
+            seen.add(tag.lower())
+            out.append(tag)
+    lines.append(" ".join(out[:20]))
+    affiliate = [d for d in deals if is_affiliate_link(link(d))]
+    if affiliate:
+        statements = {line for d in affiliate for line in disclosure(d)[1][1:]}
+        lines += ["", "#ad #affiliate", *sorted(statements)]
+    text = "\n".join(lines)
+    if len(text) > CAPTION_LIMIT or text.count("#") > HASHTAG_LIMIT:
+        raise CardError("roundup caption exceeds Instagram limits")
+    return text
+
+
+def roundup(items):
+    """One carousel post from single-deal posts (best discount first)."""
+    items = sorted(items, key=lambda p: -card_facts(p["deal"])["percent"])
+    keys = [p["key"] for p in items]
+    return {"kind": "roundup", "key": "roundup-" + hashlib.sha256("|".join(keys).encode()).hexdigest()[:16],
+            "title": f"Roundup of {len(items)} deals", "items": items,
+            "image_urls": [p["image_url"] for p in items], "text": roundup_caption([p["deal"] for p in items])}
+
+
+def plan(deals, mapping, posts, today, now=None, roundups=None):
     hosted = hosted_urls(mapping)
     posted_keys = {p.get("key") for p in posts if isinstance(p, dict)}
     ready, skipped = [], []
@@ -265,10 +319,14 @@ def plan(deals, mapping, posts, today, now=None):
                 return datetime.fromisoformat(str(p.get("reserved_at", "")).replace("Z", "+00:00"))
             except ValueError:
                 return None
-        recent = [p for p in posts if isinstance(p, dict) and stamp(p) and now - stamp(p) < timedelta(hours=24)]
+        # one Instagram post per roundup, however many deals it carries
+        recent = {p.get("roundup") or p.get("key") for p in posts
+                  if isinstance(p, dict) and stamp(p) and now - stamp(p) < timedelta(hours=24)}
         if len(recent) >= MAX_POSTS_PER_DAY:
             return [], [(d.get("title", "Untitled"), f"daily limit of {MAX_POSTS_PER_DAY} posts reached")
                         for d in deals if isinstance(d, dict)]
+    roundups = roundups_enabled() if roundups is None else roundups
+    limit = ROUNDUP_MAX if roundups else MAX_POSTS_PER_RUN
     for deal in deals:
         if not isinstance(deal, dict):
             continue
@@ -278,16 +336,19 @@ def plan(deals, mapping, posts, today, now=None):
             continue
         try:
             post = {"key": post_key(deal), "channel": CHANNEL, "deal_url": deal["url"], "title": deal["title"],
-                    "price": deal["price"], "image_url": hosted[feed_card(deal)], "text": caption(deal)}
+                    "price": deal["price"], "image_url": hosted[feed_card(deal)], "text": caption(deal), "deal": deal}
         except CardError as exc:
             skipped.append((deal.get("title", "Untitled"), str(exc)))
             continue
-        if len(ready) >= MAX_POSTS_PER_RUN:
-            skipped.append((deal["title"], f"run limit of {MAX_POSTS_PER_RUN} post reached; next run"))
+        if len(ready) >= limit:
+            skipped.append((deal["title"], "run limit reached; next run"))
             continue
         ready.append(post)
         posted_keys.add(post["key"])
-    return ready, skipped
+    if roundups and len(ready) >= ROUNDUP_MIN:
+        return [roundup(ready)], skipped
+    skipped += [(p["title"], f"run limit of {MAX_POSTS_PER_RUN} post reached; next run") for p in ready[1:]]
+    return ready[:1], skipped
 
 
 BUFFER_API = "https://api.buffer.com"
@@ -319,13 +380,19 @@ class DraftCheckFailed(BufferError):
     """Buffer's answer did not prove a harmless draft was created: stop, never continue."""
 
 
+def assets(image_urls):
+    """Buffer assets for one image or a carousel (a list, up to 10)."""
+    urls = [image_urls] if isinstance(image_urls, str) else list(image_urls)
+    return [{"image": {"url": url}} for url in urls]
+
+
 def draft_input(channel_id, text, image_url):
     """createPost input for a test draft. mode and schedulingType are required by Buffer's
     schema, so they are set to the least risky values: schedulingType "notification" means
     Buffer's workers never auto-publish it (a person would have to post by hand), on top of
     saveToDraft, which keeps it out of the queue entirely."""
     return {"text": text, "channelId": channel_id, "saveToDraft": True, "schedulingType": "notification",
-            "mode": "addToQueue", "assets": [{"image": {"url": image_url}}], "metadata": INSTAGRAM_METADATA}
+            "mode": "addToQueue", "assets": assets(image_url), "metadata": INSTAGRAM_METADATA}
 
 
 def verify_draft(result, channel_id):
@@ -380,7 +447,7 @@ class BufferClient:
         """Live post, shared now (only reached from publish(), behind every live gate)."""
         # shareNow: published at once, while the price check is minutes old (a queue slot could be hours later)
         payload = {"text": text, "channelId": channel_id, "schedulingType": "automatic", "mode": "shareNow",
-                   "assets": [{"image": {"url": image_url}}], "metadata": INSTAGRAM_METADATA}
+                   "assets": assets(image_url), "metadata": INSTAGRAM_METADATA}
         result = self._call(CREATE_POST, {"input": payload}).get("createPost") or {}
         if result.get("__typename") != "PostActionSuccess":
             raise BufferError(f"Buffer rejected the post ({result.get('__typename')}): {result.get('message', 'no message')}")
@@ -411,6 +478,9 @@ def publish(ready, posts, client, channel_id, now, log=print, lock=lambda key: T
     taken = {p.get("key") for p in posts if isinstance(p, dict)}
     results = []
     for post in ready:
+        if post.get("kind") == "roundup":
+            results += publish_roundup(post, posts, taken, client, channel_id, now, log, lock)
+            continue
         if post["key"] in taken:
             log(f"Duplicate blocked: {post['title']} ({post['key']})")
             continue
@@ -434,6 +504,45 @@ def publish(ready, posts, client, channel_id, now, log=print, lock=lambda key: T
         log(f"Sent to Buffer (share now): {post['title']} (id {created['id']})")
         results.append(row)
     return results
+
+
+def publish_roundup(post, posts, taken, client, channel_id, now, log, lock):
+    """A carousel: every deal on it is reserved and locked like a single post BEFORE Buffer is called; a deal
+    whose lock is already taken is dropped from the carousel (caption and slides rebuilt from the rest)."""
+    rows, items, locked = [], [], []
+    for item in post["items"]:
+        if item["key"] in taken:
+            log(f"Duplicate blocked: {item['title']} ({item['key']})")
+            continue
+        row = {"key": item["key"], "deal_url": item["deal_url"], "title": item["title"], "price": item["price"],
+               "image_url": item["image_url"], "status": "reserved", "reserved_at": now, "roundup": post["key"]}
+        posts.append(row)
+        taken.add(item["key"])
+        if not lock(item["key"]):
+            row.update(status="locked", error="durable lock already taken: posted or attempted before")
+            log(f"Duplicate blocked by lock tag {LOCK_PREFIX}{item['key']}: {item['title']}")
+            locked.append(row)
+            continue
+        rows.append(row)
+        items.append(item)
+    if not items:
+        return locked
+    if len(items) == 1:  # a single remaining deal goes out as a normal post with its own caption
+        text, images = items[0]["text"], items[0]["image_url"]
+        rows[0].pop("roundup", None)
+    else:
+        text, images = roundup_caption([i["deal"] for i in items]), [i["image_url"] for i in items]
+    try:
+        created = client.create_post(channel_id, text, images)
+    except Exception as exc:  # keep the reservations: a timeout may still have created the post
+        for row in rows:
+            row.update(status="error", error=str(exc)[:300])
+        log(f"Buffer error for the roundup of {len(items)} deals: {exc}. Reservations kept; check Buffer.")
+        return locked + rows
+    for row in rows:
+        row.update(status="queued", buffer_post_id=created["id"])
+    log(f"Sent to Buffer (share now): roundup of {len(items)} deals (id {created['id']})")
+    return locked + rows
 
 
 def git_tag_lock(key, run=None):
@@ -500,7 +609,9 @@ def render_report(ready, skipped, live):
     mode = "LIVE" if live else "DRY RUN (nothing sent to Buffer)"
     out = [f"## Buffer publisher: {mode}", "", f"Channel: `{CHANNEL}` · Eligible this run: **{len(ready)}**", ""]
     for post in ready:
-        out += [f"### Would post: {post['title']}", f"- Image: {post['image_url']}", f"- Dedupe key: `{post['key']}`",
+        images = post.get("image_urls") or [post["image_url"]]
+        out += [f"### Would post: {post['title']}", *[f"- Slide {i}: {u}" for i, u in enumerate(images, 1)],
+                f"- Dedupe key(s): `{', '.join(i['key'] for i in post.get('items', [post]))}`",
                 "", "```", post["text"], "```", ""]
     if skipped:
         out += ["### Not eligible", ""] + [f"- **{title}**: {reason}" for title, reason in skipped]
@@ -548,10 +659,56 @@ def run_draft_check(card, env, log=print):
             DRAFT_CHECKS.write_text(json.dumps(drafts, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def roundup_draft_check(deals, mapping, drafts, client, channel_id, now, today, log=print):
+    """Create ONE verified Buffer DRAFT carousel from the current approved deals, to prove Buffer accepts a
+    multi-image Instagram post before roundups are switched on. Never queued or published; recorded only in
+    buffer-draft-checks.json."""
+    ready, skipped = plan(deals, mapping, [], today, roundups=True)
+    if not ready or ready[0].get("kind") != "roundup":
+        raise DraftCheckFailed(f"fewer than {ROUNDUP_MIN} deals eligible for a roundup")
+    post = ready[0]
+    row = {"key": post["key"], "title": post["title"], "image_urls": post["image_urls"], "channel_id": channel_id,
+           "status": "reserved", "reserved_at": now}
+    drafts.append(row)
+    try:
+        created = client.create_draft(channel_id, post["text"], post["image_urls"])
+    except Exception as exc:
+        row.update(status="error", error=str(exc)[:300])
+        log(f"Roundup draft check FAILED: {exc}")
+        raise DraftCheckFailed(str(exc)) from exc
+    row.update(status="draft", buffer_post_id=created["id"], buffer_status=created["status"])
+    log(f"Verified Buffer draft carousel of {len(post['image_urls'])} slides (id {created['id']}, status draft, "
+        "not scheduled). Check it in Buffer, then delete it.")
+    return row
+
+
+def run_roundup_draft_check(env, log=print):
+    channel = env.get("BUFFER_CHANNEL_ID", "")
+    if not env.get("BUFFER_API_KEY") or not channel:
+        log("Refused: BUFFER_API_KEY secret and BUFFER_CHANNEL_ID variable must both be configured.")
+        return 2
+    from datetime import datetime, timezone
+    deals, mapping, drafts = load(ROOT / "deals.json", []), load(ROOT / "cloudinary-images.json", []), \
+        load(DRAFT_CHECKS, [])
+    before = len(drafts)
+    try:
+        roundup_draft_check(deals, mapping, drafts, BufferClient(env["BUFFER_API_KEY"]), channel,
+                            datetime.now(timezone.utc).isoformat(timespec="seconds"), date.today(), log=log)
+        return 0
+    except DraftCheckFailed as exc:
+        log(f"Roundup draft check stopped: {exc}")
+        return 1
+    finally:
+        if len(drafts) != before:
+            DRAFT_CHECKS.write_text(json.dumps(drafts, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Plan (and, behind every gate, publish) Instagram posts via Buffer")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--live", action="store_true", help="queue real posts (refused unless every gate passes)")
+    mode.add_argument("--draft-check-roundup", action="store_true",
+                      help="create ONE verified Buffer DRAFT carousel (never queued or published)")
     mode.add_argument("--draft-check", metavar="CARD_ID",
                       help="create ONE verified Buffer DRAFT for this deal (never queued or published)")
     parser.add_argument("--approve-for-dry-run", action="append", default=[], metavar="CARD_ID",
@@ -560,9 +717,11 @@ def main(argv=None):
         args = parser.parse_args(argv)
     except SystemExit:
         return 2
-    if args.approve_for_dry_run and (args.live or args.draft_check):
+    if args.approve_for_dry_run and (args.live or args.draft_check or args.draft_check_roundup):
         print("--approve-for-dry-run is only allowed in dry runs.")
         return 2
+    if args.draft_check_roundup:  # separate path, like --draft-check
+        return run_roundup_draft_check(os.environ)
     if args.draft_check:  # separate path: returns before any live-posting code below
         return run_draft_check(args.draft_check, os.environ)
 
