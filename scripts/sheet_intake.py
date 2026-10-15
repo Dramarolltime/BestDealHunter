@@ -37,6 +37,7 @@ LEDGER = ROOT / "sheet-intake.json"
 MAX_AGE = timedelta(hours=3)
 PACIFIC = ZoneInfo("America/Los_Angeles")
 SHEET_CSV = re.compile(r"https://docs\.google\.com/spreadsheets/d/(e/)?[\w-]+/(pub|export)\?[\w=&%-]*")
+SHEET_LINK = re.compile(r"https://docs\.google\.com/spreadsheets/d/([\w-]{20,})(?:/[^?#]*)?(?:\?[^#]*)?(?:#gid=(\d+))?")
 DRIVE_ID = re.compile(r"https://(?:drive|docs)\.google\.com/(?:file/d/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})")
 READY = {"ready", "verified", "yes"}
 YES = {"yes", "y", "true", "x", "✅", "checked"}
@@ -78,6 +79,18 @@ def rows(csv_text):
         row["_row"] = n
         out.append(row)
     return out
+
+
+def csv_url(link):
+    """The Sheet's CSV export URL from a published CSV link or an ordinary share link (".../edit#gid=0").
+    A share link works when the Sheet is shared "Anyone with the link: Viewer"; None for anything else."""
+    link = str(link or "").strip()
+    if SHEET_CSV.fullmatch(link):
+        return link
+    m = SHEET_LINK.fullmatch(link)
+    if not m:
+        return None
+    return f"https://docs.google.com/spreadsheets/d/{m.group(1)}/export?format=csv" + (f"&gid={m.group(2)}" if m.group(2) else "")
 
 
 def drive_download_url(link):
@@ -180,16 +193,25 @@ def main(argv=None, env=os.environ, now=None, opener=urllib.request.urlopen):
     if not url:
         print("DEALS_SHEET_CSV_URL not set: Alpha's deal sheet is not connected yet.")
         return 0
-    if not SHEET_CSV.fullmatch(url):
-        print("::error::DEALS_SHEET_CSV_URL must be the Sheet's 'Publish to web' CSV link (docs.google.com).")
+    url = csv_url(url)
+    if not url:
+        print("::error::DEALS_SHEET_CSV_URL must be the Google Sheet's link (docs.google.com/spreadsheets/...).")
         return 1
     try:
         with opener(urllib.request.Request(url, headers={"User-Agent": "BestDealHunter sheet intake"}),
                     timeout=30) as resp:
             text = resp.read(5_000_000).decode("utf-8-sig")
     except (urllib.error.URLError, TimeoutError) as exc:
-        print(f"Could not read the deal sheet ({type(exc).__name__}); trying again next run.")
+        print(f"Could not read the deal sheet ({type(exc).__name__}); is it shared 'Anyone with the link: Viewer'? "
+              "Trying again next run.")
         return 0
+    if text.lstrip().startswith("<"):  # Google's sign-in page instead of the CSV
+        print("Could not read the deal sheet: Google asked for a sign-in. Share it 'Anyone with the link: Viewer'.")
+        return 0
+    header = next(csv.reader(io.StringIO(text)), [])
+    missing = [f for f in ("store", "title", "url", "price", "original", "checked_at", "screenshot", "status")
+               if not any(norm(h) in COLUMNS[f] for h in header)]
+    print(f"Deal sheet columns: {', '.join(header)}" + (f" · MISSING: {', '.join(missing)}" if missing else ""))
     deals = json.loads(FEED.read_text(encoding="utf-8"))
     ledger = json.loads(LEDGER.read_text(encoding="utf-8")) if LEDGER.exists() else []
     new = run(text, deals, ledger, now or datetime.now(timezone.utc), opener)
