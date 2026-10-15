@@ -27,13 +27,19 @@ import json
 import random
 import re
 import sys
+from contextlib import contextmanager
 from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageOps
 
-from links import disclosure, is_affiliate_link
+from links import disclosure, is_affiliate_link, link
+
+
+def card_disclosure(deal):
+    """The disclosure line printed on an affiliate deal's card ("" when none is printed)."""
+    return disclosure(deal)[0] if is_affiliate_link(link(deal)) else ""
 
 ROOT = Path(__file__).resolve().parents[1]
 FONTS = ROOT / "assets" / "fonts"
@@ -48,6 +54,35 @@ PACIFIC = ZoneInfo("America/Los_Angeles")
 # Alpha's bold deal-image palette.
 BACKGROUND, GLOW, GLOW_2, WHITE, GRAY, MUTED = "#07101F", "#1450C8", "#0E2A66", "#FFFFFF", "#B6C2D6", "#8A94A6"
 YELLOW, RED, RED_DARK, PANEL, PANEL_EDGE = "#FACC15", "#E11D2E", "#7F0A14", "#050B16", "#3A4A66"
+# Owner, 2026-10-15: new cards should not all share the same background colour. Each new deal gets one of these
+# themes in its `card_theme` (deep base, spotlight glow, second glow, price panel, panel edge); deals without one
+# keep the original navy, so cards already published never change. Yellow and red stay the same on every theme.
+THEMES = {
+    "navy": ("#07101F", "#1450C8", "#0E2A66", "#050B16", "#3A4A66"),
+    "plum": ("#13081F", "#7B2FC9", "#3B1566", "#0C0516", "#5B3D7B"),
+    "forest": ("#06150F", "#13A06A", "#0D5A3A", "#040F0A", "#2F5B48"),
+    "teal": ("#061619", "#0F9AA8", "#0B4E5A", "#041013", "#2F5E66"),
+    "charcoal": ("#0E0F12", "#5B6577", "#2A2F38", "#08090B", "#464C58"),
+    "ember": ("#150C06", "#D9741A", "#6B390E", "#0E0804", "#6B4E33"),
+}
+
+
+def theme_for(deal):
+    """The theme a new deal gets, picked from its card id so it is stable and new deals vary."""
+    names = sorted(THEMES)
+    return names[int(card_id(deal), 16) % len(names)]
+
+
+@contextmanager
+def _theme(name):
+    """Draw with a theme's colours (the module colours are swapped for one render, then restored)."""
+    global BACKGROUND, GLOW, GLOW_2, PANEL, PANEL_EDGE
+    saved = BACKGROUND, GLOW, GLOW_2, PANEL, PANEL_EDGE
+    BACKGROUND, GLOW, GLOW_2, PANEL, PANEL_EDGE = THEMES.get(name or "navy", THEMES["navy"])
+    try:
+        yield
+    finally:
+        BACKGROUND, GLOW, GLOW_2, PANEL, PANEL_EDGE = saved
 AI_KIND = "ai_illustration"  # earlier ai_product_art.py pictures: studio shot inside the card
 LISTING_PHOTO = "listing_photo"  # the retailer listing's own product photo (eBay Browse API), shown unedited
 AI_SCENE = "ai_scene"  # AI lifestyle photo from the product name only (fills the card)
@@ -340,6 +375,11 @@ def scene_band(path, size, band_bottom):
 
 def render_card(deal, kind="feed"):
     """Alpha's bold deal-image style, drawn from the deal record only (owner's choice, 2026-10-14)."""
+    with _theme(deal.get("card_theme")):
+        return _render_card(deal, kind)
+
+
+def _render_card(deal, kind):
     facts = card_facts(deal)
     photo_path = authorized_photo(deal)
     w, h = SIZES[kind]
@@ -348,7 +388,7 @@ def render_card(deal, kind="feed"):
     listing = bool(photo_path) and deal.get("image_source_kind") == LISTING_PHOTO
     b = 0.78 if scene or listing else 1.0  # smaller badge, so the product photo stays visible
     if deal.get("image_source_kind") == AI_SCENE_FROM_PHOTO and photo_path:
-        top_of_badge = h - 40 * k - (36 * k if is_affiliate_link(deal.get("url")) else 0) - 260 * k - 340 * k * b
+        top_of_badge = h - 40 * k - (36 * k if card_disclosure(deal) else 0) - 260 * k - 340 * k * b
         canvas = scene_band(photo_path, (w, h), top_of_badge + 110 * k)
     elif scene:
         canvas = scene_background(photo_path, (w, h))
@@ -375,7 +415,7 @@ def render_card(deal, kind="feed"):
 
     # With a picture (an AI illustration or an authorized photo), it fills the middle under a shorter title,
     # drawn first so the % OFF badge overlaps its lower edge as in Alpha's images.
-    foot_y = h - 40 * k - (36 * k if is_affiliate_link(deal.get("url")) else 0)
+    foot_y = h - 40 * k - (36 * k if card_disclosure(deal) else 0)
     badge_top = foot_y - 260 * k - 340 * k * b
     if photo_path and not scene:
         title_face = font(60 * k, 800)
@@ -393,8 +433,8 @@ def render_card(deal, kind="feed"):
     foot = f"{SITE}  ·  Price as of {facts['as_of']}  ·  Prices may change" if facts["as_of"] else \
         f"{SITE}  ·  Prices may change"
     y = h - 40 * k
-    if is_affiliate_link(deal.get("url")):
-        draw.text((w / 2, y), disclosure(deal)[0], font=font(24 * k, 500), fill=GRAY, anchor="ms")
+    if card_disclosure(deal):
+        draw.text((w / 2, y), card_disclosure(deal), font=font(24 * k, 500), fill=GRAY, anchor="ms")
         y -= 36 * k
     draw.text((w / 2, y), foot, font=fit(draw, foot, 500, int(25 * k), w - 2 * margin), fill=GRAY, anchor="ms")
 

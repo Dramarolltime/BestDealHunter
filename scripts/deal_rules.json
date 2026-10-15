@@ -33,5 +33,6 @@
   "min_discount_percent": 50,
   "min_affiliate_discount_percent": 20,
   "max_verification_age_days": 2,
-  "page_check_allowed_hosts": []
+  "page_check_allowed_hosts": [],
+  "ebay_campaign_id": "5339220016"
 }

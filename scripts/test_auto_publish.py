@@ -144,3 +144,31 @@ class MainTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EbayPartnerLinkTests(unittest.TestCase):
+    """Owner, 2026-10-15: new eBay deals use the eBay Partner Network link; existing deals stay as they are."""
+    EBAY = "https://www.ebay.com/itm/123456789012"
+
+    def ebay_row(self):
+        return row(url=self.EBAY, store="eBay")
+
+    def test_new_ebay_deal_gets_the_campaign_link_and_the_ad_disclosure(self):
+        from links import disclosure
+        d = ap.select([self.ebay_row()], [], [], RUN, TODAY, 5, log=lambda *_: None)[0]
+        self.assertEqual(d["url"], self.EBAY)  # identity, duplicate checks and the post ledger keep the plain URL
+        self.assertTrue(d["affiliate_url"].startswith(self.EBAY + "?"))
+        self.assertIn("campid=5339220016", d["affiliate_url"])
+        self.assertEqual(disclosure(d)[0], "")  # owner: nothing printed on the picture
+        self.assertIn("#ad #affiliate", disclosure(d)[1][0])  # the caption keeps the required short tags
+        from validate_deals import validate
+        validate([d], TODAY)
+        with self.assertRaises(ValueError):
+            validate([dict(d, affiliate_url="https://www.ebay.com/itm/999999999999?campid=5339220016")], TODAY)
+
+    def test_other_stores_and_already_listed_deals_get_no_affiliate_link(self):
+        self.assertNotIn("affiliate_url", ap.select([row()], [], [], RUN, TODAY, 5, log=lambda *_: None)[0])
+        existing = {"store": "eBay", "url": self.EBAY, "title": "x", "price": 19.99, "original_price": 49.99,
+                    "approved_by": "automatic: x"}
+        ap.select([self.ebay_row()], [], [existing], RUN, TODAY, 5, log=lambda *_: None, refreshed=[])
+        self.assertNotIn("affiliate_url", existing)

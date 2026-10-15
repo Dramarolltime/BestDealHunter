@@ -164,6 +164,8 @@ def submit(issue, deals, now, fetch=fetch_screenshot, fetch_card=fetch_card_imag
     entry.update(publication_approved=True, approved_by=f"owner deal form: {issue.get('html_url')}",
                  price_checked_at=rec["evidence"]["checked_at"],
                  photo_reference=rec["evidence"]["source"])  # the screenshot shows the real product
+    from deal_graphics import theme_for
+    entry["card_theme"] = theme_for(entry)  # owner: new cards don't all share one background colour
     f = fields(issue.get("body"))
     art = SCREENSHOT.search(f.get("Alpha's image", ""))
     confirmed = any(IMAGE_CONFIRMED in line.lower() for line in f.get("Image check", "").splitlines()

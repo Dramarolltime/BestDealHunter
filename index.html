@@ -168,6 +168,7 @@ function image(d){
 }
 const posted=d=>{const s=postedAt(d);if(s.length<=10)return day(s);const t=new Date(s);if(isNaN(t))return "";const now=new Date(),y=new Date(now);y.setDate(now.getDate()-1);const time=t.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});return t.toDateString()===now.toDateString()?"Today "+time:t.toDateString()===y.toDateString()?"Yesterday "+time:t.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" "+time};
 const isNew=d=>{const t=new Date(postedAt(d));return postedAt(d).length>10&&!isNaN(t)&&Date.now()-t<864e5};
+const href=d=>typeof d.affiliate_url==="string"&&d.affiliate_url.startsWith(d.url.split("?")[0]+"?")&&/^https:\/\/www\.ebay\.com\/itm\//.test(d.affiliate_url)?d.affiliate_url:d.url;
 function card(d){
   const past=d.archived,stale=!past&&d.unverified;
   const labels='<div class="labels"><span class="store">'+esc(d.store)+'</span>'+(past?'<span class="tag past">Past Deal</span>':stale?'<span class="tag unverified">Price not re-verified</span>':isNew(d)?'<span class="tag new">New</span>':'')+(past?'':'<span class="posted">'+posted(d)+'</span>')+'</div>';
@@ -178,7 +179,7 @@ function card(d){
     :stale?'Price last checked '+day(d.verified_date)+'; it may have changed. Confirm at the retailer.'
     :'Verified '+day(d.verified_date)+stock+(d.expires_date?' · Ends '+day(d.expires_date):'');
   const promo=d.promo_code&&!past?'<div class="promo">Use code <strong>'+esc(d.promo_code)+'</strong> <button type="button" class="copy-code" data-code="'+esc(d.promo_code)+'">Copy code</button>'+(d.promo_note?'<div class="meta">'+esc(d.promo_note)+'</div>':'')+'</div>':'';
-  return '<article class="card'+(past?' is-past':'')+(stale?' is-unverified':'')+'"><a class="deal-link" href="'+esc(d.url)+'" target="_blank" rel="noopener noreferrer sponsored" aria-label="'+(past?'Check current price of ':'View ')+esc(d.title)+' at '+esc(d.store)+'">'+image(d)+'<div class="card-body">'+labels+'<h3>'+esc(d.title)+'</h3>'+prices+pill+'<p class="meta">'+meta+'</p></div></a>'+promo+'</article>';
+  return '<article class="card'+(past?' is-past':'')+(stale?' is-unverified':'')+'"><a class="deal-link" href="'+esc(href(d))+'" target="_blank" rel="noopener noreferrer sponsored" aria-label="'+(past?'Check current price of ':'View ')+esc(d.title)+' at '+esc(d.store)+'">'+image(d)+'<div class="card-body">'+labels+'<h3>'+esc(d.title)+'</h3>'+prices+pill+'<p class="meta">'+meta+'</p></div></a>'+promo+'</article>';
 }
 function render(){
   ["main","affiliate","archive"].forEach(t=>{el("tab-"+t).classList.toggle("active",section===t);el("tab-"+t).setAttribute("aria-pressed",String(section===t))});

@@ -149,3 +149,18 @@ class GeneratorTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CardThemeTests(unittest.TestCase):
+    """Owner, 2026-10-15: new cards vary their background colour; cards without a theme keep navy."""
+
+    def test_new_deals_get_varied_themes_and_old_cards_stay_navy(self):
+        import deal_graphics as g
+        names = {g.theme_for({"url": f"https://www.ebay.com/itm/{i}", "store": "eBay"}) for i in range(40)}
+        self.assertGreater(len(names), 3)
+        self.assertTrue(names <= set(g.THEMES))
+        before = g.BACKGROUND
+        with g._theme("forest"):
+            self.assertEqual(g.BACKGROUND, g.THEMES["forest"][0])
+        self.assertEqual(g.BACKGROUND, before)  # restored after each card
+        self.assertEqual(g.THEMES["navy"][0], before)
