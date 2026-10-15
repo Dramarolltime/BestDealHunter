@@ -67,8 +67,11 @@ def direct_url(url):
 def disclosure(deal):
     """(short line for cards, caption lines) matching whether this deal's link is an affiliate link."""
     if is_affiliate_link(link(deal)):
-        statement = ("As an Amazon Associate I earn from qualifying purchases." if deal.get("store") == "Amazon"
-                     else "BestDealHunter may earn a commission from qualifying purchases.")
-        return "#ad · We may earn a commission · Link in bio", ["#ad #affiliate #deals #bestdealhunter", statement]
+        if deal.get("store") == "Amazon":  # Associates Operating Agreement: this exact statement, on the post itself
+            return ("#ad · We may earn a commission · Link in bio",
+                    ["#ad #affiliate #deals #bestdealhunter", "As an Amazon Associate I earn from qualifying purchases."])
+        # Owner, 2026-10-15: no commission line on the picture; the caption keeps the short #ad #affiliate tags
+        # (FTC and eBay Partner Network rules require a clear disclosure on an affiliate post).
+        return "", ["#ad #affiliate #deals #bestdealhunter"]
     return ("Independent deal pick · Not sponsored · Link in bio",
             ["#deals #bestdealhunter", "Independent deal pick: not sponsored, and we earn nothing from this link."])

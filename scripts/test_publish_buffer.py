@@ -104,8 +104,8 @@ class CaptionTests(unittest.TestCase):
 
     def test_affiliate_link_gets_the_ad_disclosure(self):
         text = pb.caption(deal(url="https://www.bestbuy.com/site/test?irclickid=abc"))
-        self.assertIn("#ad", text)
-        self.assertIn("may earn a commission", text)
+        self.assertIn("#ad #affiliate", text)
+        self.assertNotIn("may earn a commission", text)  # owner: tags only, no commission sentence
 
 
 class PlanTests(unittest.TestCase):

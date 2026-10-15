@@ -159,7 +159,8 @@ class EbayPartnerLinkTests(unittest.TestCase):
         self.assertEqual(d["url"], self.EBAY)  # identity, duplicate checks and the post ledger keep the plain URL
         self.assertTrue(d["affiliate_url"].startswith(self.EBAY + "?"))
         self.assertIn("campid=5339220016", d["affiliate_url"])
-        self.assertIn("#ad", disclosure(d)[0])
+        self.assertEqual(disclosure(d)[0], "")  # owner: nothing printed on the picture
+        self.assertIn("#ad #affiliate", disclosure(d)[1][0])  # the caption keeps the required short tags
         from validate_deals import validate
         validate([d], TODAY)
         with self.assertRaises(ValueError):
