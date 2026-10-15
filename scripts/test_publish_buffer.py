@@ -361,13 +361,15 @@ class RoundupTests(unittest.TestCase):
         self.assertNotIn("#ad", post["text"])  # no affiliate links on these
         self.assertEqual(pb.assets(post["image_urls"])[1], {"image": {"url": post["image_urls"][1]}})
 
-    def test_fewer_than_three_post_singly_and_roundups_off_by_default(self):
+    def test_fewer_than_three_post_singly_and_the_switch(self):
         deals, hosted = self.deals(2)
         ready, _ = pb.plan(deals, hosted, [], TODAY, roundups=True)
         self.assertEqual((len(ready), ready[0].get("kind")), (1, None))
         deals, hosted = self.deals(5)
-        self.assertIs(pb.RULES.get("instagram_roundups"), False)  # on only after the Buffer draft check
-        self.assertIsNone(pb.plan(deals, hosted, [], TODAY)[0][0].get("kind"))
+        # switched on 2026-10-15 after Buffer accepted an 8-slide draft carousel (buffer-draft-checks.json)
+        self.assertIs(pb.RULES.get("instagram_roundups"), True)
+        self.assertEqual(pb.plan(deals, hosted, [], TODAY)[0][0].get("kind"), "roundup")
+        self.assertIsNone(pb.plan(deals, hosted, [], TODAY, roundups=False)[0][0].get("kind"))
 
     def test_affiliate_slide_adds_ad_tags(self):
         deals, hosted = self.deals(3)
