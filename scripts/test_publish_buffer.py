@@ -331,3 +331,76 @@ class DuplicateAndFreshnessTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RoundupTests(unittest.TestCase):
+    """Owner, 2026-10-15: roundup carousels, one deal per slide, with every deal's own duplicate protection."""
+
+    def deals(self, n):
+        out, hosted = [], []
+        for i in range(n):
+            cid = f"{i:012x}"
+            out.append(deal(url=f"https://www.bestbuy.com/site/test-{i}", title=f"ILLUSTRATIVE TEST ITEM {i}",
+                            price=100 - i, image=f"images/generated/deal-{cid}-square.jpg"))
+            hosted.append({"image": f"images/generated/deal-{cid}-feed.jpg",
+                           "cloudinary_url": f"https://res.cloudinary.com/x/image/upload/v1/bestdealhunter/{cid}.jpg"})
+        return out, hosted
+
+    def test_three_or_more_eligible_deals_become_one_carousel(self):
+        deals, hosted = self.deals(10)
+        ready, skipped = pb.plan(deals, hosted, [], TODAY, roundups=True)
+        self.assertEqual(len(ready), 1)
+        post = ready[0]
+        self.assertEqual(post["kind"], "roundup")
+        self.assertEqual(len(post["image_urls"]), pb.ROUNDUP_MAX)
+        self.assertEqual(len(skipped), 2)  # the rest wait for the next run
+        self.assertIn(f"Today's Top {pb.ROUNDUP_MAX} Deals", post["text"])
+        from deal_graphics import card_facts
+        for d in deals[:3]:
+            self.assertIn(f"{card_facts(d)['price']} (", post["text"])
+        self.assertNotIn("#ad", post["text"])  # no affiliate links on these
+        self.assertEqual(pb.assets(post["image_urls"])[1], {"image": {"url": post["image_urls"][1]}})
+
+    def test_fewer_than_three_post_singly_and_roundups_off_by_default(self):
+        deals, hosted = self.deals(2)
+        ready, _ = pb.plan(deals, hosted, [], TODAY, roundups=True)
+        self.assertEqual((len(ready), ready[0].get("kind")), (1, None))
+        deals, hosted = self.deals(5)
+        self.assertIs(pb.RULES.get("instagram_roundups"), False)  # on only after the Buffer draft check
+        self.assertIsNone(pb.plan(deals, hosted, [], TODAY)[0][0].get("kind"))
+
+    def test_affiliate_slide_adds_ad_tags(self):
+        deals, hosted = self.deals(3)
+        deals[1]["url"] = "https://www.ebay.com/itm/123456789012"
+        deals[1]["store"] = "eBay"
+        deals[1]["affiliate_url"] = "https://www.ebay.com/itm/123456789012?campid=5339220016"
+        self.assertIn("#ad #affiliate", pb.roundup_caption(deals))
+
+    def test_every_deal_is_reserved_and_locked_and_a_taken_lock_drops_the_slide(self):
+        deals, hosted = self.deals(4)
+        post = pb.plan(deals, hosted, [], TODAY, roundups=True)[0][0]
+        sent = []
+
+        class Client:
+            def create_post(self, channel, text, images):
+                sent.append((text, images))
+                return {"id": "b1"}
+        ledger = []
+        blocked = post["items"][0]["key"]
+        rows = pb.publish([post], ledger, Client(), "chan", "2026-10-10T12:00:00+00:00", log=lambda *_: None,
+                          lock=lambda key: key != blocked)
+        self.assertEqual(len(sent), 1)
+        self.assertEqual(len(sent[0][1]), 3)  # the locked deal was left out
+        self.assertEqual(sorted(r["status"] for r in rows), ["locked", "queued", "queued", "queued"])
+        self.assertEqual({r.get("roundup") for r in ledger}, {post["key"]})
+        again, _ = pb.plan(deals, hosted, ledger, TODAY, roundups=True)
+        self.assertEqual(again, [])  # nothing on that carousel can be posted again
+
+    def test_a_roundup_counts_once_toward_the_daily_limit(self):
+        from datetime import datetime, timezone
+        deals, hosted = self.deals(4)
+        ledger = [{"key": f"k{i}", "roundup": "roundup-1", "reserved_at": "2026-10-10T11:00:00+00:00"}
+                  for i in range(pb.MAX_POSTS_PER_DAY + 3)]
+        ready, _ = pb.plan(deals, hosted, ledger, TODAY, now=datetime(2026, 10, 10, 12, tzinfo=timezone.utc),
+                           roundups=True)
+        self.assertEqual(len(ready), 1)

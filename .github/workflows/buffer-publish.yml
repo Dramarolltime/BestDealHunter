@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'draft-check (safe) or live'
+        description: 'draft-check (safe), draft-check-roundup (safe, one draft carousel) or live'
         type: choice
-        options: [draft-check, live]
+        options: [draft-check, draft-check-roundup, live]
         default: draft-check
       card_id:
         description: 'draft-check only: card id of the test deal (12 hex chars)'
@@ -40,7 +40,9 @@ jobs:
           MODE: ${{ inputs.mode }}
           CARD_ID: ${{ inputs.card_id }}
         run: |
-          if [ "$MODE" = "draft-check" ]; then
+          if [ "$MODE" = "draft-check-roundup" ]; then
+            python scripts/publish_buffer.py --draft-check-roundup
+          elif [ "$MODE" = "draft-check" ]; then
             python scripts/publish_buffer.py --draft-check "$CARD_ID"
           else
             python scripts/publish_buffer.py --live
