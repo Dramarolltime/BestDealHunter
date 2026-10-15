@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-10-14T23:49:00-07:00",
+  "status": "research_only",
+  "publication_eligible": false,
+  "candidates": [
+    {
+      "sku": "6504662",
+      "retailer": "Best Buy",
+      "name": "Insignia 35W Dual USB-C charger",
+      "listed_price": 7.99,
+      "retailer_comparable_value": 19.99,
+      "promo_code": null,
+      "promo_note": "No code advertised; checkout not tested",
+      "publication_eligible": false
+    },
+    {
+      "sku": "6410925",
+      "retailer": "Best Buy",
+      "name": "Insignia 10-foot USB-C to Lightning cable",
+      "listed_price": 4.99,
+      "retailer_comparable_value": 16.99,
+      "promo_code": null,
+      "promo_note": "No code advertised; checkout not tested",
+      "publication_eligible": false
+    }
+  ],
+  "blockers": [
+    "Checkout total not verified",
+    "Reference price legitimacy not independently verified",
+    "Location-specific inventory not verified",
+    "Expiration not stated",
+    "No validated hosted graphic"
+  ],
+  "note": "Do not publish."
+}
