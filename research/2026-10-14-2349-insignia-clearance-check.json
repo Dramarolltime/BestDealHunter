@@ -6,30 +6,39 @@
     {
       "sku": "6504662",
       "retailer": "Best Buy",
-      "name": "Insignia 35W Dual USB-C charger",
+      "name": "Insignia 35W Dual USB-C Port Wall Charger - White",
+      "url": "https://www.bestbuy.com/product/insignia-35w-foldable-compact-dual-usb-c-port-wall-charger-for-iphone-ipad-macbook-air-samsung-smartphones-tablets-and-more-white/6504662",
       "listed_price": 7.99,
       "retailer_comparable_value": 19.99,
+      "advertised_discount_percent": 60,
       "promo_code": null,
       "promo_note": "No code advertised; checkout not tested",
+      "availability": "Add to cart shown; pickup and shipping displayed for selected location",
+      "expiration_date": null,
       "publication_eligible": false
     },
     {
       "sku": "6410925",
       "retailer": "Best Buy",
-      "name": "Insignia 10-foot USB-C to Lightning cable",
+      "name": "Insignia 10-foot USB-C to Lightning Cable - Moon Gray",
+      "url": "https://www.bestbuy.com/product/insignia-10-usb-c-to-lightning-charge-and-sync-cable-moon-gray/6410925",
       "listed_price": 4.99,
       "retailer_comparable_value": 16.99,
+      "advertised_discount_percent": 71,
       "promo_code": null,
       "promo_note": "No code advertised; checkout not tested",
+      "availability": "Add to cart shown; pickup and shipping displayed for selected location",
+      "expiration_date": null,
       "publication_eligible": false
     }
   ],
+  "duplicate_check": "No matching SKUs in 40 published entries, 13 review-queue entries, or 23 Buffer Instagram posts",
   "blockers": [
-    "Checkout total not verified",
-    "Reference price legitimacy not independently verified",
+    "Final checkout total and taxes not verified",
+    "Retailer comparable value is not an independently verified historical selling price",
     "Location-specific inventory not verified",
-    "Expiration not stated",
-    "No validated hosted graphic"
+    "Clearance expiration not stated",
+    "No validated GitHub-hosted branded product graphic"
   ],
-  "note": "Do not publish."
+  "note": "Unpublished research. Do not publish."
 }
