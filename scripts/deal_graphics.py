@@ -48,7 +48,8 @@ PACIFIC = ZoneInfo("America/Los_Angeles")
 # Alpha's bold deal-image palette.
 BACKGROUND, GLOW, GLOW_2, WHITE, GRAY, MUTED = "#07101F", "#1450C8", "#0E2A66", "#FFFFFF", "#B6C2D6", "#8A94A6"
 YELLOW, RED, RED_DARK, PANEL, PANEL_EDGE = "#FACC15", "#E11D2E", "#7F0A14", "#050B16", "#3A4A66"
-AI_KIND = "ai_illustration"  # image_source made by ai_product_art.py
+AI_KIND = "ai_illustration"  # earlier ai_product_art.py pictures: studio shot inside the card
+AI_SCENE = "ai_scene"  # ai_product_art.py lifestyle photos: fill the whole card (Alpha's look)
 REFERENCE_LABELS = {"Best Buy": "Comparable value", "Amazon": "List price", "Macy's": "Original price"}
 _fonts = {}
 
@@ -273,13 +274,29 @@ def draw_art(canvas, path, box, illustration):
         draw.text((right - 14, top_y + 19), label, font=face, fill=GRAY, anchor="rm")
 
 
+def scene_background(path, size):
+    """A lifestyle photo filling the card, darkened at the top (header, title) and bottom (badge, prices)."""
+    w, h = size
+    with Image.open(path) as src:
+        photo = ImageOps.fit(ImageOps.exif_transpose(src).convert("RGB"), size, Image.Resampling.LANCZOS,
+                             centering=(0.5, 0.4))
+    shade = Image.new("L", size, 0)
+    draw = ImageDraw.Draw(shade)
+    for y in range(h):
+        top = 215 * max(0.0, 1 - y / (h * 0.30)) ** 1.2
+        bottom = 238 * max(0.0, (y - h * 0.52) / (h * 0.48)) ** 0.9
+        draw.line((0, y, w, y), fill=int(min(240, top + bottom)))
+    return Image.composite(Image.new("RGB", size, BACKGROUND), photo, shade).convert("RGBA")
+
+
 def render_card(deal, kind="feed"):
     """Alpha's bold deal-image style, drawn from the deal record only (owner's choice, 2026-10-14)."""
     facts = card_facts(deal)
     photo_path = authorized_photo(deal)
     w, h = SIZES[kind]
     k = 1.0 if kind == "feed" else 0.84
-    canvas = background((w, h))
+    scene = bool(photo_path) and deal.get("image_source_kind") == AI_SCENE
+    canvas = scene_background(photo_path, (w, h)) if scene else background((w, h))
     draw = ImageDraw.Draw(canvas)
     margin = 48
 
@@ -303,7 +320,7 @@ def render_card(deal, kind="feed"):
     # drawn first so the % OFF badge overlaps its lower edge as in Alpha's images.
     foot_y = h - 40 * k - (36 * k if is_affiliate_link(deal.get("url")) else 0)
     badge_top = foot_y - 260 * k - 340 * k
-    if photo_path:
+    if photo_path and not scene:
         title_face = font(60 * k, 800)
         lines = wrap(draw, facts["title"], title_face, w - 2 * margin, 2)
         art_box = (margin, 190 * k + len(lines) * title_face.size * 1.12 + 12 * k, w - margin, badge_top + 120 * k)
@@ -365,6 +382,18 @@ def render_card(deal, kind="feed"):
     draw = ImageDraw.Draw(canvas)
 
     # Title, then (without a picture) check rows, above the badge.
+    if scene:
+        title_face = font(58 * k, 800)
+        for i, line in enumerate(wrap(draw, facts["title"], title_face, w - 2 * margin, 2)):
+            draw.text((margin, 190 * k + i * title_face.size * 1.12), line, font=title_face, fill=WHITE,
+                      stroke_width=2, stroke_fill=BACKGROUND)
+        face = font(20 * k, 700)
+        label = "AI ILLUSTRATION"
+        top = 190 * k + 2 * title_face.size * 1.12 + 14 * k
+        draw.rounded_rectangle((margin, top, margin + text_width(draw, label, face) + 28, top + 34 * k), radius=17,
+                               fill=PANEL)
+        draw.text((margin + 14, top + 17 * k), label, font=face, fill=GRAY, anchor="lm")
+        return canvas.convert("RGB")
     if photo_path:
         for i, line in enumerate(lines):
             draw.text((margin, 190 * k + i * title_face.size * 1.12), line, font=title_face, fill=WHITE)
