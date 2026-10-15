@@ -1,0 +1,59 @@
+{
+  "checked_at_local": "2026-10-14T17:57:52-07:00",
+  "timezone": "America/Los_Angeles",
+  "purpose": "Unpublished research; never advertise these as checkout-verified",
+  "duplicate_check": "No matches in deals.json, deal-review-queue.json, GitHub code search by product IDs, or 16 Buffer posts reviewed. Research directory filenames also reviewed.",
+  "candidates": [
+    {
+      "retailer": "Macy's",
+      "product_id": "20264898",
+      "title": "Arch Studio Dishwasher-Safe Cutting Boards, Set of 3",
+      "url": "https://www.macys.com/shop/product/arch-studio-dishwasher-safe-cutting-boards-set-of-3-exclusively-at-macys?ID=20264898",
+      "advertised_price_usd": 15.93,
+      "retailer_reference_price_usd": 60,
+      "advertised_discount_percent": 73,
+      "calculated_discount_percent": 73.45,
+      "promo_code": null,
+      "promo_note": "No code needed on displayed price. Coupon excluded. Last Act final sale; no returns, exchanges, or price adjustments. Free shipping only with qualifying minimum purchase.",
+      "retailer_page_checked_date": "2026-10-14",
+      "page_evidence": "https://www.macys.com/shop/product/arch-studio-dishwasher-safe-cutting-boards-set-of-3-exclusively-at-macys?ID=20264898",
+      "availability_evidence": "Add To Bag and Buy Now displayed; inventory and ZIP-specific fulfillment not confirmed",
+      "expiration_date": null,
+      "checkout_price_verified": false,
+      "reference_price_independently_verified": false,
+      "public_branded_image_url": null,
+      "status": "research_only",
+      "publication_eligible": false
+    },
+    {
+      "retailer": "Macy's",
+      "product_id": "24917125",
+      "title": "Arch Studio 5 Piece Silicone Utensil Set — Mint",
+      "url": "https://www.macys.com/shop/product/arch-studio-5-piece-silicone-utensil-set-macys-exclusive?id=24917125",
+      "advertised_price_usd": 18.93,
+      "retailer_reference_price_usd": 62,
+      "advertised_discount_percent": 69,
+      "calculated_discount_percent": 69.47,
+      "promo_code": null,
+      "promo_note": "No code needed on displayed price. Coupon excluded. Mint variant. Last Act final sale; no returns, exchanges, or price adjustments. Free shipping only with qualifying minimum purchase.",
+      "retailer_page_checked_date": "2026-10-11",
+      "page_evidence": "https://www.macys.com/shop/product/arch-studio-5-piece-silicone-utensil-set-macys-exclusive?id=24917125",
+      "availability_evidence": "Add To Bag and Buy Now displayed on page snapshot; inventory and ZIP-specific fulfillment not confirmed",
+      "expiration_date": null,
+      "checkout_price_verified": false,
+      "reference_price_independently_verified": false,
+      "public_branded_image_url": null,
+      "status": "research_only",
+      "publication_eligible": false
+    }
+  ],
+  "blockers": [
+    "No verified final checkout price, taxes, shipping, or checkout-applied code",
+    "No independently validated historical reference price",
+    "No ZIP-specific availability",
+    "No stated expiry date; must recheck before posting",
+    "No product-specific publicly verified GitHub-hosted branded image"
+  ],
+  "website_published": false,
+  "instagram_published": false
+}
