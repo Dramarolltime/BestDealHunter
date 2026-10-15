@@ -250,19 +250,32 @@ def trim(art, threshold=40, pad=0.08):
     return art.crop((max(0, box[0] - px), max(0, box[1] - py), min(art.width, box[2] + px), min(art.height, box[3] + py)))
 
 
-def draw_listing_photo(canvas, path, box, credit):
-    """The real product photo, unedited (only resized), on a white panel, with its source credited."""
+def draw_listing_photo(canvas, path, box, credit, stage_bottom):
+    """The real product photo, large on a bright full-width stage matched to the photo's own background, with a
+    soft floor shadow. The photo is only resized and cropped of empty margins; the product is never edited.
+    Its source is credited."""
+    w = canvas.width
     x0, y0, x1, y1 = (int(v) for v in box)
     with Image.open(path) as src:
-        photo = ImageOps.exif_transpose(src).convert("RGB")
-    pad = 24
-    photo = ImageOps.contain(photo, (x1 - x0 - 2 * pad, y1 - y0 - 2 * pad - 30), Image.Resampling.LANCZOS)
-    pw, ph = photo.width + 2 * pad, photo.height + 2 * pad
-    left, top = x0 + (x1 - x0 - pw) // 2, y0 + (y1 - y0 - 30 - ph) // 2
+        photo = trim(ImageOps.exif_transpose(src).convert("RGB"), threshold=18, pad=0.08)
+    edge = photo.getpixel((1, 1))
+    stage_top, stage_bottom = y0 - 8, int(stage_bottom)
+    stage = Image.new("RGB", (w, stage_bottom - stage_top), edge)
+    darker = tuple(int(c * 0.86) for c in edge)
+    stage = Image.composite(Image.new("RGB", stage.size, darker), stage, Image.linear_gradient("L").resize(stage.size))
+    canvas.paste(stage, (0, stage_top))
+    photo = ImageOps.contain(photo, (int((x1 - x0) * 0.92), y1 - y0 - 60), Image.Resampling.LANCZOS)
+    left, top = (w - photo.width) // 2, y0 + 24 + (y1 - y0 - 60 - photo.height) // 2
+    shadow = Image.new("L", canvas.size, 0)
+    ImageDraw.Draw(shadow).ellipse((left + photo.width * 0.15, top + photo.height * 0.93,
+                                    left + photo.width * 0.85, top + photo.height * 0.93 + 40), fill=90)
+    canvas.paste(Image.new("RGB", canvas.size, "#4A5468"), (0, 0), shadow.filter(ImageFilter.GaussianBlur(20)))
+    fade = Image.new("L", photo.size, 0)
+    inset = max(6, min(photo.size) // 30)  # inside the 8% empty margin, so only background is softened
+    ImageDraw.Draw(fade).rectangle((inset, inset, photo.width - inset, photo.height - inset), fill=255)
+    canvas.paste(photo, (left, top), fade.filter(ImageFilter.GaussianBlur(inset * 0.7)))
     draw = ImageDraw.Draw(canvas)
-    draw.rounded_rectangle((left, top, left + pw, top + ph), radius=28, fill=WHITE)
-    canvas.paste(photo, (left + pad, top + pad))
-    draw.text((left + pw / 2, top + ph + 26), credit, font=font(20, 700), fill=GRAY, anchor="ms")
+    draw.text((w - 48, stage_top + 34), credit, font=font(20, 700), fill="#6B7487", anchor="rs")
 
 
 def draw_art(canvas, path, box, illustration):
@@ -342,9 +355,10 @@ def render_card(deal, kind="feed"):
         title_face = font(60 * k, 800)
         lines = wrap(draw, facts["title"], title_face, w - 2 * margin, 2)
         art_box = (margin, 190 * k + len(lines) * title_face.size * 1.12 + 12 * k, w - margin,
-                   badge_top + (14 if listing else 120) * k)
+                   badge_top + (60 if listing else 120) * k)
         if deal.get("image_source_kind") == LISTING_PHOTO:
-            draw_listing_photo(canvas, photo_path, art_box, f"PHOTO: {facts['store'].upper()} LISTING")
+            draw_listing_photo(canvas, photo_path, art_box, f"PHOTO: {facts['store'].upper()} LISTING",
+                               stage_bottom=badge_top + 200 * k * b)
         else:
             draw_art(canvas, photo_path, art_box, illustration=deal.get("image_source_kind") == AI_KIND)
         draw = ImageDraw.Draw(canvas)
