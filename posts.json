@@ -425,11 +425,11 @@
     "title": "French Avenue Men's French Avenue Liquid Brun EDP Spray 3.4 oz Fragrances",
     "price": 26.49,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123980/bestdealhunter/ddaa1df581e7b4746e14bfcd.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "6ef58036439a6d5e",
@@ -437,11 +437,11 @@
     "title": "CK ONE by Calvin Klein EDT unisex 6.7 oz / 6.8 oz New in Box",
     "price": 33.4,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123978/bestdealhunter/6df90cbfda75d32f7fa0d5ec.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "901fa9bc4100d5e4",
@@ -449,11 +449,11 @@
     "title": "Levi's Men's 541 Mid Rise Athletic Fit Full Tapered Jeans Heavyweight Flex Denim",
     "price": 25.19,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123946/bestdealhunter/121c75317c40d97729c7f78b.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "f088bdb81eb7f609",
@@ -461,11 +461,11 @@
     "title": "Oakley Vertex Hiking Boots - FOF100559-7CE – Army Green",
     "price": 89.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123953/bestdealhunter/ca46ea2decda3d6c450eb385.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "6c87af0f14e456ba",
@@ -473,11 +473,11 @@
     "title": "Hurley Men's Lightweight Regular 4-Way Stretch Fit Trek Hybrid Short",
     "price": 22.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123940/bestdealhunter/01048375f3a0025ed52485b0.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "79b7ee61cd5309b1",
@@ -485,11 +485,11 @@
     "title": "PUMA Bmw M Motorsport Rbd Break Low Lace Up Mens Black Sneakers Casual Shoes 30",
     "price": 39.95,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123966/bestdealhunter/75b9e42aa7b51b282e27f602.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "da12447be4fd455d",
@@ -497,11 +497,11 @@
     "title": "Crocs Adult Pokémon Classic Clogs",
     "price": 34.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123942/bestdealhunter/fe10d878b868503a14c50f5f.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "bb22010de8010fe7",
@@ -509,10 +509,106 @@
     "title": "Rocky Sport Pro Rubber Outdoor Boot",
     "price": 79.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792123963/bestdealhunter/a7bebdc4f4422fd35bdeaa5b.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T04:13:43+00:00",
     "roundup": "roundup-766dfc8315f5a6c7",
     "buffer_post_id": "6ad1a4844ed7d375a444aa47",
+    "buffer_status": "sent"
+  },
+  {
+    "key": "cad88ae8f953daae",
+    "deal_url": "https://www.ebay.com/itm/356276828670",
+    "title": "New Men's Malbon Rain Golf Jacket Shell Performance Full Zip Hooded Jacket",
+    "price": 82.52,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127522/bestdealhunter/82d6f483d57277058668f5cc.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "f9772ac33bd65d0f",
+    "deal_url": "https://www.ebay.com/itm/366691497645",
+    "title": "WP Weatherproof Men's Soft Stretch Straight Leg Terrain Utility Pant",
+    "price": 24.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127497/bestdealhunter/62ea9a135f8582fe996e78da.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "867caff1a207c4ae",
+    "deal_url": "https://www.ebay.com/itm/306847231848",
+    "title": "Airwalk The OG CW06506M Mens Black Suede Low Top Spring Lifestyle Sneakers Shoes",
+    "price": 24.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127504/bestdealhunter/49b1b3618f11d05e3c121c4a.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "f9c3eb391013a6a7",
+    "deal_url": "https://www.ebay.com/itm/158292042749",
+    "title": "Mullan Step Tan Combination",
+    "price": 39.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127518/bestdealhunter/333cc9dfc0ed970c36a6ea36.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "8b206c02ad5516fe",
+    "deal_url": "https://www.ebay.com/itm/168766757994",
+    "title": "Crocs Adult University of Florida Collegiate Classic Clogs",
+    "price": 24.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127514/bestdealhunter/bc46d7b925b465c72edf0129.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "edf9acd9d4e7892b",
+    "deal_url": "https://www.ebay.com/itm/407072846131",
+    "title": "Reebok Campio XT 100209321 Mens White Leather Lifestyle Sneakers Shoes",
+    "price": 27.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127506/bestdealhunter/c0890a785068e8a36d63ade5.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "d780369bdfd09078",
+    "deal_url": "https://www.ebay.com/itm/188967719284",
+    "title": "S Sport By Skechers Men's Brise Slip Resistant Sneakers: Textured Rubber Outsole",
+    "price": 21.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127483/bestdealhunter/d2751d5d61653c474ba56063.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "28466868a2b6c07f",
+    "deal_url": "https://www.ebay.com/itm/406381429901",
+    "title": "L.B. Evans Aristocrat Opera Mens Brown Casual Slippers 3025LB",
+    "price": 39.97,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127526/bestdealhunter/520fbac303daec31f0166d8d.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T05:13:00+00:00",
+    "roundup": "roundup-55162ed961e80787",
+    "buffer_post_id": "6ad1b2699597cd1662699f51",
     "buffer_status": "sending"
   }
 ]
