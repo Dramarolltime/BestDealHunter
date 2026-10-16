@@ -1,0 +1,52 @@
+name: Alpha images (Drive -> Cloudinary)
+# Issue #59. Alpha's AI deal images: reads the Deal Queue Sheet (DEALS_SHEET_CSV_URL), downloads each new
+# `AI Image Drive URL`, checks it, uploads it to Cloudinary with the existing secrets and records the public URL
+# in alpha-images.json; the Sheet's Apps Script copies that URL into `AI Image Cloudinary URL`.
+# Publishes nothing: no deals.json change, no website change, no Instagram post.
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'  # every 15 minutes
+  workflow_dispatch:
+    inputs:
+      sheet:
+        description: 'Optional: a different Google Sheet link to read (e.g. a test Sheet)'
+        type: string
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: alpha-images
+  cancel-in-progress: false
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Upload new Alpha images to Cloudinary
+        env:
+          DEALS_SHEET_CSV_URL: ${{ vars.DEALS_SHEET_CSV_URL }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          SHEET: ${{ inputs.sheet }}
+        run: |
+          if [ -n "$SHEET" ]; then
+            python scripts/alpha_images.py --apply --sheet "$SHEET" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            python scripts/alpha_images.py --apply | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Record the Cloudinary URLs (read by the Sheet's Apps Script)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add alpha-images.json
+          if git diff --cached --quiet; then echo "No new images."; exit 0; fi
+          git commit -m "Record Alpha image uploads"
+          for attempt in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep $((attempt * 5)); done
+          echo "::error::Could not push"; exit 1
