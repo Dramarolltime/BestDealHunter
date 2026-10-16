@@ -1005,7 +1005,7 @@
     "reserved_at": "2026-10-16T10:14:39+00:00",
     "roundup": "roundup-658cb2d54d2853f1",
     "buffer_post_id": "6ad1f914bbb9ce09f66b48c4",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "7dc0a0dfb5ddc8e6",
@@ -1017,7 +1017,7 @@
     "reserved_at": "2026-10-16T10:14:39+00:00",
     "roundup": "roundup-658cb2d54d2853f1",
     "buffer_post_id": "6ad1f914bbb9ce09f66b48c4",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "481102aec8fbc39f",
@@ -1029,6 +1029,17 @@
     "reserved_at": "2026-10-16T10:14:39+00:00",
     "roundup": "roundup-658cb2d54d2853f1",
     "buffer_post_id": "6ad1f914bbb9ce09f66b48c4",
-    "buffer_status": "sending"
+    "buffer_status": "error"
+  },
+  {
+    "key": "9abdc4b8a94189a5",
+    "deal_url": "https://www.ebay.com/itm/318292430923",
+    "title": "Merrell Encore Ice 4 J004624W Womens Blue Wide Nubuck Clog Flats Shoes",
+    "price": 56.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792149060/bestdealhunter/b493c4b75949b7504088de4d.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T11:11:08+00:00",
+    "buffer_post_id": "6ad2064e60e6a12e6b24f28b",
+    "buffer_status": "error"
   }
 ]
