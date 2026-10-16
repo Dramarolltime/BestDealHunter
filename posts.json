@@ -1041,5 +1041,77 @@
     "reserved_at": "2026-10-16T11:11:08+00:00",
     "buffer_post_id": "6ad2064e60e6a12e6b24f28b",
     "buffer_status": "error"
+  },
+  {
+    "key": "3bb25222031e11f6",
+    "deal_url": "https://www.ebay.com/itm/406847183189",
+    "title": "adidas Adizero Aruku Mens Grey, Silver Sneakers Casual Shoes JS0052",
+    "price": 49.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792152642/bestdealhunter/b92a9ed77446aa723d9b5c87.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T12:11:47+00:00",
+    "roundup": "roundup-a988ba5586962eb3",
+    "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "b6a3f17d9561d0c9",
+    "deal_url": "https://www.ebay.com/itm/406904830969",
+    "title": "diadora Cellula Running Mens Blue Sneakers Athletic Shoes 180243-D1254",
+    "price": 69.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792152630/bestdealhunter/80dab8d7caa7951c47f9516b.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T12:11:47+00:00",
+    "roundup": "roundup-a988ba5586962eb3",
+    "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "6fa4b4b012c5578c",
+    "deal_url": "https://www.ebay.com/itm/178562168160",
+    "title": "Levi's Women's Low-Rise Superlow Loose Jeans - Blended Beauty",
+    "price": 29.51,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792152698/bestdealhunter/16d1ff195c06c27f297192a1.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T12:11:47+00:00",
+    "roundup": "roundup-a988ba5586962eb3",
+    "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "5340d4a963df2c03",
+    "deal_url": "https://www.ebay.com/itm/157875771299",
+    "title": "Carhartt Men's Force SD Nano Composite Toe Work Shoes CMD3441",
+    "price": 54.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792152687/bestdealhunter/c75219386c1e743f88f3ed15.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T12:11:47+00:00",
+    "roundup": "roundup-a988ba5586962eb3",
+    "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "5fad8635763ceff8",
+    "deal_url": "https://www.ebay.com/itm/168516694565",
+    "title": "Crocs Adult Crush Platform Clogs",
+    "price": 32.49,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792152694/bestdealhunter/e51d6ef882952a90d4eae873.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T12:11:47+00:00",
+    "roundup": "roundup-a988ba5586962eb3",
+    "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "f13ef22f7166112e",
+    "deal_url": "https://www.ebay.com/itm/358796376309",
+    "title": "Blundstone Unisex Original Series Chelsea Boot",
+    "price": 109.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792152696/bestdealhunter/94a0ad5d2dd6d8966ad40944.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T12:11:47+00:00",
+    "roundup": "roundup-a988ba5586962eb3",
+    "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
+    "buffer_status": "sending"
   }
 ]
