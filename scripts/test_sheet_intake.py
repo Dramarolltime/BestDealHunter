@@ -137,3 +137,20 @@ class SheetTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AlphaHeaderTests(unittest.TestCase):
+    """Alpha's own sheet layout (2026-10-16) maps onto the same fields and the same checks."""
+
+    HEADER = ("Deal ID,Store,Product,Sale Price (USD),Reference Price (USD),Discount %,Product URL,Price Evidence URL,"
+              "Verified At (PT),Availability,AI Image Drive URL,GitHub Image Path,Status,Claude Notes,Published URL")
+
+    def test_alpha_columns_are_understood(self):
+        row = ('t-1,Target,Test Kit,6,19.99,69.98,https://www.target.com/p/-/A-94918812,https://e-catalog.com/x,'
+               '2026-10-15 15:53 PDT,In stock,,,Needs Claude review,,')
+        r = si.rows(self.HEADER + "\n" + row + "\n")[0]
+        self.assertEqual((r["price"], r["original"], r["status"]), ("6", "19.99", "Needs Claude review"))
+        self.assertEqual(si.checked_time(r["checked_at"]).utcoffset().total_seconds(), -7 * 3600)
+        self.assertIn(si.norm(r["status"]), si.READY)
+        with self.assertRaises(si.Rejected):  # no In Stock / Sold By Store confirmations, no screenshot
+            si.record(r, datetime(2026, 10, 15, 23, 30, tzinfo=timezone.utc))

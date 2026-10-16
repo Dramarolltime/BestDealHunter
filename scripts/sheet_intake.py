@@ -39,7 +39,7 @@ PACIFIC = ZoneInfo("America/Los_Angeles")
 SHEET_CSV = re.compile(r"https://docs\.google\.com/spreadsheets/d/(e/)?[\w-]+/(pub|export)\?[\w=&%-]*")
 SHEET_LINK = re.compile(r"https://docs\.google\.com/spreadsheets/d/([\w-]{20,})(?:/[^?#]*)?(?:\?[^#]*)?(?:#gid=(\d+))?")
 DRIVE_ID = re.compile(r"https://(?:drive|docs)\.google\.com/(?:file/d/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})")
-READY = {"ready", "verified", "yes"}
+READY = {"ready", "verified", "yes", "needsclaudereview", "readyforclaude"}  # Alpha's sheet: "Needs Claude review"
 YES = {"yes", "y", "true", "x", "✅", "checked"}
 # Column names Alpha may use -> the field they fill (matched without case, spaces or punctuation).
 COLUMNS = {
@@ -47,14 +47,15 @@ COLUMNS = {
     "title": ("product", "productname", "title"),
     "url": ("producturl", "dealurl", "url", "link", "productlink"),
     "category": ("category",),
-    "price": ("saleprice", "price", "now"),
-    "original": ("wasprice", "originalprice", "regularprice", "listprice", "was"),
+    "price": ("saleprice", "price", "now", "salepriceusd"),
+    "original": ("wasprice", "originalprice", "regularprice", "listprice", "was", "referenceprice", "referencepriceusd",
+                 "waspriceusd"),
     "label": ("waslabel", "referencelabel", "pricelabel"),
     "in_stock": ("instock", "instockonline"),
     "sold_by": ("soldbystore", "soldby", "soldbyretailer"),
-    "checked_at": ("checkedat", "verifiedat", "seenat", "timechecked"),
-    "screenshot": ("screenshot", "screenshotlink", "proof"),
-    "image": ("alphaimage", "image", "imagelink", "drivelink", "imagedrivelink"),
+    "checked_at": ("checkedat", "verifiedat", "seenat", "timechecked", "verifiedatpt", "checkedatpt"),
+    "screenshot": ("screenshot", "screenshotlink", "proof", "screenshotdriveurl", "screenshoturl"),
+    "image": ("alphaimage", "image", "imagelink", "drivelink", "imagedrivelink", "aiimagedriveurl", "imagedriveurl"),
     "image_ok": ("imagenumbersmatch", "imagecheck", "numbersmatch"),
     "status": ("status", "verificationstatus"),
 }
@@ -101,7 +102,7 @@ def drive_download_url(link):
 
 def checked_time(text):
     """'2026-10-15T09:30:00-07:00', '2026-10-15 09:30' or '10/15/2026 9:30:00' (no zone = Pacific)."""
-    text = str(text or "").strip()
+    text = re.sub(r"\s*(PDT|PST|PT)$", "", str(text or "").strip(), flags=re.I)  # Pacific is the default anyway
     for fmt in (None, "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M"):
         try:
             t = datetime.fromisoformat(text) if fmt is None else datetime.strptime(text, fmt)
