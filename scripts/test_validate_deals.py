@@ -303,7 +303,9 @@ class ListingPolicyRequirementTests(unittest.TestCase):
 
     def test_five_original_deals_remain_on_main_page(self):
         deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
-        originals = [d for d in deals if d["title"].split(" ")[0] in {"Delsey", "KitchenAid", "Hanes", "Bose", "Insignia"}]
+        # the five hand-published Oct 9 deals (later automatic deals can share a brand, e.g. an eBay Hanes 4-pack)
+        originals = [d for d in deals if d["title"].split(" ")[0] in {"Delsey", "KitchenAid", "Hanes", "Bose", "Insignia"}
+                     and not str(d.get("approved_by", "")).startswith("automatic")]
         self.assertEqual(len(originals), 5)
         self.assertTrue(all(deal_status(d, self.TODAY) == "active" for d in originals))
 
