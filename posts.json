@@ -130,5 +130,101 @@
     "reserved_at": "2026-10-15T11:12:35+00:00",
     "buffer_post_id": "6ad0b525f26224326062c193",
     "buffer_status": "sent"
+  },
+  {
+    "key": "56063443b1808526",
+    "deal_url": "https://www.ebay.com/itm/407261056431",
+    "title": "River's End Northern Comfort 3In1 Jacket Mens Blue Casual Athletic Outerwear 219",
+    "price": 22.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792113373/bestdealhunter/7478cbdf0b08bfaea9bdfb9c.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "125b3d5f479aef4d",
+    "deal_url": "https://www.ebay.com/itm/196179538545",
+    "title": "Klipsch Gig XXL Portable Wireless Bluetooth Party Speaker",
+    "price": 79.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792113371/bestdealhunter/4276aad7a2222fb4b48e4eed.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "ddcf9e15698b10a3",
+    "deal_url": "https://www.ebay.com/itm/394498982238",
+    "title": "Rockville RS6x9PR Pair of Car Audio 6x9\" Wedge Sealed Speaker Box Enclosures",
+    "price": 34.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792113377/bestdealhunter/f9b69166d200feba0cd248c1.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "dc6c2395b1f6b352",
+    "deal_url": "https://www.ebay.com/itm/127098781035",
+    "title": "Timberland Men's Genuine Smooth Leather Cloudy Passcase Bifold Wallet",
+    "price": 22.49,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792113370/bestdealhunter/690c62d9be91ce78206737a9.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "c8c01222767f2db4",
+    "deal_url": "https://www.ebay.com/itm/188943316037",
+    "title": "Cole Haan Men's GrandPrø Tennis Sneakers",
+    "price": 69.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792113363/bestdealhunter/980df07b0ddfbd846eacb7ff.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "8f0891052efa0022",
+    "deal_url": "https://www.ebay.com/itm/355442196945",
+    "title": "3 Three Pack Men's Calvin Klein Cotton Boxer Brief Black White Tri New In Box",
+    "price": 23.31,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792108872/bestdealhunter/f7e002d8948660f9a2b3685b.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "c12a3456d631d999",
+    "deal_url": "https://www.ebay.com/itm/318049785865",
+    "title": "Mens Nike Gym Athletic Club Swoosh Hoodie Hooded Sweatshirt Pants Set New",
+    "price": 82.89,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792108868/bestdealhunter/685041e9a8811a0ce824b9e5.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "1e21f4854e8fdbb4",
+    "deal_url": "https://www.ebay.com/itm/206300379100",
+    "title": "Converse Adult Street Ox Low Top Sneakers",
+    "price": 28.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792113374/bestdealhunter/d7ef2352cd0fdfd8ff26327b.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T01:17:19+00:00",
+    "roundup": "roundup-144e5d5fe10a961f",
+    "buffer_post_id": "6ad17b2bee2c696029b3e609",
+    "buffer_status": "sending"
   }
 ]
