@@ -909,7 +909,7 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "1c80c2df70bfa12c",
@@ -921,7 +921,7 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "531832ab41ceaac6",
@@ -933,7 +933,7 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "051eb22499e44b05",
@@ -945,7 +945,7 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "67c9b982eacbddf9",
@@ -957,7 +957,7 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "3235c9711a2a6405",
@@ -969,7 +969,7 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "8a5e4f26a4d421ca",
@@ -981,7 +981,7 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "f243b8aac18a0c48",
@@ -993,6 +993,42 @@
     "reserved_at": "2026-10-16T09:14:02+00:00",
     "roundup": "roundup-6edb55073bf1a736",
     "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "error"
+  },
+  {
+    "key": "ead5fc829899c0f7",
+    "deal_url": "https://www.ebay.com/itm/307066131497",
+    "title": "Johnston & Murphy Jake 24-5686 Mens Gray Suede Lifestyle Sneakers Shoes",
+    "price": 59.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792142034/bestdealhunter/743da1f70cfb00758a8ef21a.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T10:14:39+00:00",
+    "roundup": "roundup-658cb2d54d2853f1",
+    "buffer_post_id": "6ad1f914bbb9ce09f66b48c4",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "7dc0a0dfb5ddc8e6",
+    "deal_url": "https://www.ebay.com/itm/365924301760",
+    "title": "Lucky Brand Men's 410 Athletic Fit Straight Leg 5 Pocket Stretch Denim Jeans",
+    "price": 26.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792145670/bestdealhunter/347b330184e61a85aeb3620c.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T10:14:39+00:00",
+    "roundup": "roundup-658cb2d54d2853f1",
+    "buffer_post_id": "6ad1f914bbb9ce09f66b48c4",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "481102aec8fbc39f",
+    "deal_url": "https://www.ebay.com/itm/365947925341",
+    "title": "Levi's Women's 314 Shaping Straight Mid-Rise Stretch Denim Jean",
+    "price": 24.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792145669/bestdealhunter/6bfbc8420694ff84641f1696.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T10:14:39+00:00",
+    "roundup": "roundup-658cb2d54d2853f1",
+    "buffer_post_id": "6ad1f914bbb9ce09f66b48c4",
     "buffer_status": "sending"
   }
 ]
