@@ -43,6 +43,7 @@ READY = {"ready", "verified", "yes", "needsclaudereview", "readyforclaude"}  # A
 YES = {"yes", "y", "true", "x", "✅", "checked"}
 # Column names Alpha may use -> the field they fill (matched without case, spaces or punctuation).
 COLUMNS = {
+    "deal_id": ("dealid", "id"),
     "store": ("store", "retailer"),
     "title": ("product", "productname", "title"),
     "url": ("producturl", "dealurl", "url", "link", "productlink"),
@@ -157,13 +158,22 @@ def fetchers(k, opener=urllib.request.urlopen):
             lambda url, _ref: download_image(url, EVIDENCE / f"deal-sheet-{k}-card", "Alpha's image", opener))
 
 
+def alpha_image(row):
+    """Alpha's image for this row: the Cloudinary copy alpha_images.py uploaded and verified for this Deal ID and
+    Drive file (issue #59), else the Drive file itself. A URL typed into the Sheet is never trusted on its own."""
+    from alpha_images import LEDGER, image_for
+    ledger = json.loads(LEDGER.read_text(encoding="utf-8")) if LEDGER.exists() else []
+    hosted = image_for(str(row.get("deal_id", "")).strip(), row.get("image", ""), ledger) if row.get("image") else None
+    return hosted or drive_download_url(row.get("image"))
+
+
 def run(csv_text, deals, ledger, now, opener=urllib.request.urlopen, log=print):
     """Process new Ready rows. Returns the new deals.json entries; appends one ledger entry per processed row."""
     done = {e.get("key") for e in ledger if isinstance(e, dict)}
     new = []
     for row in rows(csv_text):
-        if norm(row.get("status")) not in READY:
-            continue
+        if norm(row.get("status")) not in READY or str(row.get("deal_id", "")).upper().startswith("TEST-"):
+            continue  # TEST- rows exercise the image handoff only and are never published
         k = key(row)
         if k in done:
             continue
@@ -171,7 +181,7 @@ def run(csv_text, deals, ledger, now, opener=urllib.request.urlopen, log=print):
         try:
             rec, shot = record(row, now)
             fetch, fetch_card = fetchers(k, opener)
-            entry, note = accept(rec, shot, drive_download_url(row.get("image")), norm(row.get("image_ok")) in YES,
+            entry, note = accept(rec, shot, alpha_image(row), norm(row.get("image_ok")) in YES,
                                  k, f"owner deal form: Alpha deal sheet row {row['_row']}", deals + new, now,
                                  fetch, fetch_card)
         except (Rejected, ValueError, OSError, urllib.error.URLError) as exc:
