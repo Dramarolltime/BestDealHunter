@@ -31,7 +31,7 @@ function syncAlphaImages() {
     sheet.getRange(1, urlCol + 1).setValue(URL_COLUMN);
   }
   let written = 0;
-  ledger.filter(e => e.result === 'uploaded' && HOSTED.test(e.cloudinary_url || '')).forEach(e => {
+  ledger.filter(e => e.result === 'uploaded' && e.drive_file_id && HOSTED.test(e.cloudinary_url || '')).forEach(e => {
     for (let r = 1; r < values.length; r++) {
       const sameDeal = String(values[r][idCol]).trim() === e.deal_id;
       const sameFile = String(values[r][driveCol]).indexOf(e.drive_file_id) >= 0;

@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Alpha's AI deal images: Google Drive -> Cloudinary -> Google Sheet (issue #59).
 
-Alpha (ChatGPT) cannot send image bytes to GitHub or Cloudinary. It (or the owner, from a phone) saves the image
-in the shared Drive folder and puts the file's link in the deal's `AI Image Drive URL` cell. Every 15 minutes the
-"Alpha images" workflow runs this script:
+Alpha (ChatGPT) gets an image to us one of two ways:
+  * Cloudinary: Alpha uploads it with its Cloudinary connection and pastes the image's res.cloudinary.com link in the
+    deal's `AI Image Cloudinary URL` cell; this script downloads and checks it (step 3), and copies it into the
+    BestDealHunter account if it lives in another Cloudinary account (step 4); or
+  * Drive: Alpha (or the owner, from a phone) saves the image in the shared Drive folder and puts the file's link
+    in the deal's `AI Image Drive URL` cell (this wins if both cells are filled).
+Every 15 minutes the "Alpha images" workflow runs this script:
 
   1. read the Deal Queue tab (DEALS_SHEET_CSV_URL, the same link the deal intake uses; no Google password);
   2. for each row with a Deal ID and an `AI Image Drive URL`, download that one Drive file (Drive file links only);
@@ -43,6 +47,7 @@ MAX_BYTES = 10 * 1024 * 1024
 MIN_SIDE = 600
 TYPES = {b"\xff\xd8\xff": ("image/jpeg", "jpg"), b"\x89PNG\r\n\x1a\n": ("image/png", "png")}
 DEAL_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{1,60}")
+CLOUDINARY = re.compile(r"https://res\.cloudinary\.com/([a-z0-9_-]+)/image/upload/[^\s?#]+\.(?:jpe?g|png)", re.I)
 
 
 class ImageRejected(Exception):
@@ -51,6 +56,20 @@ class ImageRejected(Exception):
 
 def slug(deal_id):
     return re.sub(r"[^a-z0-9-]+", "-", deal_id.lower()).strip("-")[:48]
+
+
+def source_of(row):
+    """The row's image link: its Drive file if there is one, else the Cloudinary link Alpha pasted."""
+    return (row.get("image") or "").strip() or (row.get("hosted_image") or "").strip()
+
+
+def identity(link):
+    """(Drive file ID, None) for a Drive link, (None, URL) for a Cloudinary image link, else (None, None)."""
+    source = drive_download_url(link)
+    if source:
+        return source.rsplit("id=", 1)[-1], None
+    m = CLOUDINARY.fullmatch(link or "")
+    return (None, m.group(0)) if m else (None, None)
 
 
 def is_test(deal_id):
@@ -112,33 +131,38 @@ def upload(data, mime, ext, public_id, creds, transport=http, now=time.time):
 
 
 def run(csv_text, ledger, creds, opener=urllib.request.urlopen, transport=http, now=None, log=print):
-    """Upload every new row's AI image. Appends one ledger entry per processed row; returns the new entries."""
+    """Check (and if needed upload) every new row's AI image. Appends one ledger entry per processed row; returns the new entries."""
     now = now or datetime.now(timezone.utc)
-    done = {(e.get("deal_id"), e.get("drive_file_id")) for e in ledger}
+    done = {(e.get("deal_id"), e.get("drive_file_id") or e.get("source_url")) for e in ledger}
     by_hash = {e.get("sha256"): e.get("deal_id") for e in ledger if e.get("result") == "uploaded"}
     new = []
     for row in rows(csv_text):
-        deal_id, link = row.get("deal_id", "").strip(), row.get("image", "").strip()
+        deal_id, link = row.get("deal_id", "").strip(), source_of(row)
         if not deal_id or not link:
             continue
-        source = drive_download_url(link)
-        file_id = source.rsplit("id=", 1)[-1] if source else link
-        if (deal_id, file_id) in done:
+        file_id, hosted = identity(link)
+        ident = file_id or hosted or link
+        if (deal_id, ident) in done:
             continue
-        entry = {"deal_id": deal_id, "row": row["_row"], "drive_file_id": file_id, "test": is_test(deal_id),
+        entry = {"deal_id": deal_id, "row": row["_row"], "test": is_test(deal_id),
                  "at": now.isoformat(timespec="seconds")}
+        entry.update({"source_url": hosted} if hosted else {"drive_file_id": ident})
         try:
             if not DEAL_ID.fullmatch(deal_id):
                 raise ImageRejected("Deal ID must be letters, numbers, - _ or . only")
-            if not source:
-                raise ImageRejected("AI Image Drive URL must be a Google Drive file link")
-            data = download(source, opener)
+            if not (file_id or hosted):
+                raise ImageRejected("the image link must be a Google Drive file link or a res.cloudinary.com "
+                                    "JPEG/PNG image link")
+            data = download(hosted or drive_download_url(link), opener)
             mime, ext, width, height = check_image(data)
             digest = hashlib.sha256(data).hexdigest()
             if by_hash.get(digest, deal_id) != deal_id:
                 raise ImageRejected(f"the same image is already used for deal {by_hash[digest]}")
-            folder = "bestdealhunter/alpha-test" if entry["test"] else "bestdealhunter/alpha"
-            url = upload(data, mime, ext, f"{folder}/{slug(deal_id)}-{digest[:10]}", creds, transport)
+            if hosted and CLOUDINARY.fullmatch(hosted).group(1) == creds[0]:
+                url = hosted  # already in the BestDealHunter account: checked above, used as is
+            else:
+                folder = "bestdealhunter/alpha-test" if entry["test"] else "bestdealhunter/alpha"
+                url = upload(data, mime, ext, f"{folder}/{slug(deal_id)}-{digest[:10]}", creds, transport)
         except (ImageRejected, UploadError, urllib.error.URLError, TimeoutError, OSError) as exc:
             entry.update(result="rejected", reason=str(exc)[:200])
             log(f"❌ Row {row['_row']} ({deal_id}): image not used: {entry['reason']}")
@@ -148,17 +172,19 @@ def run(csv_text, ledger, creds, opener=urllib.request.urlopen, transport=http, 
             by_hash[digest] = deal_id
             log(f"✅ Row {row['_row']} ({deal_id}): {url}")
         ledger.append(entry)
-        done.add((deal_id, file_id))
+        done.add((deal_id, ident))
         new.append(entry)
     return new
 
 
-def image_for(deal_id, drive_link, ledger):
-    """The verified Cloudinary URL recorded for this deal's Drive image, or None."""
-    source = drive_download_url(drive_link) or ""
-    file_id = source.rsplit("id=", 1)[-1] if source else None
+def image_for(deal_id, link, ledger):
+    """The checked Cloudinary URL recorded for this deal's image link (Drive file or Cloudinary URL), or None."""
+    file_id, hosted = identity(link)
+    if not (file_id or hosted):
+        return None
     return next((e["cloudinary_url"] for e in reversed(ledger) if e.get("result") == "uploaded"
-                 and e.get("deal_id") == deal_id and (file_id is None or e.get("drive_file_id") == file_id)), None)
+                 and e.get("deal_id") == deal_id
+                 and (e.get("drive_file_id") == file_id if file_id else e.get("source_url") == hosted)), None)
 
 
 def main(argv=None, env=os.environ, opener=urllib.request.urlopen):

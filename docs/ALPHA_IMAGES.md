@@ -14,7 +14,18 @@ in "AI Image Drive URL"      verifies the URL, records it in              (only 
                              hourly auto-publish: the deal (with all its price checks) uses that Cloudinary image
 ```
 
-## Why this path
+## Option A (simplest): Alpha uploads to Cloudinary itself
+
+Alpha has a Cloudinary connection. Alpha uploads the image there and pastes the image's link (it starts with
+`https://res.cloudinary.com/` and ends in `.jpg` or `.png`) into the row's **`AI Image Cloudinary URL`** cell, leaving
+`AI Image Drive URL` empty. Within ~15 minutes the "Alpha images" workflow downloads that image and runs the same
+checks as below (real JPEG/PNG, ≤ 10 MB, ≥ 600 px, not reused for another deal). An image already in the
+BestDealHunter account (`j9g6uest`) is used as is; one in any other Cloudinary account is copied into ours first.
+Nothing is published until that check is recorded in `alpha-images.json`; a link typed into the Sheet is never used
+unchecked. No Apps Script is needed for this option.
+
+## Option B: Drive
+
 
 * ChatGPT cannot send image bytes to GitHub or Cloudinary. It can save files to Google Drive (through the
   owner's Drive connection), so Drive is the drop-off point. The owner can also drop an image into the folder
@@ -29,12 +40,12 @@ in "AI Image Drive URL"      verifies the URL, records it in              (only 
 
 | Check | Where |
 |---|---|
-| Only Google Drive file links; a real JPEG or PNG (magic bytes + decoded); ≤ 10 MB; ≥ 600 px short side | `alpha_images.py` |
-| Each Deal ID + Drive file is uploaded once; the same image can't be reused for another deal | `alpha_images.py` |
+| Only Google Drive file links or res.cloudinary.com JPEG/PNG links; a real JPEG or PNG (magic bytes + decoded); ≤ 10 MB; ≥ 600 px short side | `alpha_images.py` |
+| Each Deal ID + Drive file (or Cloudinary link) is handled once; the same image can't be reused for another deal | `alpha_images.py` |
 | Public ID `bestdealhunter/alpha/<deal-id>-<hash>`; `TEST-` deals go to `bestdealhunter/alpha-test/` | `alpha_images.py` |
 | Upload is signed, `overwrite=false`; the URL must answer HTTP 200 with an image | `alpha_images.py` |
 | The URL is written only into an **empty** `AI Image Cloudinary URL` cell of the row with the same Deal ID **and** Drive file | Apps Script |
-| Publishing uses the image only from `alpha-images.json` (a URL typed into the Sheet is never trusted) and only when `Image Numbers Match` = Yes | `sheet_intake.py` |
+| Publishing uses the image only from `alpha-images.json` (a URL typed into the Sheet is used only after it was checked) and only when `Image Numbers Match` = Yes | `sheet_intake.py` |
 | The AI image is **never** price evidence: every deal still needs `Screenshot Drive URL` (a real retailer page), `In Stock`, `Sold By Store`, a check under 3 hours old, 50–79 % off | `sheet_intake.py` |
 | `TEST-` rows are never published to the website or Instagram | `sheet_intake.py` |
 
