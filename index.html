@@ -102,6 +102,9 @@ a{color:inherit}
 .brand-post img{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 8px 28px rgba(16,24,40,.18)}
 .brand-post p{margin:12px 0 0;font-weight:700}
 footer{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px;line-height:1.6}
+.footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 18px;margin-bottom:10px}
+.footer-links a{color:var(--ink);font-weight:600;text-decoration:none}
+.footer-links a:hover{text-decoration:underline}
 .verify{font-size:11px;margin-top:8px}
 </style>
 </head>
@@ -142,7 +145,7 @@ footer{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px;lin
   <section class="brand-post" id="brand-post" hidden><a id="brand-post-link" href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer"><img id="brand-post-image" src="images/brand/bestdealhunter-logo-1080.jpg" width="1080" height="1080" alt="BestDealHunter logo. Opens our Instagram post" loading="lazy"></a><p><a id="brand-post-caption" href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer">See this post on Instagram @best_dealhunter</a></p></section>
   <section class="info"><h2>How it works</h2><p>Deals are only published from authorized sources with a valid price comparison. Prices and availability may change; confirm the final price at the retailer. Past Deals show the price recorded when each deal was posted.</p></section>
 </main>
-<footer>Disclosure: BestDealHunter may earn commissions from qualifying purchases through affiliate links, at no additional cost to you. As an Amazon Associate I earn from qualifying purchases.<br>© <span id="year"></span> BestDealHunter. · Follow <a href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer">@best_dealhunter</a>
+<footer><nav class="footer-links" aria-label="Site information"><a href="about.html">About Us</a><a href="contact.html">Contact Us</a><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms &amp; Conditions</a></nav>Disclosure: BestDealHunter may earn commissions from qualifying purchases through affiliate links, at no additional cost to you. As an Amazon Associate I earn from qualifying purchases.<br>© <span id="year"></span> BestDealHunter. · Follow <a href="https://www.instagram.com/best_dealhunter/" target="_blank" rel="noopener noreferrer">@best_dealhunter</a>
 <div class="verify">Impact-Site-Verification: 506e7ba6-e633-41f0-9624-0b84a7102cec</div></footer>
 <script>
 const allowedStores=["Amazon","eBay","Walmart","Target","Best Buy","Home Depot","Lowe's","Macy's","Dick's Sporting Goods"];const categories=["All","Electronics","Home","Fashion","Beauty","Sports","Other"];const maxVerificationAgeDays=2;

@@ -1,0 +1,30 @@
+/* Shared style for the About, Contact, Privacy Policy and Terms pages (same look as the deals page). */
+:root{--navy:#0b1a33;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--bg:#f5f6f8;--yellow:#fbbf24;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg)}
+a{color:#0b57d0}
+.wrap{max-width:1440px;margin:0 auto;padding:0 16px}
+.site-header{background:var(--navy);color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.site-header .wrap{display:flex;align-items:center;gap:12px 28px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
+.brand svg{width:40px;height:40px;flex:none}
+.brand-name{font-weight:800;font-size:25px;letter-spacing:-.02em;line-height:1}
+.brand-name span{color:var(--yellow)}
+.brand-tag{display:block;font-size:13px;font-weight:500;color:#dbe3f0;margin-top:3px}
+.top-nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.top-nav a{color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:10px 12px}
+.top-nav a:hover{color:var(--yellow)}
+@media (max-width:520px){.brand-tag{display:none}.brand-name{font-size:21px}.top-nav{margin-left:0}.top-nav a{padding:6px 8px;font-size:14px}}
+main.page{max-width:820px;margin:24px auto 40px;padding:28px 22px;background:#fff;border:1px solid var(--line);border-radius:14px;line-height:1.65;font-size:16px}
+@media (max-width:520px){main.page{margin:12px 12px 28px;padding:20px 16px;font-size:15.5px}}
+main.page h1{font-size:28px;line-height:1.2;margin:0 0 4px}
+main.page h2{font-size:19px;margin:28px 0 6px}
+main.page .updated{color:var(--muted);font-size:14px;margin:0 0 18px}
+main.page ul{padding-left:22px}
+main.page li{margin:4px 0}
+.callout{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:16px 0}
+.contact-card{display:block;font-size:18px;font-weight:700;word-break:break-word}
+footer{text-align:center;padding:24px 16px 32px;color:var(--muted);font-size:13px;line-height:1.7}
+.footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px}
+.footer-links a{color:var(--ink);font-weight:600;text-decoration:none}
+.footer-links a:hover{text-decoration:underline}

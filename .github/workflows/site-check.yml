@@ -1,0 +1,38 @@
+name: Site check
+
+# Confirms the live site and its required pages answer (apex and www), and shows the domain's mail (MX) records
+# so the contact address can be confirmed. Read-only: no secrets, no writes.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 13 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pages answer
+        run: |
+          fail=0
+          for host in bestdealhunters.com www.bestdealhunters.com; do
+            for path in "" about.html contact.html privacy.html terms.html deals.json; do
+              url="https://$host/$path"
+              out=$(curl -sS -L -o /dev/null -m 30 -w '%{http_code} %{url_effective}' "$url" 2>&1) || true
+              echo "$url -> $out"
+              case "$out" in 200\ *) ;; *) fail=1 ;; esac
+            done
+          done
+          exit $fail
+      - name: Mail records for the contact address
+        if: always()
+        run: |
+          echo "MX records for bestdealhunters.com:"
+          mx=$(dig +short MX bestdealhunters.com)
+          echo "${mx:-(none)}"
+          echo "www CNAME/A:"; dig +short www.bestdealhunters.com
+          if [ -z "$mx" ]; then
+            echo "::warning::bestdealhunters.com has no MX records, so mail to Admin@bestdealhunters.com cannot be delivered."
+          fi
