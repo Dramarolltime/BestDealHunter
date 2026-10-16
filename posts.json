@@ -521,11 +521,11 @@
     "title": "New Men's Malbon Rain Golf Jacket Shell Performance Full Zip Hooded Jacket",
     "price": 82.52,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127522/bestdealhunter/82d6f483d57277058668f5cc.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "f9772ac33bd65d0f",
@@ -533,11 +533,11 @@
     "title": "WP Weatherproof Men's Soft Stretch Straight Leg Terrain Utility Pant",
     "price": 24.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127497/bestdealhunter/62ea9a135f8582fe996e78da.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "867caff1a207c4ae",
@@ -545,11 +545,11 @@
     "title": "Airwalk The OG CW06506M Mens Black Suede Low Top Spring Lifestyle Sneakers Shoes",
     "price": 24.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127504/bestdealhunter/49b1b3618f11d05e3c121c4a.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "f9c3eb391013a6a7",
@@ -557,11 +557,11 @@
     "title": "Mullan Step Tan Combination",
     "price": 39.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127518/bestdealhunter/333cc9dfc0ed970c36a6ea36.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "8b206c02ad5516fe",
@@ -569,11 +569,11 @@
     "title": "Crocs Adult University of Florida Collegiate Classic Clogs",
     "price": 24.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127514/bestdealhunter/bc46d7b925b465c72edf0129.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "edf9acd9d4e7892b",
@@ -581,11 +581,11 @@
     "title": "Reebok Campio XT 100209321 Mens White Leather Lifestyle Sneakers Shoes",
     "price": 27.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127506/bestdealhunter/c0890a785068e8a36d63ade5.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "d780369bdfd09078",
@@ -593,11 +593,11 @@
     "title": "S Sport By Skechers Men's Brise Slip Resistant Sneakers: Textured Rubber Outsole",
     "price": 21.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127483/bestdealhunter/d2751d5d61653c474ba56063.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "28466868a2b6c07f",
@@ -605,10 +605,106 @@
     "title": "L.B. Evans Aristocrat Opera Mens Brown Casual Slippers 3025LB",
     "price": 39.97,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127526/bestdealhunter/520fbac303daec31f0166d8d.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T05:13:00+00:00",
     "roundup": "roundup-55162ed961e80787",
     "buffer_post_id": "6ad1b2699597cd1662699f51",
+    "buffer_status": "sent"
+  },
+  {
+    "key": "a997cfbf118e7329",
+    "deal_url": "https://www.ebay.com/itm/168613888216",
+    "title": "Khamrah QAHWA By Lattafa Eau de Parfum 3.4 oz / 100 ml Unisex Spray",
+    "price": 23.73,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130972/bestdealhunter/27cb75a55688f54e9de3a164.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "968f0af7a2a6874f",
+    "deal_url": "https://www.ebay.com/itm/392288539168",
+    "title": "Men’s Red Label Premium Faded Denim Cotton Jean Button Up Slim Fit Jacket",
+    "price": 37.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130980/bestdealhunter/aec6c95202a50be9e149d8d5.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "5a9608a48b24e308",
+    "deal_url": "https://www.ebay.com/itm/304442245414",
+    "title": "Light Blue by Dolce & Gabbana D&G Perfume Women 3.3 / 3.4 oz New Tester with Cap",
+    "price": 38.78,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130977/bestdealhunter/aa80ca5bbb742efa6a37eaa7.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "d0fe9d03d1714a50",
+    "deal_url": "https://www.ebay.com/itm/157969778328",
+    "title": "Rayhaan Men's Obsidian EDP Spray 3.3 oz Fragrances 6297001571323",
+    "price": 21.19,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130974/bestdealhunter/91d1af0f42fbe913475eecc0.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "a13933435887acdd",
+    "deal_url": "https://www.ebay.com/itm/361276690462",
+    "title": "CHROME AZZARO Men Cologne 6.7 / 6.8 oz edt Men New in Box",
+    "price": 48.23,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130979/bestdealhunter/b3fc860570b13044aea9a6ab.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "2493fbee6c6d3b8d",
+    "deal_url": "https://www.ebay.com/itm/178073977636",
+    "title": "French Avenue Unisex Vulcan Feu EDP Spray 3.38 oz Fragrances 6290360378053",
+    "price": 31.79,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130971/bestdealhunter/6d6941d60b03613c4687ad9c.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "2431e7cd6df37967",
+    "deal_url": "https://www.ebay.com/itm/206588343053",
+    "title": "Converse Adult Street Mid Sneakers",
+    "price": 30.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127549/bestdealhunter/784f69e3f92ac35f461f4138.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "e26369ac23cafece",
+    "deal_url": "https://www.ebay.com/itm/137587521106",
+    "title": "Wolverine Men Overman Waterproof CarbonMAX® Wellington Work Boots Leather",
+    "price": 99.0,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130976/bestdealhunter/f3faff714fd52c65c11b6c4a.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T06:10:03+00:00",
+    "roundup": "roundup-9dac81fc5b300745",
+    "buffer_post_id": "6ad1bfc7ee2c696029c0e158",
     "buffer_status": "sending"
   }
 ]
