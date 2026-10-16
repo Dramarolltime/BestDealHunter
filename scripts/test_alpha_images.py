@@ -46,8 +46,8 @@ class Fake:
         self.files, self.uploads = files, []
 
     def opener(self, req, timeout=60):
-        file_id = req.full_url.rsplit("id=", 1)[-1]
-        return Resp(self.files[file_id])
+        url = req.full_url
+        return Resp(self.files[url if url.startswith("https://res.cloudinary.com/") else url.rsplit("id=", 1)[-1]])
 
     def transport(self, method, url, body=None, headers=None):
         if method == "POST":
@@ -118,6 +118,63 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(ai.main([], env={}, opener=boom), 0)
         self.assertEqual(ai.main([], env={"DEALS_SHEET_CSV_URL": "https://docs.google.com/spreadsheets/d/"
                                           "1OExDVOjUYZP5eDucyDv-tsJAMXeHZexmzVePnkKmuMw/edit"}, opener=boom), 1)
+
+
+OURS = "https://res.cloudinary.com/democloud/image/upload/v1792200000/alpha/target-1.png"
+THEIRS = "https://res.cloudinary.com/othercloud/image/upload/v1792200000/target-1.jpg"
+CLD_HEADER = "Deal ID,Store,Product,AI Image Drive URL,AI Image Cloudinary URL,Status"
+
+
+class AlphaUploadsToCloudinaryTests(unittest.TestCase):
+    """Alpha uploads with its own Cloudinary connection and pastes the link; we still download and check it."""
+
+    def go(self, *rows, files, ledger=None):
+        fake = Fake(files)
+        ledger = [] if ledger is None else ledger
+        text = "\n".join([CLD_HEADER, *rows]) + "\n"
+        return ai.run(text, ledger, CREDS, fake.opener, fake.transport, NOW, log=lambda *_: None), ledger, fake
+
+    def test_link_in_our_account_is_checked_and_used_without_reupload(self):
+        new, ledger, fake = self.go(f"target-1,Target,Test,,{OURS},Draft", files={OURS: image()})
+        self.assertEqual((new[0]["result"], new[0]["cloudinary_url"], new[0]["source_url"]), ("uploaded", OURS, OURS))
+        self.assertEqual(fake.uploads, [])
+        self.assertEqual(ai.image_for("target-1", OURS, ledger), OURS)
+        again, _, _ = self.go(f"target-1,Target,Test,,{OURS},Draft", files={OURS: image()}, ledger=ledger)
+        self.assertEqual(again, [])
+
+    def test_link_in_another_account_is_copied_into_ours(self):
+        new, _, fake = self.go(f"target-1,Target,Test,,{THEIRS},Draft", files={THEIRS: image("JPEG")})
+        self.assertEqual(len(fake.uploads), 1)
+        self.assertRegex(new[0]["cloudinary_url"], r"^https://res\.cloudinary\.com/democloud/.*/bestdealhunter/alpha/")
+
+    def test_bad_cloudinary_images_and_other_hosts_are_rejected(self):
+        new, _, fake = self.go(f"target-1,Target,Test,,{OURS},Draft",
+                               "target-2,Target,Test,,https://example.com/x.png,Draft",
+                               files={OURS: image(size=(300, 300))})
+        self.assertEqual([e["result"] for e in new], ["rejected", "rejected"])
+        self.assertIn("at least 600 px", new[0]["reason"])
+        self.assertEqual(fake.uploads, [])
+
+    def test_drive_link_wins_when_both_are_filled(self):
+        drive = f"https://drive.google.com/file/d/{FILE_A}/view"
+        new, _, fake = self.go(f"target-1,Target,Test,{drive},{OURS},Draft", files={FILE_A: image()})
+        self.assertEqual(new[0]["drive_file_id"], FILE_A)
+        self.assertEqual(len(fake.uploads), 1)
+
+    def test_unchecked_cloudinary_link_is_never_published(self):
+        import sheet_intake as si
+        saved, tmp = ai.LEDGER, Path(__file__).resolve().parent / "_alpha_ledger_cld.json"
+        tmp.write_text("[]")
+        try:
+            ai.LEDGER = tmp
+            self.assertIsNone(si.alpha_image({"deal_id": "target-1", "hosted_image": OURS}))
+            tmp.write_text(json.dumps([{"deal_id": "target-1", "source_url": OURS, "result": "uploaded",
+                                        "cloudinary_url": OURS}]))
+            self.assertEqual(si.alpha_image({"deal_id": "target-1", "hosted_image": OURS}), OURS)
+            self.assertIsNone(si.alpha_image({"deal_id": "target-2", "hosted_image": OURS}))
+        finally:
+            ai.LEDGER = saved
+            tmp.unlink()
 
 
 class PublishingUsesTheHostedImageTests(unittest.TestCase):

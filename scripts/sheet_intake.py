@@ -57,6 +57,7 @@ COLUMNS = {
     "checked_at": ("checkedat", "verifiedat", "seenat", "timechecked", "verifiedatpt", "checkedatpt"),
     "screenshot": ("screenshot", "screenshotlink", "proof", "screenshotdriveurl", "screenshoturl"),
     "image": ("alphaimage", "image", "imagelink", "drivelink", "imagedrivelink", "aiimagedriveurl", "imagedriveurl"),
+    "hosted_image": ("aiimagecloudinaryurl", "cloudinaryurl", "cloudinaryimageurl", "aiimagecloudinarylink"),
     "image_ok": ("imagenumbersmatch", "imagecheck", "numbersmatch"),
     "status": ("status", "verificationstatus"),
 }
@@ -159,11 +160,13 @@ def fetchers(k, opener=urllib.request.urlopen):
 
 
 def alpha_image(row):
-    """Alpha's image for this row: the Cloudinary copy alpha_images.py uploaded and verified for this Deal ID and
-    Drive file (issue #59), else the Drive file itself. A URL typed into the Sheet is never trusted on its own."""
-    from alpha_images import LEDGER, image_for
+    """Alpha's image for this row: the Cloudinary image alpha_images.py checked for this Deal ID and source (a Drive
+    file, or a Cloudinary link Alpha uploaded itself; issue #59), else the Drive file itself. A Cloudinary URL typed
+    into the Sheet is used only once alpha_images.py has downloaded and checked it."""
+    from alpha_images import LEDGER, image_for, source_of
     ledger = json.loads(LEDGER.read_text(encoding="utf-8")) if LEDGER.exists() else []
-    hosted = image_for(str(row.get("deal_id", "")).strip(), row.get("image", ""), ledger) if row.get("image") else None
+    link = source_of(row)
+    hosted = image_for(str(row.get("deal_id", "")).strip(), link, ledger) if link else None
     return hosted or drive_download_url(row.get("image"))
 
 
