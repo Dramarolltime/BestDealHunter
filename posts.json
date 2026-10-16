@@ -713,11 +713,11 @@
     "title": "Omega Italy Men's Slim Fit Classic Button Up Long Sleeve Solid Color Dress Shirt",
     "price": 25.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130986/bestdealhunter/ac797c56bef2d808ae640d1f.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "583ca7be69ba67bd",
@@ -725,11 +725,11 @@
     "title": "Drakkar Noir by Guy Laroche 6.7 / 6.8 oz EDT Cologne for Men New In Box",
     "price": 27.64,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792127558/bestdealhunter/f5a71b6a4ba570ed7f30429e.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "82a9f46e591e47d0",
@@ -737,11 +737,11 @@
     "title": "adidas men Essentials Warm-Up 3-Stripes Track Jacket",
     "price": 22.0,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135426/bestdealhunter/49f58bb45556da02e7d21c35.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "789df1139e5919d7",
@@ -749,11 +749,11 @@
     "title": "Bontrager Hilo Comp Saddle 134mm Triathlon TT Split Nose Steel Rails",
     "price": 49.95,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135428/bestdealhunter/94602d5985e72bc66713f6b5.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "1718e3b81c63cabd",
@@ -761,11 +761,11 @@
     "title": "Levi's Men's 505 Regular Fit Straight Jeans Mid Rise Straight Leg Stretch",
     "price": 27.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135412/bestdealhunter/8a996879eb6f026219485c2e.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "57fc8e54425f4c11",
@@ -773,11 +773,11 @@
     "title": "Club De Nuit Intense by Armaf Cologne for Men 3.6 oz EDT New In Box",
     "price": 31.75,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135425/bestdealhunter/af0f61146b9808d5991492c8.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "3b9861864ecf0b68",
@@ -785,11 +785,11 @@
     "title": "Maxxis Minion DHF MTB Tire 27.5x2.5 Black Tubeless Ready",
     "price": 42.5,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135427/bestdealhunter/98015d56de886fa71de885f1.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
-    "buffer_status": "sending"
+    "buffer_status": "sent"
   },
   {
     "key": "357d01c3256e016b",
@@ -797,10 +797,106 @@
     "title": "Mens UA Under Armour Storm Fleece Quarter Zip Sweatshirt Jacket Hoody NF New",
     "price": 37.27,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135408/bestdealhunter/7bcf88f32acc424ec81efea6.jpg",
-    "status": "queued",
+    "status": "sent",
     "reserved_at": "2026-10-16T07:24:06+00:00",
     "roundup": "roundup-d7a6b7a45e65c1d4",
     "buffer_post_id": "6ad1d1219597cd1662703317",
+    "buffer_status": "sent"
+  },
+  {
+    "key": "12f090f44a16c093",
+    "deal_url": "https://www.ebay.com/itm/307193146864",
+    "title": "Emporio Armani Black Solid Men's Tie, 3\"",
+    "price": 44.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792138476/bestdealhunter/909f330c6d68ec4aca31da9f.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "03ffcfa8176e6723",
+    "deal_url": "https://www.ebay.com/itm/291695139104",
+    "title": "BLUE JEANS by Gianni Versace Cologne for Men EDT 2.5 oz New In Can",
+    "price": 23.82,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792138475/bestdealhunter/00a29439862ce958a8c76537.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "163cb187c729e186",
+    "deal_url": "https://www.ebay.com/itm/182439573000",
+    "title": "Berlioni Italy Men's Premium French Convertible Cuff Solid Dress Shirt White",
+    "price": 24.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135431/bestdealhunter/f253ca53abad3450a168f906.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "72c149e706373ae7",
+    "deal_url": "https://www.ebay.com/itm/278443871958",
+    "title": "eero 6+ Plus mesh Dual Band wifi system Covers up to 4,500 sq. ft.",
+    "price": 133.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792138474/bestdealhunter/308d82430b91a2a6c6ab5d75.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "d69a6a9c51109026",
+    "deal_url": "https://www.ebay.com/itm/158254772522",
+    "title": "Emmet Easy Cola Suede",
+    "price": 39.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130992/bestdealhunter/2ad939778d7b48e79a2c3092.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "0cdec749c2063735",
+    "deal_url": "https://www.ebay.com/itm/127331250178",
+    "title": "Arrma Gorgon 4x2 MEGA 550 Brushed 1/10 Monster Truck Ready-To-Assemble Kit",
+    "price": 99.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130989/bestdealhunter/6f0be4fef488bc714186061a.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "469468fd0ee3c6e8",
+    "deal_url": "https://www.ebay.com/itm/306733750956",
+    "title": "DVS Militia DV00110263 Mens Brown Synthetic Skate Inspired Sneakers Shoes",
+    "price": 48.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792130996/bestdealhunter/801c099ca578e108e7e3ab98.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "aebc971508dd2d87",
+    "deal_url": "https://www.ebay.com/itm/401435761994",
+    "title": "CK One by Calvin Klein Cologne / Perfume Unisex 6.7 / 6.8 oz New In Box",
+    "price": 32.34,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792138467/bestdealhunter/c085522a221ac80a48c8a9d9.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T08:14:46+00:00",
+    "roundup": "roundup-a4fdce0762735b4b",
+    "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
     "buffer_status": "sending"
   }
 ]
