@@ -813,7 +813,7 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "03ffcfa8176e6723",
@@ -825,7 +825,7 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "163cb187c729e186",
@@ -837,7 +837,7 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "72c149e706373ae7",
@@ -849,7 +849,7 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "d69a6a9c51109026",
@@ -861,7 +861,7 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "0cdec749c2063735",
@@ -873,7 +873,7 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "469468fd0ee3c6e8",
@@ -885,7 +885,7 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "aebc971508dd2d87",
@@ -897,6 +897,102 @@
     "reserved_at": "2026-10-16T08:14:46+00:00",
     "roundup": "roundup-a4fdce0762735b4b",
     "buffer_post_id": "6ad1dd00ee2c696029c6bcb1",
+    "buffer_status": "error"
+  },
+  {
+    "key": "51915e3314a7217e",
+    "deal_url": "https://www.ebay.com/itm/407192555751",
+    "title": "PUMA Palermo Nyc Flagship Lace Up Mens White Sneakers Casual Shoes 40268901",
+    "price": 34.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135434/bestdealhunter/b51bbe61a9c682d0408b234c.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "1c80c2df70bfa12c",
+    "deal_url": "https://www.ebay.com/itm/198716823172",
+    "title": "Nydj Pintuck Blouse Women's",
+    "price": 31.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135435/bestdealhunter/642dcf6a0ca3377b5c547a65.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "531832ab41ceaac6",
+    "deal_url": "https://www.ebay.com/itm/147575627700",
+    "title": "New Officine Men's Shoes Militia Sneaker",
+    "price": 249.9,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135438/bestdealhunter/2aa2c703703fc4f71bccaf05.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "051eb22499e44b05",
+    "deal_url": "https://www.ebay.com/itm/205695023136",
+    "title": "Georgia Boot Comfort Core Waterproof Low Heel Logger Work Boot GB00122",
+    "price": 109.09,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792142029/bestdealhunter/f3d9ca569525ec19b4c902cc.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "67c9b982eacbddf9",
+    "deal_url": "https://www.ebay.com/itm/316941305717",
+    "title": "Mens Nike Gym Athletic Chenille Club Hoodie Hooded Sweatshirt Pullover New",
+    "price": 42.33,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792142006/bestdealhunter/2ddfcfb70c3c56b196d955e5.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "3235c9711a2a6405",
+    "deal_url": "https://www.ebay.com/itm/407124887717",
+    "title": "adidas Own The Run Aeroready Jacket Mens Blue Casual Athletic Outerwear IV7672",
+    "price": 44.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135436/bestdealhunter/52322051830e4678f33fecea.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "8a5e4f26a4d421ca",
+    "deal_url": "https://www.ebay.com/itm/188941225484",
+    "title": "Nanit Home 8\" Display",
+    "price": 88.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792142032/bestdealhunter/b84fb5ce877be6858705304e.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "f243b8aac18a0c48",
+    "deal_url": "https://www.ebay.com/itm/206555808508",
+    "title": "Star Wars Retro Collection Star Wars: A New Hope Multipack",
+    "price": 32.37,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792138479/bestdealhunter/3f4ad72defc7c147d9a220cf.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-16T09:14:02+00:00",
+    "roundup": "roundup-6edb55073bf1a736",
+    "buffer_post_id": "6ad1eae99597cd166275c8eb",
     "buffer_status": "sending"
   }
 ]
