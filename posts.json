@@ -1601,5 +1601,15 @@
     "status": "locked",
     "reserved_at": "2026-10-17T22:02:31+00:00",
     "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "a6abcee822e5e0d5",
+    "deal_url": "https://www.ebay.com/itm/406988863028",
+    "title": "Johnston & Murphy Anson 24-6549 Mens Gray Suede Lifestyle Sneakers Shoes",
+    "price": 50.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792278109/bestdealhunter/ee70ed9f63712c082aed91fd.jpg",
+    "status": "error",
+    "reserved_at": "2026-10-17T23:01:57+00:00",
+    "error": "HTTP Error 429: Too Many Requests"
   }
 ]
