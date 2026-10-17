@@ -197,7 +197,7 @@ class KillSwitchTests(unittest.TestCase):
         import json
         for post in json.loads(pb.POSTS.read_text()):
             self.assertRegex(post["key"], r"^[0-9a-f]{16}$")
-            self.assertIn(post["status"], {"reserved", "locked", "sent", "error", "queued", "scheduled", "sending"})
+            self.assertIn(post["status"], {"reserved", "locked", "sent", "error", "failed", "queued", "scheduled", "sending"})
 
 
 class FakeBuffer:
@@ -266,6 +266,40 @@ class PublishLedgerTests(unittest.TestCase):
         self.assertEqual(posts[0]["status"], "queued")
         pb.refresh_statuses(posts, pb.BufferClient("k", FakeBuffer(status="sent")))
         self.assertEqual(posts[0]["status"], "sent")
+
+    def test_status_is_asked_once_per_buffer_post_and_errors_are_final(self):
+        posts = [{"key": f"k{i}", "status": "queued", "buffer_post_id": "p9"} for i in range(8)]
+        fake = FakeBuffer(status="error")
+        self.assertTrue(pb.refresh_statuses(posts, pb.BufferClient("k", fake), log=lambda *_: None))
+        self.assertEqual(len(fake.requests), 1)
+        self.assertEqual({r["status"] for r in posts}, {"failed"})
+        pb.refresh_statuses(posts, pb.BufferClient("k", fake), log=lambda *_: None)
+        self.assertEqual(len(fake.requests), 1)  # a failed post is never asked about again
+
+    def test_status_checks_are_capped_and_stop_on_rate_limit(self):
+        posts = [{"key": f"k{i}", "status": "queued", "buffer_post_id": f"p{i}"} for i in range(30)]
+        fake = FakeBuffer(status="scheduled")
+        pb.refresh_statuses(posts, pb.BufferClient("k", fake), log=lambda *_: None)
+        self.assertEqual(len(fake.requests), pb.STATUS_CHECKS_PER_RUN)
+
+        def limited(payload):
+            raise OSError("HTTP Error 429: Too Many Requests")
+        self.assertFalse(pb.refresh_statuses(posts, pb.BufferClient("k", limited), log=lambda *_: None))
+
+    def test_posting_pauses_for_six_hours_after_a_failed_post(self):
+        from datetime import datetime, timedelta, timezone
+        now = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
+        def at(h):
+            return (now - timedelta(hours=h)).isoformat()
+        posts = [{"key": "a", "status": "sent", "buffer_post_id": "p1", "reserved_at": at(30)},
+                 {"key": "b", "status": "failed", "buffer_post_id": "p2", "reserved_at": at(2)},
+                 {"key": "c", "status": "locked", "reserved_at": at(1)}]
+        self.assertIn("paused", pb.paused_after_failure(posts, now))
+        posts[1]["reserved_at"] = at(7)
+        self.assertIsNone(pb.paused_after_failure(posts, now))
+        posts[1]["status"] = "sent"
+        posts[1]["reserved_at"] = at(1)
+        self.assertIsNone(pb.paused_after_failure(posts, now))
 
     def test_graphql_errors_raise(self):
         client = pb.BufferClient("k", lambda payload: {"errors": [{"message": "Unauthorized"}]})
