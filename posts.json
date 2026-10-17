@@ -1537,5 +1537,49 @@
     "status": "error",
     "reserved_at": "2026-10-17T19:07:38+00:00",
     "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "0b03b1f6f8277f38",
+    "deal_url": "https://www.ebay.com/itm/407295453367",
+    "title": "adidas Yeezy 950 M Pirate Black Mens Black Casual Boots IG8188",
+    "price": 149.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792267329/bestdealhunter/f86719c53d5b6f7c27097d14.jpg",
+    "status": "error",
+    "reserved_at": "2026-10-17T20:02:18+00:00",
+    "roundup": "roundup-e981ae5802dc39b4",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "50ed5d71cc8e1950",
+    "deal_url": "https://www.ebay.com/itm/206631389196",
+    "title": "Georgia Boot AMP LT Logger Low Heel Waterproof Work Boot GB00270 for Men",
+    "price": 48.71,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792267330/bestdealhunter/5796216eb3a9b1acb50bc129.jpg",
+    "status": "error",
+    "reserved_at": "2026-10-17T20:02:18+00:00",
+    "roundup": "roundup-e981ae5802dc39b4",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "6cf42bf8d1cdc26a",
+    "deal_url": "https://www.ebay.com/itm/237116350811",
+    "title": "TORY BURCH TY7216U 1964T5 Dark Tortoise Brown Polarized 52 mm Women's Sunglasses",
+    "price": 83.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792260107/bestdealhunter/0adfabb57a237a56805037cf.jpg",
+    "status": "error",
+    "reserved_at": "2026-10-17T20:02:18+00:00",
+    "roundup": "roundup-e981ae5802dc39b4",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "efd89a4ca6a00e41",
+    "deal_url": "https://www.ebay.com/itm/206466795854",
+    "title": "Full/Queen Hot Wheels Classic Track Corduroy Track Kids' Comforter Set Blue",
+    "price": 23.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792267327/bestdealhunter/0f8f6db1c5a776acb969c796.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T20:02:18+00:00",
+    "roundup": "roundup-e981ae5802dc39b4",
+    "error": "durable lock already taken: posted or attempted before"
   }
 ]
