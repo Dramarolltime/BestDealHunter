@@ -1527,5 +1527,15 @@
     "reserved_at": "2026-10-17T18:01:58+00:00",
     "roundup": "roundup-93d93ec584ec17e6",
     "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "9fab51010fe3bfb1",
+    "deal_url": "https://www.ebay.com/itm/198630397319",
+    "title": "Heated Electric Blanket Twin Size Soft Flannel Sherpa, Auto Off, 62\" x 84\" Grey",
+    "price": 34.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792256656/bestdealhunter/55359b729ed0b9bb54ded599.jpg",
+    "status": "error",
+    "reserved_at": "2026-10-17T19:07:38+00:00",
+    "error": "HTTP Error 429: Too Many Requests"
   }
 ]
