@@ -49,8 +49,9 @@ unchecked. No Apps Script is needed for this option.
 | The AI image is **never** price evidence: every deal still needs `Screenshot Drive URL` (a real retailer page), `In Stock`, `Sold By Store`, a check under 3 hours old, 50–79 % off | `sheet_intake.py` |
 | `TEST-` rows are never published to the website or Instagram | `sheet_intake.py` |
 
-Screenshots stay in `Screenshot Drive URL` and are saved under `evidence/` in the repo; they are never uploaded
-to the AI-image folder and never used as a deal picture.
+Screenshots stay in `Screenshot Drive URL` (a Google Drive link, or a Cloudinary link, e.g. in a
+`BestDealHunter/evidence/` folder) and are saved under `evidence/` in the repo; they must be a real screenshot of the
+store's page (never the AI image) and are never used as a deal picture.
 
 ## One-time setup (owner, about 5 minutes)
 

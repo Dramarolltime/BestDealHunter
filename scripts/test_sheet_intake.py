@@ -111,6 +111,15 @@ class SheetTests(unittest.TestCase):
                 self.assertEqual(ledger[0]["result"], "rejected")
                 self.assertIn(reason.lower(), ledger[0]["reason"].lower())
 
+    def test_screenshot_can_be_a_cloudinary_link_but_not_the_ai_image(self):
+        cld = "https://res.cloudinary.com/j9g6uest/image/upload/v1/BestDealHunter/evidence/target-1.png"
+        new, ledger = self.run_sheet(sheet(line(Screenshot=cld)))
+        self.assertEqual(ledger[0]["result"], "accepted")
+        self.assertIn(cld, self.urls)
+        new, ledger = self.run_sheet(sheet(line(Screenshot=ART)))
+        self.assertEqual(ledger[0]["result"], "rejected")
+        self.assertIn("not the ai image", ledger[0]["reason"].lower())
+
     def test_unticked_image_uses_the_standard_card(self):
         new, _ = self.run_sheet(sheet(line(**{"Image Numbers Match": "No"})))
         self.assertNotIn("card_source", new[0])
