@@ -557,18 +557,52 @@ def git_tag_lock(key, run=None):
     return run("push", "origin", f"refs/tags/{name}:refs/tags/{name}").returncode == 0
 
 
-def refresh_statuses(posts, client):
-    """Record `sent` only when Buffer itself reports it."""
-    changed = 0
+STATUS_CHECKS_PER_RUN = 12  # Buffer's API quota is small and shared; each distinct post is asked about once
+PAUSE_AFTER_FAILURE_HOURS = 6  # after Buffer reports a failed post, try again at most once every 6 hours
+
+
+def refresh_statuses(posts, client, log=print):
+    """Record `sent` only when Buffer itself reports it; a Buffer `error` is final (status "failed", never asked
+    about again). Each Buffer post is asked about once per run, however many deals it carries, and at most
+    STATUS_CHECKS_PER_RUN posts are asked about. Returns False if Buffer refused (e.g. rate limit), else True."""
+    groups = {}
     for row in posts:
         if row.get("status") == "queued" and row.get("buffer_post_id"):
-            status = client.post_status(row["buffer_post_id"])
+            groups.setdefault(row["buffer_post_id"], []).append(row)
+    for post_id, rows in list(groups.items())[-STATUS_CHECKS_PER_RUN:]:
+        try:
+            status = client.post_status(post_id)
+        except Exception as exc:  # rate limit or outage: stop asking this run
+            log(f"::warning::Could not read Buffer post status ({exc}); trying again next run.")
+            return False
+        for row in rows:
             if status and status != row.get("buffer_status"):
                 row["buffer_status"] = status
-                if str(status).lower() == "sent":
-                    row["status"] = "sent"
-                changed += 1
-    return changed
+            if str(status).lower() == "sent":
+                row["status"] = "sent"
+            elif str(status).lower() == "error":
+                row["status"] = "failed"
+    return True
+
+
+def paused_after_failure(posts, now):
+    """A reason to skip posting this run when the latest Instagram post failed in Buffer less than
+    PAUSE_AFTER_FAILURE_HOURS ago (so a broken channel isn't hit every hour), else None."""
+    from datetime import datetime, timedelta
+    def stamp(p):
+        try:
+            return datetime.fromisoformat(str(p.get("reserved_at", "")).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    tried = [p for p in posts if isinstance(p, dict) and p.get("buffer_post_id") and stamp(p)]
+    if not tried:
+        return None
+    last = max(tried, key=stamp)
+    if last.get("status") == "failed" and now - stamp(last) < timedelta(hours=PAUSE_AFTER_FAILURE_HOURS):
+        return (f"the last Instagram post failed in Buffer ({last['buffer_post_id']}); posting is paused until "
+                f"{(stamp(last) + timedelta(hours=PAUSE_AFTER_FAILURE_HOURS)).isoformat(timespec='minutes')} "
+                "(check the error in Buffer)")
+    return None
 
 
 def draft_check(card, deals, mapping, drafts, client, channel_id, now, today, log=print):
@@ -750,8 +784,17 @@ def main(argv=None):
         return 2
     client = BufferClient(os.environ["BUFFER_API_KEY"])
     from datetime import datetime, timezone
-    publish(ready, posts, client, channel, datetime.now(timezone.utc).isoformat(timespec="seconds"), lock=git_tag_lock)
-    refresh_statuses(posts, client)
+    now = datetime.now(timezone.utc)
+    reachable = refresh_statuses(posts, client)  # first, so a failure Buffer reported is known before posting
+    pause = None if reachable else "Buffer refused the status check (rate limit or outage)"
+    pause = pause or paused_after_failure(posts, now)
+    if pause:
+        print(f"::warning::Instagram post skipped this run: {pause}.")
+        if summary:
+            with open(summary, "a", encoding="utf-8") as fh:
+                fh.write(f"\n**Instagram post skipped this run:** {pause}.\n")
+    else:
+        publish(ready, posts, client, channel, now.isoformat(timespec="seconds"), lock=git_tag_lock)
     POSTS.write_text(json.dumps(posts, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return 0
 
