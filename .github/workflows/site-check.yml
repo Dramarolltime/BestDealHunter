@@ -25,6 +25,9 @@ jobs:
               case "$out" in 200\ *) ;; *) fail=1 ;; esac
             done
           done
+          out=$(curl -sS -L -o /dev/null -m 30 -w '%{http_code} %{url_effective}' http://bestdealhunters.com/privacy.html 2>&1) || true
+          echo "http://bestdealhunters.com/privacy.html -> $out"
+          case "$out" in "200 https://"*) ;; *) echo "::error::plain http is not redirected to https"; fail=1 ;; esac
           exit $fail
       - name: Mail records for the contact address
         if: always()
