@@ -62,6 +62,13 @@ class SitePagesTests(unittest.TestCase):
         self.assertIn(f'href="mailto:{EMAIL}"', contact)
         for text in (privacy, terms):
             self.assertIn(f"mailto:{EMAIL}", text)
+        # no promises we can't keep (owner review, 2026-10-17)
+        self.assertNotIn("business days", contact)
+        self.assertNotIn("$50", terms)
+        self.assertNotIn("Impact", about + terms + privacy)  # only programs we actually use are named
+        for text in (about, terms, privacy):
+            self.assertIn("eBay Partner Network", text)
+            self.assertIn("Amazon Associates", text)
 
     def test_privacy_policy_names_every_third_party_the_site_loads(self):
         """If the site starts loading a new service (analytics, fonts, images), the policy must be updated first."""
