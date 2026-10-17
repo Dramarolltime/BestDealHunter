@@ -39,6 +39,7 @@ PACIFIC = ZoneInfo("America/Los_Angeles")
 SHEET_CSV = re.compile(r"https://docs\.google\.com/spreadsheets/d/(e/)?[\w-]+/(pub|export)\?[\w=&%-]*")
 SHEET_LINK = re.compile(r"https://docs\.google\.com/spreadsheets/d/([\w-]{20,})(?:/[^?#]*)?(?:\?[^#]*)?(?:#gid=(\d+))?")
 DRIVE_ID = re.compile(r"https://(?:drive|docs)\.google\.com/(?:file/d/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})")
+CLOUDINARY_IMAGE = re.compile(r"https://res\.cloudinary\.com/[a-z0-9_-]+/image/upload/[^\s?#]+\.(?:jpe?g|png|webp)", re.I)
 READY = {"ready", "verified", "yes", "needsclaudereview", "readyforclaude"}  # Alpha's sheet: "Needs Claude review"
 YES = {"yes", "y", "true", "x", "✅", "checked"}
 # Column names Alpha may use -> the field they fill (matched without case, spaces or punctuation).
@@ -139,9 +140,13 @@ def record(row, now):
     if original > 0 and price < original and int((original - price) * 100 // original) >= HOLD_AT_PERCENT:
         raise Rejected(f"{HOLD_AT_PERCENT}% off or more is held: double-check the was-price is the store's own "
                        "crossed-out price")
-    shot = drive_download_url(row.get("screenshot"))
+    link = str(row.get("screenshot") or "").strip()
+    shot = drive_download_url(link) or (link if CLOUDINARY_IMAGE.fullmatch(link) else None)
     if not shot:
-        raise Rejected("add the Google Drive link of a screenshot showing the sale price and the was price")
+        raise Rejected("add the Google Drive or Cloudinary link of a screenshot of the store's page showing the "
+                       "sale price and the was price")
+    if link in {str(row.get("image") or "").strip(), str(row.get("hosted_image") or "").strip()}:
+        raise Rejected("the screenshot must be a real screenshot of the store's page, not the AI image")
     return {
         "store": store, "title": row.get("title", ""), "url": url,
         "category": row.get("category") or "Other", "seller": store,
@@ -154,7 +159,7 @@ def record(row, now):
 
 
 def fetchers(k, opener=urllib.request.urlopen):
-    """Download the screenshot / Alpha's image from Drive into evidence/ (images only, at most 10 MB)."""
+    """Download the screenshot / Alpha's image (Drive or Cloudinary) into evidence/ (images only, at most 10 MB)."""
     return (lambda url, _ref: download_image(url, EVIDENCE / f"deal-sheet-{k}", "screenshot", opener),
             lambda url, _ref: download_image(url, EVIDENCE / f"deal-sheet-{k}-card", "Alpha's image", opener))
 
