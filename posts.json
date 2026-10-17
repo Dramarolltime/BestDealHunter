@@ -1146,7 +1146,7 @@
     "reserved_at": "2026-10-17T04:10:06+00:00",
     "roundup": "roundup-68ca22db015baa96",
     "buffer_post_id": "6ad2f5231694d771d51be90f",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "b3f64cfd2d9921d9",
@@ -1158,7 +1158,7 @@
     "reserved_at": "2026-10-17T04:10:06+00:00",
     "roundup": "roundup-68ca22db015baa96",
     "buffer_post_id": "6ad2f5231694d771d51be90f",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "95e1f47433b32359",
@@ -1203,5 +1203,98 @@
     "reserved_at": "2026-10-17T04:10:06+00:00",
     "roundup": "roundup-68ca22db015baa96",
     "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "66774287ea8796c7",
+    "deal_url": "https://www.ebay.com/itm/396135273207",
+    "title": "ETERNITY for Men by CALVIN KLEIN 3.3 / 3.4 oz EDT New In box",
+    "price": 31.38,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792213603/bestdealhunter/e7d973f1e7b229f59ef81f61.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "4f54bae253201cf3",
+    "deal_url": "https://www.ebay.com/itm/354853809299",
+    "title": "Hawk Hammock Apex Full Platform, Tree Digger Teeth, Silent Strap",
+    "price": 52.53,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792210183/bestdealhunter/dff11e1bc45a444a6e8e7b7d.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "buffer_post_id": "6ad302831694d771d51e6fcf",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "0c44db3112dae939",
+    "deal_url": "https://www.ebay.com/itm/178562206511",
+    "title": "KBB by KAHLANA Women's 'The Trench Romper'",
+    "price": 20.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792213599/bestdealhunter/b29d61d7a5f9b5e0c490ab24.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "buffer_post_id": "6ad302831694d771d51e6fcf",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "745f69db55b589d5",
+    "deal_url": "https://www.ebay.com/itm/182439590813",
+    "title": "Berlioni Italy Men's White Dress Shirt Tuxedo Formal Laydown Collar + Bow Tie",
+    "price": 25.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792213562/bestdealhunter/17d3f6f9b7d4680c2ae35cc3.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "buffer_post_id": "6ad302831694d771d51e6fcf",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "b8780ec65d74c5f3",
+    "deal_url": "https://www.ebay.com/itm/298630185728",
+    "title": "[C20719-WIDE] MENS COLE HAAN ZEROGRAND WINGTIP OXFORD - WIDE WIDTH",
+    "price": 79.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792213606/bestdealhunter/cad74e884943035a3174a06e.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "afab809cc5b0114e",
+    "deal_url": "https://www.ebay.com/itm/406692112131",
+    "title": "PUMA Neutron Training Mens Black Sneakers Athletic Shoes 31016901",
+    "price": 34.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792206504/bestdealhunter/5f8042a3b112f29f26eb3354.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "buffer_post_id": "6ad302831694d771d51e6fcf",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "103c011a24ff8a4b",
+    "deal_url": "https://www.ebay.com/itm/178231041411",
+    "title": "Rayhaan Men's Wolf EDP Spray 3.4 oz Fragrances 6297001571378",
+    "price": 24.37,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792213604/bestdealhunter/1ff0518202092648ca335e57.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "12235e35471dd11a",
+    "deal_url": "https://www.ebay.com/itm/322387534811",
+    "title": "Men heavy duty PRIME Merino Wool Socks 4 Pack for winter ski & trailing",
+    "price": 24.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792213601/bestdealhunter/3444f6e316feb12528e6c74e.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T05:07:06+00:00",
+    "roundup": "roundup-6930fbb5e128943b",
+    "buffer_post_id": "6ad302831694d771d51e6fcf",
+    "buffer_status": "sending"
   }
 ]
