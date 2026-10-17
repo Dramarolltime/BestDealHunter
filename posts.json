@@ -1439,5 +1439,93 @@
     "reserved_at": "2026-10-17T08:06:12+00:00",
     "buffer_post_id": "6ad32c750a208cb3230f61d3",
     "buffer_status": "error"
+  },
+  {
+    "key": "d3b513aaf3915837",
+    "deal_url": "https://www.ebay.com/itm/306750826629",
+    "title": "Dunham Byrne Mudguard WP Chukka CJ0852 Mens Black Extra Wide 4E Chukkas Boots",
+    "price": 37.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792256654/bestdealhunter/5a89bb3b73e2ed29cdd0e471.jpg",
+    "status": "error",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "ee9a61092fd47865",
+    "deal_url": "https://www.ebay.com/itm/375908426571",
+    "title": "Bates Men's Rush Shield DRYGuard Waterproof Mid Boots",
+    "price": 49.98,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792260045/bestdealhunter/e81402d7ac4f39e1b43ff8d7.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "93363c83ed24d312",
+    "deal_url": "https://www.ebay.com/itm/178562207031",
+    "title": "Levi's Women's Rompers & Jumpsuits Utility Overalls",
+    "price": 26.66,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792260034/bestdealhunter/9ecc6aeac7c6197d719c2f6a.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "71895c99a91653ee",
+    "deal_url": "https://www.ebay.com/itm/278326862957",
+    "title": "[C29411] MENS COLE HAAN ZEROGRAND WINGTIP OXFORD",
+    "price": 79.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792260094/bestdealhunter/23497a1c3fd3c9aae36576ca.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "461d4d09f5857a89",
+    "deal_url": "https://www.ebay.com/itm/336836969270",
+    "title": "TORY BURCH TY7143U 170913 Square Black Dk Brown Grad 56 mm Women's Sunglasses",
+    "price": 74.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792256651/bestdealhunter/2c04a5a837843497082b09d8.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "cc64ebd1960b71bd",
+    "deal_url": "https://www.ebay.com/itm/307231391804",
+    "title": "Trek RSL Aero Water Bottle and Cage",
+    "price": 49.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792253046/bestdealhunter/14c773fcdb5f51bbc3e6f19f.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "2b673e002c11ad46",
+    "deal_url": "https://www.ebay.com/itm/189052825936",
+    "title": "S Sport By Skechers Men's Brennen Sneakers",
+    "price": 21.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792260036/bestdealhunter/9c8917b31b868483e4405489.jpg",
+    "status": "error",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "3f3f14bac653e410",
+    "deal_url": "https://www.ebay.com/itm/327049290181",
+    "title": "Skechers Men's Canvas Swift Fit Bungee Laced Casual Sneaker",
+    "price": 39.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792260103/bestdealhunter/99bf36f614faf66af4b406da.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T18:01:58+00:00",
+    "roundup": "roundup-93d93ec584ec17e6",
+    "error": "durable lock already taken: posted or attempted before"
   }
 ]
