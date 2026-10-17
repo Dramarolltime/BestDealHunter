@@ -1052,7 +1052,7 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "b6a3f17d9561d0c9",
@@ -1064,7 +1064,7 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "6fa4b4b012c5578c",
@@ -1076,7 +1076,7 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "5340d4a963df2c03",
@@ -1088,7 +1088,7 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "5fad8635763ceff8",
@@ -1100,7 +1100,7 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "f13ef22f7166112e",
@@ -1112,6 +1112,96 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
+    "buffer_status": "error"
+  },
+  {
+    "key": "1a6d8dd9c38bf43e",
+    "deal_url": "https://www.ebay.com/itm/401438045309",
+    "title": "Obsession by Calvin Klein 4 / 4.0 oz EDT Cologne for Men New In Box",
+    "price": 24.1,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792210172/bestdealhunter/63981d809a65c8c211e8a9ac.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "523d6ea634437ff9",
+    "deal_url": "https://www.ebay.com/itm/392363630700",
+    "title": "Rockville RWK4CU 4 AWG Gauge 100% Copper Complete Amp Installation Wire Kit OFC",
+    "price": 59.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792199758/bestdealhunter/c9f5ffdbb1ea76798060d1c2.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "1c1b194dec746ecd",
+    "deal_url": "https://www.ebay.com/itm/314777885585",
+    "title": "Nike Men's Sportswear Club Swoosh Logo Muscle Tee Top T Shirt New With Tags",
+    "price": 21.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792210174/bestdealhunter/33d57f079bd292f61f43325b.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "buffer_post_id": "6ad2f5231694d771d51be90f",
     "buffer_status": "sending"
+  },
+  {
+    "key": "b3f64cfd2d9921d9",
+    "deal_url": "https://www.ebay.com/itm/206469918545",
+    "title": "Levi's Women's High-Rise Wide Leg Jeans Woodstock Stretch Denim Cotton",
+    "price": 24.75,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792210141/bestdealhunter/e7fe483f62a23eb1d30d0814.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "buffer_post_id": "6ad2f5231694d771d51be90f",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "95e1f47433b32359",
+    "deal_url": "https://www.ebay.com/itm/177800644182",
+    "title": "Goodfellow & Co Men's Tweed Sportcoat Blazer Wool Blend",
+    "price": 20.69,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792210143/bestdealhunter/249a4c3f9551e1912a26d969.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "e22a96a88c80edf9",
+    "deal_url": "https://www.ebay.com/itm/406383827232",
+    "title": "PUMA Redeem Pro Racer Lace Up Mens Black Sneakers Casual Shoes 37944201",
+    "price": 34.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792199773/bestdealhunter/7c853b747d07680268908cb6.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "3fdfa3c10e2c7ac5",
+    "deal_url": "https://www.ebay.com/itm/176855635616",
+    "title": "Levi's Men's 511 Slim Fit Jeans Mid Rise Skinny Fit Stretch",
+    "price": 27.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792202958/bestdealhunter/c0cf68374fe586e5fedc3c71.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "c086a554ebdfc7e8",
+    "deal_url": "https://www.ebay.com/itm/188572810376",
+    "title": "Levi's Men's 578 Baggy Fit Jeans",
+    "price": 27.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792206499/bestdealhunter/2ac35ffa82e0b4657fa76efc.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-17T04:10:06+00:00",
+    "roundup": "roundup-68ca22db015baa96",
+    "error": "durable lock already taken: posted or attempted before"
   }
 ]
