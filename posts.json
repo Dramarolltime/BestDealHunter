@@ -1307,7 +1307,7 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "e833f17d728dec79",
@@ -1319,7 +1319,7 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "7f525ccc73fbc24b",
@@ -1331,7 +1331,7 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "bb5c35f4006f5f07",
@@ -1343,7 +1343,7 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "b090719dad4884fe",
@@ -1355,7 +1355,7 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "15b2dd8041555260",
@@ -1367,7 +1367,7 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "37125dfc3c61c39d",
@@ -1379,7 +1379,7 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "d7ebbf06728851da",
@@ -1391,6 +1391,42 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "error"
+  },
+  {
+    "key": "2327010c2cd3d26a",
+    "deal_url": "https://www.ebay.com/itm/391787613748",
+    "title": "ETERNITY by Calvin Klein Perfume for Women EDP 3.3 / 3.4 oz New In Box",
+    "price": 35.87,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792221451/bestdealhunter/9808b1b43239eef78e59b5f0.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T07:17:40+00:00",
+    "roundup": "roundup-14138762857f564f",
+    "buffer_post_id": "6ad3211850252c7767d41e65",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "be91633cd8800a36",
+    "deal_url": "https://www.ebay.com/itm/206611451839",
+    "title": "Arctic Sport II Women's Ankle Boot",
+    "price": 54.62,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792221452/bestdealhunter/76ceff6925b6dc8f44400006.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T07:17:40+00:00",
+    "roundup": "roundup-14138762857f564f",
+    "buffer_post_id": "6ad3211850252c7767d41e65",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "5bd0a0faacc27a8d",
+    "deal_url": "https://www.ebay.com/itm/297919677647",
+    "title": "Merrell Men's Fullbench Tactical CB Low Black Shoes",
+    "price": 62.98,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792221433/bestdealhunter/1cfde73b13ad9ae4991de5d9.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T07:17:40+00:00",
+    "roundup": "roundup-14138762857f564f",
+    "buffer_post_id": "6ad3211850252c7767d41e65",
     "buffer_status": "sending"
   }
 ]
