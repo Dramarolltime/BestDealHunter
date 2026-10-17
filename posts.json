@@ -1225,7 +1225,7 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "0c44db3112dae939",
@@ -1237,7 +1237,7 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "745f69db55b589d5",
@@ -1249,7 +1249,7 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "b8780ec65d74c5f3",
@@ -1272,7 +1272,7 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "sending"
+    "buffer_status": "error"
   },
   {
     "key": "103c011a24ff8a4b",
@@ -1295,6 +1295,102 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
+    "buffer_status": "error"
+  },
+  {
+    "key": "1c7062075008e97e",
+    "deal_url": "https://www.ebay.com/itm/395111708544",
+    "title": "Crunch CRW12D4 12 Inch 800 Watt MAX 4 Ohm Dual Voice Coil Car Subwoofer Speaker",
+    "price": 39.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792213614/bestdealhunter/f2e7683c20f8fe482c06436a.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "e833f17d728dec79",
+    "deal_url": "https://www.ebay.com/itm/188654872170",
+    "title": "New Santoni Men's Shoes Rock Lugsole Penny Loafer",
+    "price": 279.9,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792217030/bestdealhunter/0b66a6ffebbbffaf5bbdd352.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "7f525ccc73fbc24b",
+    "deal_url": "https://www.ebay.com/itm/407246218586",
+    "title": "PUMA Court Classico Sport Lace Up Mens White Sneakers Casual Shoes 40073107",
+    "price": 29.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792206510/bestdealhunter/2d9909a5b3fcf4a6236d7a09.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "bb5c35f4006f5f07",
+    "deal_url": "https://www.ebay.com/itm/405315316041",
+    "title": "Fierce by Abercrombie & Fitch 3.4 oz EDC Cologne for Men New In Box",
+    "price": 35.48,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792217057/bestdealhunter/07c663d37dd396e66c77f8ab.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "b090719dad4884fe",
+    "deal_url": "https://www.ebay.com/itm/206122572264",
+    "title": "Levi's Women's High-Rise Cinch Baggy Jeans",
+    "price": 32.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792217055/bestdealhunter/f3e040e8233df6a2ade3bd48.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "15b2dd8041555260",
+    "deal_url": "https://www.ebay.com/itm/287293175504",
+    "title": "SanDisk 8TB Desk Drive SSD USB Type-C",
+    "price": 899.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792217054/bestdealhunter/8864a856be294df26cf095dc.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "37125dfc3c61c39d",
+    "deal_url": "https://www.ebay.com/itm/178487885123",
+    "title": "Goodfellow & Co Men's Comfort Wear Knit Blazer Long Sleeve Cotton",
+    "price": 20.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792217056/bestdealhunter/833f98d00f3b47e6ec63a4c1.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
+    "buffer_status": "sending"
+  },
+  {
+    "key": "d7ebbf06728851da",
+    "deal_url": "https://www.ebay.com/itm/820084166998",
+    "title": "Brooks Men's Hyperion Max 3",
+    "price": 99.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792206512/bestdealhunter/a62d7a67ae6d3723dcbdcf3f.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-17T06:04:25+00:00",
+    "roundup": "roundup-b43681637084596c",
+    "buffer_post_id": "6ad30ff41694d771d52130ff",
     "buffer_status": "sending"
   }
 ]
