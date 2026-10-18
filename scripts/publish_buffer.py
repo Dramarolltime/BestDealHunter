@@ -44,11 +44,14 @@ DRAFT_CHECKS = ROOT / "buffer-draft-checks.json"  # test drafts only; never mixe
 CARD_ID = re.compile(r"[0-9a-f]{12}")
 CHANNEL = "best_dealhunter"  # existing Buffer-connected Instagram channel (per Alpha)
 CARD = re.compile(r"images/generated/deal-([0-9a-f]{12})-(?:feed|square)\.jpg")
-CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 30
+# Instagram flagged our posts as spam (Buffer, 2026-10-17) after ~11 posts/day with 10-17 hashtags each. Instagram
+# now allows at most 5 hashtags per post, and fewer, spaced-out posts look less automated.
+CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 5
 MAX_POSTS_PER_RUN = 1
 # Pictures that show the real product: the listing photo, or an AI scene built from it / from the page screenshot.
 REAL_PRODUCT_KINDS = ("listing_photo", "ai_scene_from_photo")
-MAX_POSTS_PER_DAY = 12  # hourly runs: at most 12 Instagram posts in any 24 hours
+MAX_POSTS_PER_DAY = 4  # at most 4 Instagram posts in any 24 hours
+MIN_HOURS_BETWEEN_POSTS = 4  # and at least 4 hours between two posts
 MAX_POST_AGE_HOURS = 3  # an auto-published deal is posted only while its page check is this fresh
 # Amazon Associates Program Policies (read 2026-10-13): "your Site may only show prices and availability if:
 # (a) we serve the link in which that price and availability data are displayed, or (b) you obtain Product
@@ -205,7 +208,9 @@ def brand_tag(title):
     return None
 
 
-def hashtags(deal):
+def hashtags(deal, limit=HASHTAG_LIMIT):
+    """At most `limit` tags, most specific first: brand, product type, category, store, #BestDealHunter, then
+    rotating category tags so posts don't all look the same."""
     title = str(deal.get("title", ""))
     category = deal.get("category") or "Other"
     if category == "Electronics":
@@ -215,15 +220,15 @@ def hashtags(deal):
     pool = HASHTAGS.get(category, HASHTAGS["Other"]).split()
     seed = int(post_key(deal), 16)
     extra = [pool[1 + (seed + i * 3) % (len(pool) - 1)] for i in range(2)]
-    tags = [brand_tag(title)]
-    tags += next((t.split() for rx, t in PRODUCT_TAGS if re.search(rx, title, re.I)), [])
-    tags += [pool[0], *extra, STORE_TAGS.get(deal.get("store")), "#BestDealHunter"]
+    product = next((t.split() for rx, t in PRODUCT_TAGS if re.search(rx, title, re.I)), [])
+    tags = [brand_tag(title), *product[:1], pool[0], STORE_TAGS.get(deal.get("store")), "#BestDealHunter",
+            *product[1:], *extra]
     seen, out = set(), []
     for tag in tags:
         if tag and tag.lower() not in seen:
             seen.add(tag.lower())
             out.append(tag)
-    return " ".join(out[:10])
+    return " ".join(out[:limit])
 
 
 def checked_at(deal):
@@ -249,9 +254,11 @@ def caption(deal):
         f"⏰ Price as of {checked_at(deal) or 'the verification time'}",
         f"⚠️ Prices may change. Availability may vary. The price on {facts['store']} at checkout applies.",
         "",
-        hashtags(deal),
     ]
-    if is_affiliate_link(link(deal)):
+    affiliate = is_affiliate_link(link(deal))
+    disclosure_tags = disclosure(deal)[1][0].count("#") if affiliate else 0
+    lines.append(hashtags(deal, HASHTAG_LIMIT - disclosure_tags))
+    if affiliate:
         lines += ["", *disclosure(deal)[1]]
     text = "\n".join(lines)
     if len(text) > CAPTION_LIMIT or text.count("#") > HASHTAG_LIMIT:
@@ -279,17 +286,15 @@ def roundup_caption(deals):
     lines += ["", "🛒 Every deal at bestdealhunters.com", "🔗 Link in bio",
               f"⏰ Prices as of {min(times) if times else 'the verification time'} or later",
               "⚠️ Prices may change. Availability may vary. The price at checkout applies.", ""]
-    tags = []
-    for deal in deals:
-        tags += hashtags(deal).split()[:2]  # brand and product type of each slide
-    tags += ["#DealRoundup", "#DealAlerts", *(STORE_TAGS.get(d.get("store")) for d in deals), "#BestDealHunter"]
+    affiliate = [d for d in deals if is_affiliate_link(link(d))]
+    tags = ["#DealRoundup", "#BestDealHunter", *(STORE_TAGS.get(d.get("store")) for d in deals)]
+    tags += [t for d in deals for t in hashtags(d).split()[:1]]  # then the first slides' brands
     seen, out = set(), []
     for tag in tags:
         if tag and tag.lower() not in seen:
             seen.add(tag.lower())
             out.append(tag)
-    lines.append(" ".join(out[:20]))
-    affiliate = [d for d in deals if is_affiliate_link(link(d))]
+    lines.append(" ".join(out[:HASHTAG_LIMIT - (2 if affiliate else 0)]))
     if affiliate:
         statements = {line for d in affiliate for line in disclosure(d)[1][1:]}
         lines += ["", "#ad #affiliate", *sorted(statements)]
@@ -558,7 +563,7 @@ def git_tag_lock(key, run=None):
 
 
 STATUS_CHECKS_PER_RUN = 12  # Buffer's API quota is small and shared; each distinct post is asked about once
-PAUSE_AFTER_FAILURE_HOURS = 6  # after Buffer reports a failed post, try again at most once every 6 hours
+PAUSE_AFTER_FAILURE_HOURS = 24  # after a failed post (e.g. Instagram's spam flag), wait a day before trying again
 
 
 def refresh_statuses(posts, client, log=print):
@@ -586,22 +591,29 @@ def refresh_statuses(posts, client, log=print):
 
 
 def paused_after_failure(posts, now):
-    """A reason to skip posting this run when the latest Instagram post failed in Buffer less than
-    PAUSE_AFTER_FAILURE_HOURS ago (so a broken channel isn't hit every hour), else None."""
+    """A reason to skip posting this run, else None:
+      * the latest Instagram attempt failed (Buffer reported an error, e.g. Instagram's spam flag, or Buffer refused
+        the request) less than PAUSE_AFTER_FAILURE_HOURS ago, so a flagged account isn't hit every hour; or
+      * the latest attempt was less than MIN_HOURS_BETWEEN_POSTS ago, so posts are spread out over the day."""
     from datetime import datetime, timedelta
     def stamp(p):
         try:
             return datetime.fromisoformat(str(p.get("reserved_at", "")).replace("Z", "+00:00"))
         except ValueError:
             return None
-    tried = [p for p in posts if isinstance(p, dict) and p.get("buffer_post_id") and stamp(p)]
+    tried = [p for p in posts if isinstance(p, dict) and stamp(p)
+             and (p.get("buffer_post_id") or p.get("status") == "error")]
     if not tried:
         return None
     last = max(tried, key=stamp)
-    if last.get("status") == "failed" and now - stamp(last) < timedelta(hours=PAUSE_AFTER_FAILURE_HOURS):
-        return (f"the last Instagram post failed in Buffer ({last['buffer_post_id']}); posting is paused until "
+    since = now - stamp(last)
+    if last.get("status") in ("failed", "error") and since < timedelta(hours=PAUSE_AFTER_FAILURE_HOURS):
+        what = last.get("buffer_post_id") or (last.get("error") or "")[:80]
+        return (f"the last Instagram post failed ({what}); posting is paused until "
                 f"{(stamp(last) + timedelta(hours=PAUSE_AFTER_FAILURE_HOURS)).isoformat(timespec='minutes')} "
                 "(check the error in Buffer)")
+    if since < timedelta(hours=MIN_HOURS_BETWEEN_POSTS):
+        return f"the last Instagram post was less than {MIN_HOURS_BETWEEN_POSTS} hours ago"
     return None
 
 

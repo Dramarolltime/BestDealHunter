@@ -69,9 +69,9 @@ def disclosure(deal):
     if is_affiliate_link(link(deal)):
         if deal.get("store") == "Amazon":  # Associates Operating Agreement: this exact statement, on the post itself
             return ("#ad · We may earn a commission · Link in bio",
-                    ["#ad #affiliate #deals #bestdealhunter", "As an Amazon Associate I earn from qualifying purchases."])
+                    ["#ad #affiliate", "As an Amazon Associate I earn from qualifying purchases."])
         # Owner, 2026-10-15: no commission line on the picture; the caption keeps the short #ad #affiliate tags
         # (FTC and eBay Partner Network rules require a clear disclosure on an affiliate post).
-        return "", ["#ad #affiliate #deals #bestdealhunter"]
+        return "", ["#ad #affiliate"]
     return ("Independent deal pick · Not sponsored · Link in bio",
-            ["#deals #bestdealhunter", "Independent deal pick: not sponsored, and we earn nothing from this link."])
+            ["Independent deal pick: not sponsored, and we earn nothing from this link."])
