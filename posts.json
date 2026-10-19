@@ -1628,10 +1628,11 @@
     "title": "Yugioh Power of the Elements Factory Sealed Booster Box Unlimited",
     "price": 37.95,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372855/bestdealhunter/4a09cc930654d203aab8f287.jpg",
-    "status": "queued",
+    "status": "failed",
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
-    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+    "buffer_post_id": "6ad570b20a208cb3238bff1c",
+    "buffer_status": "error"
   },
   {
     "key": "398a4572e56177b6",
@@ -1661,10 +1662,11 @@
     "title": "L'EAU D'ISSEY Issey Miyake 4.2 oz EDT for Men Cologne NEW IN BOX",
     "price": 40.97,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372884/bestdealhunter/7c03626d91daf243262e34b9.jpg",
-    "status": "queued",
+    "status": "failed",
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
-    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+    "buffer_post_id": "6ad570b20a208cb3238bff1c",
+    "buffer_status": "error"
   },
   {
     "key": "4239d2609de8e57f",
@@ -1672,10 +1674,11 @@
     "title": "Levi's Men's 511 Slim Fit 5 Pocket Stretch Denim Jeans",
     "price": 29.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792368040/bestdealhunter/ebb08415d1a522bc5f09b15f.jpg",
-    "status": "queued",
+    "status": "failed",
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
-    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+    "buffer_post_id": "6ad570b20a208cb3238bff1c",
+    "buffer_status": "error"
   },
   {
     "key": "79edb1ce0da78df6",
@@ -1683,10 +1686,11 @@
     "title": "Courtlite 2 Run White Leather",
     "price": 49.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372881/bestdealhunter/2c6b2cb7315e875959d02b66.jpg",
-    "status": "queued",
+    "status": "failed",
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
-    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+    "buffer_post_id": "6ad570b20a208cb3238bff1c",
+    "buffer_status": "error"
   },
   {
     "key": "7afc5006559c30d4",
@@ -1694,10 +1698,11 @@
     "title": "Men's Ankle Deck Boot",
     "price": 59.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372883/bestdealhunter/f567bc84262c37d7d656a303.jpg",
-    "status": "queued",
+    "status": "failed",
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
-    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+    "buffer_post_id": "6ad570b20a208cb3238bff1c",
+    "buffer_status": "error"
   },
   {
     "key": "279ab02d98966b59",
@@ -1705,9 +1710,10 @@
     "title": "Men's Pearl Snap Button Long Sleeve Western Stretch Cowboy Dress Shirt",
     "price": 31.99,
     "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792364526/bestdealhunter/001ce38260efa060fcfa73d9.jpg",
-    "status": "queued",
+    "status": "failed",
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
-    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+    "buffer_post_id": "6ad570b20a208cb3238bff1c",
+    "buffer_status": "error"
   }
 ]
