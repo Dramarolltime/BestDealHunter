@@ -313,6 +313,23 @@ class PublishLedgerTests(unittest.TestCase):
         posts[-1]["reserved_at"] = at(5)
         self.assertIsNone(pb.paused_after_failure(posts, now))
 
+    def test_pause_grows_with_failures_in_a_row(self):
+        from datetime import datetime, timedelta, timezone
+        now = datetime(2026, 10, 19, 12, 0, tzinfo=timezone.utc)
+        def at(h):
+            return (now - timedelta(hours=h)).isoformat()
+        posts = [{"key": "a", "status": "sent", "buffer_post_id": "p0", "reserved_at": at(200)},
+                 {"key": "b", "status": "failed", "buffer_post_id": "p1", "reserved_at": at(100)},
+                 {"key": "c", "status": "failed", "buffer_post_id": "p2", "reserved_at": at(48)},
+                 {"key": "d", "status": "failed", "buffer_post_id": "p2", "reserved_at": at(48)}]  # same roundup
+        self.assertIsNone(pb.paused_after_failure(posts[:2], now))  # 1 failure, 100 hours ago: pause over
+        self.assertIn("2 Instagram", pb.paused_after_failure(posts, now))  # 2 in a row: 3 days
+        posts.append({"key": "e", "status": "failed", "buffer_post_id": "p3", "reserved_at": at(100)})
+        posts[-1]["reserved_at"] = at(40)
+        self.assertIn("3 Instagram", pb.paused_after_failure(posts, now))  # 3 in a row: a week
+        posts.append({"key": "f", "status": "sent", "buffer_post_id": "p4", "reserved_at": at(5)})
+        self.assertIsNone(pb.paused_after_failure(posts, now))  # a post went through: back to normal
+
     def test_graphql_errors_raise(self):
         client = pb.BufferClient("k", lambda payload: {"errors": [{"message": "Unauthorized"}]})
         with self.assertRaises(pb.BufferError):

@@ -564,6 +564,9 @@ def git_tag_lock(key, run=None):
 
 STATUS_CHECKS_PER_RUN = 12  # Buffer's API quota is small and shared; each distinct post is asked about once
 PAUSE_AFTER_FAILURE_HOURS = 24  # after a failed post (e.g. Instagram's spam flag), wait a day before trying again
+# ... and longer after failures in a row (1 -> 1 day, 2 -> 3 days, 3 or more -> 7 days): a flagged account is not
+# prodded daily. A post that goes through resets it.
+PAUSE_STEPS_HOURS = (24, 72, 168)
 
 
 def refresh_statuses(posts, client, log=print):
@@ -605,12 +608,22 @@ def paused_after_failure(posts, now):
              and (p.get("buffer_post_id") or p.get("status") == "error")]
     if not tried:
         return None
-    last = max(tried, key=stamp)
+    tried.sort(key=stamp)
+    last = tried[-1]
     since = now - stamp(last)
-    if last.get("status") in ("failed", "error") and since < timedelta(hours=PAUSE_AFTER_FAILURE_HOURS):
+    attempts, streak = [], 0  # one attempt per Buffer post (a roundup is one), newest first
+    for p in reversed(tried):
+        ident = p.get("buffer_post_id") or p.get("reserved_at")
+        if ident not in attempts:
+            attempts.append(ident)
+            if p.get("status") not in ("failed", "error"):
+                break
+            streak += 1
+    hours = PAUSE_STEPS_HOURS[min(streak, len(PAUSE_STEPS_HOURS)) - 1] if streak else 0
+    if streak and since < timedelta(hours=hours):
         what = last.get("buffer_post_id") or (last.get("error") or "")[:80]
-        return (f"the last Instagram post failed ({what}); posting is paused until "
-                f"{(stamp(last) + timedelta(hours=PAUSE_AFTER_FAILURE_HOURS)).isoformat(timespec='minutes')} "
+        return (f"the last {streak} Instagram post attempt(s) failed ({what}); posting is paused until "
+                f"{(stamp(last) + timedelta(hours=hours)).isoformat(timespec='minutes')} "
                 "(check the error in Buffer)")
     if since < timedelta(hours=MIN_HOURS_BETWEEN_POSTS):
         return f"the last Instagram post was less than {MIN_HOURS_BETWEEN_POSTS} hours ago"
