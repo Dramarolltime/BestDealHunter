@@ -1621,5 +1621,93 @@
     "status": "error",
     "reserved_at": "2026-10-18T01:17:56+00:00",
     "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "e9f800d031b79703",
+    "deal_url": "https://www.ebay.com/itm/325433972802",
+    "title": "Yugioh Power of the Elements Factory Sealed Booster Box Unlimited",
+    "price": 37.95,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372855/bestdealhunter/4a09cc930654d203aab8f287.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+  },
+  {
+    "key": "398a4572e56177b6",
+    "deal_url": "https://www.ebay.com/itm/278326862181",
+    "title": "[C20719] MENS COLE HAAN ZEROGRAND WINGTIP OXFORD",
+    "price": 79.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792368008/bestdealhunter/1761b125750d68b9453247a6.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "a7fba04e83414b48",
+    "deal_url": "https://www.ebay.com/itm/406922093290",
+    "title": "Puma BMW M Motorsport RBD Drive Low Mens Black Motorsport Sneakers Shoes",
+    "price": 35.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372825/bestdealhunter/a0e59779d4abe040d98a7cd4.jpg",
+    "status": "locked",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "error": "durable lock already taken: posted or attempted before"
+  },
+  {
+    "key": "b734496d8bdd7384",
+    "deal_url": "https://www.ebay.com/itm/392116326254",
+    "title": "L'EAU D'ISSEY Issey Miyake 4.2 oz EDT for Men Cologne NEW IN BOX",
+    "price": 40.97,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372884/bestdealhunter/7c03626d91daf243262e34b9.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+  },
+  {
+    "key": "4239d2609de8e57f",
+    "deal_url": "https://www.ebay.com/itm/366356464178",
+    "title": "Levi's Men's 511 Slim Fit 5 Pocket Stretch Denim Jeans",
+    "price": 29.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792368040/bestdealhunter/ebb08415d1a522bc5f09b15f.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+  },
+  {
+    "key": "79edb1ce0da78df6",
+    "deal_url": "https://www.ebay.com/itm/960065936353",
+    "title": "Courtlite 2 Run White Leather",
+    "price": 49.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372881/bestdealhunter/2c6b2cb7315e875959d02b66.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+  },
+  {
+    "key": "7afc5006559c30d4",
+    "deal_url": "https://www.ebay.com/itm/206561765336",
+    "title": "Men's Ankle Deck Boot",
+    "price": 59.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792372883/bestdealhunter/f567bc84262c37d7d656a303.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "buffer_post_id": "6ad570b20a208cb3238bff1c"
+  },
+  {
+    "key": "279ab02d98966b59",
+    "deal_url": "https://www.ebay.com/itm/383406768085",
+    "title": "Men's Pearl Snap Button Long Sleeve Western Stretch Cowboy Dress Shirt",
+    "price": 31.99,
+    "image_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792364526/bestdealhunter/001ce38260efa060fcfa73d9.jpg",
+    "status": "queued",
+    "reserved_at": "2026-10-19T01:21:42+00:00",
+    "roundup": "roundup-f72d7767f026c41a",
+    "buffer_post_id": "6ad570b20a208cb3238bff1c"
   }
 ]
