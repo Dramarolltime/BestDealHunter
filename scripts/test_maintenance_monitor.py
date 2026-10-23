@@ -38,11 +38,16 @@ class FreshnessTests(unittest.TestCase):
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-08")], TODAY)}
         self.assertEqual(results["expiring-deals"]["severity"], "warning")
 
-    def test_no_active_deals_warns_only_when_every_offer_ended(self):
+    def test_no_active_deals_is_an_incident_only_when_every_offer_ended(self):
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-01")], TODAY)}
         self.assertNotIn("no-active-deals", results)  # old check alone keeps it listed
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-01", expires_date="2026-10-05")], TODAY)}
-        self.assertEqual((results["no-active-deals"]["ok"], results["no-active-deals"]["severity"]), (False, "warning"))
+        # an incident: every workflow can be green while the site shows no deals
+        self.assertEqual((results["no-active-deals"]["ok"], results["no-active-deals"]["severity"]), (False, "error"))
+
+    def test_empty_feed_has_no_active_deals(self):
+        results = {r["key"]: r for r in monitor.check_freshness([], TODAY)}
+        self.assertFalse(results["no-active-deals"]["ok"])
 
     def test_invalid_feed_is_an_incident(self):
         results = {r["key"]: r for r in monitor.check_freshness([deal("2026-10-09")], TODAY)}
@@ -79,6 +84,55 @@ class SiteAndImageTests(unittest.TestCase):
     def test_unhosted_images_warn(self):
         result = monitor.check_unhosted([{"title": "T", "image": "images/a.jpg"}], [])
         self.assertEqual((result["ok"], result["severity"]), (False, "warning"))
+
+
+class QueueTests(unittest.TestCase):
+    def test_counts_both_queues(self):
+        results = {r["key"]: r for r in monitor.check_queues(
+            {"pending_deals.json": [{}], "deal-review-queue.json": [{}, {}, {}]})}
+        self.assertTrue(results["pending-queue"]["ok"] and results["review-queue"]["ok"])
+        self.assertIn("4 candidate(s) awaiting review", results["review-backlog"]["details"])
+
+    def test_malformed_or_missing_queue_is_an_incident(self):
+        for bad in ({"not": "a list"}, None):
+            results = {r["key"]: r for r in monitor.check_queues({"pending_deals.json": [], "deal-review-queue.json": bad})}
+            self.assertEqual((results["review-queue"]["ok"], results["review-queue"]["severity"]), (False, "error"))
+
+    def test_repository_queues_are_both_counted(self):
+        queues = {name: monitor.load_json(name) for name in monitor.REVIEW_QUEUES}
+        total = sum(len(q) for q in queues.values())
+        details = {r["key"]: r for r in monitor.check_queues(queues)}["review-backlog"]["details"]
+        self.assertIn(f"{total} candidate(s)", details)
+
+
+class InstagramTests(unittest.TestCase):
+    """Uses the publisher's own pause rule, so the monitor and publish_buffer.py always agree."""
+    NOW = datetime(2026, 10, 20, 12, tzinfo=timezone.utc)
+
+    def rows(self, statuses):
+        return [{"status": st, "buffer_post_id": f"p{i}", "reserved_at": f"2026-10-20T0{i}:00:00+00:00"}
+                for i, st in enumerate(statuses)]
+
+    def run_check(self, statuses):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from publish_buffer import paused_after_failure
+        return monitor.check_instagram(self.rows(statuses), self.NOW, paused_after_failure)
+
+    def test_healthy_when_last_post_sent(self):
+        self.assertTrue(self.run_check(["failed", "sent"])["ok"])
+        self.assertTrue(self.run_check([])["ok"])
+
+    def test_one_failure_pause_is_a_warning(self):
+        result = self.run_check(["sent", "failed"])
+        self.assertEqual((result["ok"], result["severity"]), (False, "warning"))
+        self.assertIn("paused until", result["details"])
+
+    def test_three_failures_in_a_row_is_an_incident(self):
+        result = self.run_check(["sent", "failed", "failed", "failed"])
+        self.assertEqual((result["ok"], result["severity"]), (False, "error"))
+
+    def test_unreadable_ledger_does_not_crash(self):
+        self.assertTrue(monitor.check_instagram(None, self.NOW, lambda posts, now: None)["ok"])
 
 
 class WorkflowTests(unittest.TestCase):

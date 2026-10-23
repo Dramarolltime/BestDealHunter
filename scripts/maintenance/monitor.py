@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """BestDealHunter hourly maintenance monitor (phase 1: monitoring and reporting only).
 
-Checks the public website, hosted Cloudinary images, deal freshness, the pending
-queue and recent GitHub Actions runs on main. It then:
+Checks the public website, hosted Cloudinary images, deal freshness, both review
+queues (pending_deals.json and deal-review-queue.json), whether Instagram posting is
+paused after failed posts, and recent GitHub Actions runs on main. It then:
   * opens one GitHub issue per new problem (label `maintenance`), closes it with a
     comment when the problem clears, and never duplicates an open incident;
   * rewrites the body of a single status issue (label `maintenance-status`);
@@ -28,6 +29,9 @@ INCIDENT_LABEL = "maintenance"
 STATUS_LABEL = "maintenance-status"
 FAILED = {"failure", "timed_out", "startup_failure"}
 USER_AGENT = "BestDealHunter-maintenance/1.0"
+# Files holding deal candidates awaiting review, with their check keys.
+REVIEW_QUEUES = {"pending_deals.json": "pending-queue", "deal-review-queue.json": "review-queue"}
+INSTAGRAM_INCIDENT_STREAK = 3  # failed posts in a row before the pause becomes an incident
 
 
 def check(key, title, ok, details, severity="error"):
@@ -149,9 +153,11 @@ def check_freshness(deals, today, max_age=RULES["max_verification_age_days"]):
     if expiring:
         results.append(check("expiring-deals", "Price labels turn unverified within 24h", False,
                              "\n".join(f"- {s}" for s in expiring), severity="warning"))
-    if deals and not active:
+    if not active:
+        # An incident, not a warning: every workflow can be green while the site shows no deals.
         results.append(check("no-active-deals", "No active deals on the site", False,
-                             "Every published deal's offer has ended. Add new deals.", severity="warning"))
+                             ("Every published deal's offer has ended." if deals else "The feed is empty.")
+                             + " Check the latest 'Auto-publish page-verified deals' run."))
     return results
 
 
@@ -179,10 +185,36 @@ def check_unhosted(deals, hosted):
                  severity="warning")
 
 
-def check_pending(queue):
-    ok = isinstance(queue, list) and all(isinstance(d, dict) for d in queue)
-    return check("pending-queue", "pending_deals.json is malformed", ok,
-                 f"{len(queue)} deal(s) awaiting review." if ok else "Expected a JSON array of objects.")
+def check_queues(queues):
+    """`queues` maps file name -> parsed JSON (None if missing or unreadable): one validity check
+    per file plus a backlog count across ALL review queues."""
+    results, lines, total = [], [], 0
+    for name, key in REVIEW_QUEUES.items():
+        queue = queues.get(name)
+        ok = isinstance(queue, list) and all(isinstance(d, dict) for d in queue)
+        results.append(check(key, f"{name} is malformed", ok,
+                             f"{len(queue)} candidate(s) in `{name}`." if ok else "Expected a JSON array of objects."))
+        if ok:
+            total += len(queue)
+            lines.append(f"- `{name}`: {len(queue)}")
+    results.append(check("review-backlog", "Review queue backlog", True,
+                         "\n".join([f"{total} candidate(s) awaiting review across all queues:", *lines])))
+    return results
+
+
+def check_instagram(posts, now, paused_after_failure):
+    """Instagram posting via Buffer, judged by the publisher's own rule (publish_buffer.paused_after_failure).
+    A pause after failed posts is a warning; INSTAGRAM_INCIDENT_STREAK failures in a row open an incident."""
+    import re
+    reason = paused_after_failure(posts if isinstance(posts, list) else [], now)
+    match = re.search(r"the last (\d+) Instagram post attempt\(s\) failed", reason or "")
+    if not match:
+        return check("instagram-posting", "Instagram posting paused after failures", True,
+                     "Not paused for failures." + (f" ({reason})" if reason else ""))
+    streak = int(match.group(1))
+    return check("instagram-posting", "Instagram posting paused after failures", False,
+                 reason[0].upper() + reason[1:] + ".",
+                 severity="error" if streak >= INSTAGRAM_INCIDENT_STREAK else "warning")
 
 
 def latest_runs(runs):
@@ -278,6 +310,16 @@ def sync_issues(gh, results, status_body, digest, run_url, log=print):
 
 # ---------------------------------------------------------------- main
 
+def load_json(name, missing=None):
+    """Repository JSON file; `missing` if absent, None if unparseable (its check reports it)."""
+    try:
+        return json.loads((ROOT / name).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return missing
+    except ValueError:
+        return None
+
+
 def run_checks(site_url, gh, today):
     base = site_url.rstrip("/") + "/"
     status, ctype, body = http_get(base)
@@ -291,7 +333,13 @@ def run_checks(site_url, gh, today):
     hosted = json.loads((ROOT / "cloudinary-images.json").read_text(encoding="utf-8"))
     results.append(check_hosted_images(hosted, lambda u: http_get(u, method="HEAD")[:2]))
     results.append(check_unhosted(deals, hosted))
-    results.append(check_pending(json.loads((ROOT / "pending_deals.json").read_text(encoding="utf-8"))))
+    results += check_queues({name: load_json(name) for name in REVIEW_QUEUES})
+    try:
+        from publish_buffer import paused_after_failure
+        results.append(check_instagram(load_json("posts.json", []), datetime.now(timezone.utc), paused_after_failure))
+    except ImportError as exc:  # never let the Instagram check take the whole monitor down
+        results.append(check("instagram-posting", "Instagram posting paused after failures", True,
+                             f"Not checked ({exc}).", severity="warning"))
     if gh:
         since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
         runs = gh.call("GET", "/actions/runs", query={"branch": "main", "per_page": 100,

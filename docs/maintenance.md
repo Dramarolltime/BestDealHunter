@@ -26,11 +26,13 @@ The system is rolled out in **gated phases**. Each phase after phase 1 needs exp
 | Published feed | `public-feed` | Live `deals.json` unreachable or not a JSON array | Yes |
 | Deal freshness | `stale-deals` | Never fails: reports active vs archived deals. Archived deals (stale, past `expires_date`, or `status: archived`) stay on the site under **Past Deals** labelled "Expired · price not verified" (archive policy, #1) | No |
 | Feed validity | `feed-valid` | Published `deals.json` fails `validate_feed` (structure, evidence, future dates) | Yes |
-| No active deals | `no-active-deals` | Every published deal is archived | No (warning) |
+| No active deals | `no-active-deals` | Every published deal's offer has ended, or the feed is empty. Every workflow can be green while the site shows nothing | **Yes** (closes when a deal is active again) |
 | Archiving soon | `expiring-deals` | A deal moves to Past Deals within 24h | No (warning) |
 | Cloudinary | `cloudinary` | A URL in `cloudinary-images.json` isn't HTTP 200 `image/*` | Yes |
 | Unhosted images | `unhosted-images` | A deal's local image has no Cloudinary URL | No (warning) |
-| Pending queue | `pending-queue` | `pending_deals.json` isn't an array of objects | Yes |
+| Review queues | `pending-queue`, `review-queue` | `pending_deals.json` or `deal-review-queue.json` is missing or isn't an array of objects | Yes |
+| Review backlog | `review-backlog` | Never fails: counts candidates in **both** queues | No |
+| Instagram posting | `instagram-posting` | `publish_buffer.paused_after_failure` says posting is paused after failed posts (same rule the publisher uses) | Warning; **Yes** from 3 failures in a row |
 | Workflows | `workflow:<file>` | The **latest completed** run on `main` (last 7 days) is `failure`, `timed_out` or `startup_failure`. `cancelled` is ignored. | Yes, one per workflow |
 
 The job also runs the full unit-test suite first, so a broken monitor or validator fails loudly in the Actions tab.

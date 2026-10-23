@@ -19,14 +19,38 @@ jobs:
         run: python -m unittest discover -s scripts -p 'test_*.py'
       - name: Validate published offers
         run: python scripts/validate_deals.py
-      - name: Validate pending queue structure
+      - name: Report freshness (verification dates are never refreshed here)
+        # validate_feed accepts archived deals by design (archive policy), so this job passing
+        # does NOT mean deals are current. Surface the active count so "green" can't hide an empty site.
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from validate_deals import validate_feed
+          active, archived = validate_feed(json.loads(Path("deals.json").read_text()))
+          lines = [f"Active deals: {active} · archived: {archived}",
+                   "This job validates; it never re-checks retailer prices or updates verified_date "
+                   "(auto-publish.yml does that from the retailer's own data)."]
+          if not active:
+              print("::warning title=No active deals::Every published deal is archived. Check the latest "
+                    "'Auto-publish page-verified deals' run; the maintenance monitor tracks this as an incident.")
+          with open(os.environ.get("GITHUB_STEP_SUMMARY", os.devnull), "a") as fh:
+              fh.write("\n".join(["## Deal freshness", "", *[f"- {l}" for l in lines], ""]))
+          print("\n".join(lines))
+          PY
+      - name: Validate review queue structure
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          queue = json.loads(Path("pending_deals.json").read_text())
-          assert isinstance(queue, list), "Pending queue must be an array"
-          print(f"Pending review: {len(queue)}")
+          total = 0
+          for name in ("pending_deals.json", "deal-review-queue.json"):
+              queue = json.loads(Path(name).read_text())
+              assert isinstance(queue, list) and all(isinstance(d, dict) for d in queue), f"{name} must be an array of objects"
+              print(f"{name}: {len(queue)}")
+              total += len(queue)
+          print(f"Awaiting review (all queues): {total}")
           PY
 # This is a monitoring/validation job, NOT a retailer feed collector.
 # No public or Buffer publishing occurs in this workflow.

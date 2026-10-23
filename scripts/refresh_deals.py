@@ -56,6 +56,11 @@ def main():
     if merged != existing:
         DESTINATION.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Accepted {updates} verified source entries; retained {len(merged)} total published deals.")
+    if not updates:
+        # A green run here is not a re-verification: verified_date only moves when deals-source.json
+        # carries a new, validated retailer check for that URL.
+        print("No retailer-verified updates: verification dates left unchanged "
+              f"({'deals-source.json is empty' if not incoming else 'no source entry passed validation'}).")
 
 if __name__ == "__main__":
     main()
