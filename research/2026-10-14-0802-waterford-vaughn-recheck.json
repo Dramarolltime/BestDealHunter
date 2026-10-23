@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-10-14T08:02:00-07:00",
+  "status": "research_only",
+  "publication_eligible": false,
+  "store": "Macy's",
+  "title": "Waterford Vaughn 3-Pc. Comforter Set — Queen, Navy",
+  "product_id": "25276926",
+  "url": "https://www.macys.com/shop/product/waterford-vaughn-3-pc.-comforter-set?ID=25276926",
+  "retailer_category_observation": {
+    "observed_at": "2026-10-14",
+    "price": 175,
+    "reference_price": 500,
+    "advertised_discount_percent": 65,
+    "source_url": "https://www.macys.com/shop/home/bed-bath/bedding/luxury/Brand,Color_normal/Waterford,Blue?id=7502",
+    "note": "Live-accessed category shows $175-$210 for Queen/King without code, 65% off."
+  },
+  "direct_product_observation": {
+    "price": 250,
+    "reference_price": 500,
+    "advertised_discount_percent": 50,
+    "source_url": "https://www.macys.com/shop/product/waterford-vaughn-3-pc.-comforter-set?ID=25276926&sizes=BED_SIZE_T%21%21King",
+    "note": "Direct page indexed about one month ago; stale price conflicts with category."
+  },
+  "promo_code": null,
+  "promo_note": "Macy's other category snapshots show code BEST applied for this item, but today's category did not show code and no checkout application was tested. Do not claim code works.",
+  "checkout_total_verified": false,
+  "reference_price_history_verified": false,
+  "location_specific_inventory_verified": false,
+  "expiration_date": null,
+  "public_branded_image_verified": false,
+  "blockers": [
+    "Current direct product page and category display inconsistent pricing",
+    "No checkout confirmation of final price or promotional code",
+    "Historical reference price and shipping/tax unverified",
+    "No exact expiration or inventory verification",
+    "No product-specific verified GitHub-hosted image"
+  ],
+  "website_published": false,
+  "instagram_published": false
+}

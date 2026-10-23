@@ -1,0 +1,20 @@
+{
+  "status": "research_only",
+  "publication_eligible": false,
+  "store": "Macy's",
+  "title": "Tommy Bahama Palmette beach towel",
+  "product_id": "26403809",
+  "price": 17.43,
+  "reference_price": 50,
+  "promo_code": null,
+  "promo_note": "Coupon excluded; no code required.",
+  "url": "https://www.macys.com/shop/product/tommy-bahama-palmette-yarn-dyed-beach-towel-36-x-68?ID=26403809",
+  "verified_date": "2026-10-14",
+  "blockers": [
+    "checkout not verified",
+    "stock not verified",
+    "reference price not independently verified",
+    "expiration unknown",
+    "branded image unavailable"
+  ]
+}

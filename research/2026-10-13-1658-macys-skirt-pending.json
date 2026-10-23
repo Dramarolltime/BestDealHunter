@@ -1,0 +1,17 @@
+{
+  "research_date": "2026-10-13",
+  "retailer": "Macy's",
+  "product": "I.N.C. Asymmetric-Hem Midi Skirt, Deep Black",
+  "product_id": "24784707",
+  "url": "https://www.macys.com/shop/product/i.n.c.-international-concepts-womens-asymmetric-hem-midi-skirt-macys-exclusive?ID=24784707",
+  "advertised_price": 15.16,
+  "retailer_reference_price": 84.5,
+  "advertised_discount_percent": 82,
+  "promo_code": null,
+  "promo_note": "No code required; item coupon-excluded and final sale.",
+  "publication_eligible": false,
+  "blockers": [
+    "Page capture two weeks old; not a live cart or checkout",
+    "Shipping, tax, selected-size stock, historical reference price, expiration and public image unverified"
+  ]
+}

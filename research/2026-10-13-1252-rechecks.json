@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-10-13T12:52:00-07:00",
+  "publication_eligible": false,
+  "source": "Official Best Buy product pages retrieved October 13, 2026",
+  "findings": [
+    {
+      "type": "expired_offer",
+      "title": "It Takes Two PlayStation 5 / PlayStation 4",
+      "product_url": "https://www.bestbuy.com/product/it-takes-two-playstation-5-playstation-4/J7CYF9YKJ5/sku/6444455",
+      "sku": "6444455",
+      "previous_deal_price": 19.99,
+      "current_listed_price": 39.99,
+      "expired_date": "2026-10-12",
+      "promo_code": null,
+      "promo_note": "Previous $19.99 deal ended October 12; current listing shows $39.99. Exclude from publication.",
+      "recommended_queue_status": "expired"
+    },
+    {
+      "type": "updated_unverified_candidate",
+      "title": "Energizer 3-in-1 15W Magnetic Qi2 Charging Stand Black",
+      "product_url": "https://www.bestbuy.com/product/energizer-3-in-1-magnetic-15w-charger-black/J36C4YXZVG",
+      "sku": "6631369",
+      "current_listed_price": 17.49,
+      "retailer_comparable_value": 49.99,
+      "retailer_advertised_discount_percent": 65,
+      "promo_code": null,
+      "promo_note": "No code required for displayed Techtober price. Wall power adapter not included; 30W adapter required for maximum speed. Comparable value not proven historical price.",
+      "availability": "Add to cart displayed for Best Buy's default store; checkout and user ZIP availability not verified.",
+      "expiration_date": null,
+      "blockers": [
+        "Final checkout total, tax and shipping not verified",
+        "Reference price legitimacy not independently verified",
+        "Offer expiration and destination-specific availability unverified",
+        "No item-specific branded image URL verified"
+      ],
+      "recommended_queue_status": "needs_checkout_verification"
+    }
+  ],
+  "publish_to_website": false,
+  "publish_to_instagram": false
+}

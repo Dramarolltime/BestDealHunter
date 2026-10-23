@@ -29,13 +29,12 @@ jobs:
           sys.path.insert(0, "scripts")
           from validate_deals import validate_feed
           active, archived = validate_feed(json.loads(Path("deals.json").read_text()))
-          source = json.loads(Path("deals-source.json").read_text())
           lines = [f"Active deals: {active} · archived: {archived}",
-                   f"Retailer-verified source entries available for refresh: {len(source)}",
-                   "This job validates; it never re-checks retailer prices or updates verified_date."]
+                   "This job validates; it never re-checks retailer prices or updates verified_date "
+                   "(auto-publish.yml does that from the retailer's own data)."]
           if not active:
-              print("::warning title=No active deals::All published deals are archived. Re-verify retailer price "
-                    "and availability by hand; the maintenance monitor tracks this as an incident.")
+              print("::warning title=No active deals::Every published deal is archived. Check the latest "
+                    "'Auto-publish page-verified deals' run; the maintenance monitor tracks this as an incident.")
           with open(os.environ.get("GITHUB_STEP_SUMMARY", os.devnull), "a") as fh:
               fh.write("\n".join(["## Deal freshness", "", *[f"- {l}" for l in lines], ""]))
           print("\n".join(lines))

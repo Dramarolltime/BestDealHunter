@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-10-14T04:55:57-07:00",
+  "review_status": "research_only",
+  "publication_eligible": false,
+  "summary": "Two advertised 50%+ discounts identified; neither verified at checkout. Do not publish to website or Instagram.",
+  "candidates": [
+    {
+      "store": "Target",
+      "title": "Cat & Jack Girls' Mid-Rise Denim Straight Jeans — Light Wash, 14 Plus",
+      "product_id": "90441019",
+      "url": "https://www.target.com/p/-/A-90441019",
+      "listed_price": 7.5,
+      "retailer_reference_price": 15,
+      "listed_discount_percent": 50,
+      "promo_code": null,
+      "promo_note": "No promo code advertised or required for the displayed clearance price; selected variant is Light Wash, 14 Plus. Other variants may have different prices.",
+      "retailer_page_observation": "Target official product page shows $7.50 reg $15, Clearance save 50%, In Stock and Add to cart; page was crawled last month and was re-opened October 14, 2026.",
+      "reference_price_type": "Retailer regular price; independent prior-selling-price evidence not established",
+      "expiration_date": null,
+      "checkout_total_verified": false,
+      "inventory_verified_at_checkout": false,
+      "source_url": "https://www.target.com/p/-/A-90441019",
+      "blockers": [
+        "Final checkout subtotal, shipping and tax not verified",
+        "Current location-specific stock and order acceptance not verified",
+        "Legitimacy of retailer $15 regular price not independently verified",
+        "No expiration date specified",
+        "No product-specific branded graphic with verified public GitHub URL"
+      ]
+    },
+    {
+      "store": "Macy's",
+      "title": "GreenPan Reserve 2-Pc. Hard-Anodized Nonstick Frypan Set, 8 & 10 inch — Chocolate",
+      "product_id": "28357316",
+      "url": "https://www.macys.com/shop/product/greenpan-reserve-2-pc.-hard-anodized-nonstick-frypan-set-8-10-exclusively-at-macys?ID=28357316",
+      "listed_price": 55.93,
+      "retailer_reference_price": 139.99,
+      "listed_discount_percent": 60,
+      "promo_code": null,
+      "promo_note": "Macy's listing says Coupon excluded and Last Act final sale; no promotional code applies to the displayed Chocolate, 2-piece variant. Other colors may differ.",
+      "retailer_page_observation": "Macy's official product listing shows $55.93, 60% off, $139.99 reference, Chocolate, 2 piece, Add To Bag and Buy Now in last-month capture; current clearance category refreshed within 6 days lists same price. Direct page could not be freshly opened.",
+      "reference_price_type": "Retailer displayed previous price; historical selling price not independently established",
+      "expiration_date": null,
+      "checkout_total_verified": false,
+      "inventory_verified_at_checkout": false,
+      "source_url": "https://www.macys.com/shop/product/greenpan-reserve-2-pc.-hard-anodized-nonstick-frypan-set-8-10-exclusively-at-macys?ID=28357316",
+      "blockers": [
+        "Current direct product page could not be re-opened via web; latest detailed page capture older",
+        "Final checkout price, shipping and taxes unverified",
+        "Current ZIP-specific inventory not verified",
+        "Historical $139.99 selling price not independently verified",
+        "Promotion expiration not specified",
+        "No product-specific branded graphic with verified public GitHub URL"
+      ]
+    }
+  ],
+  "duplicate_check": "No exact product IDs or names returned by repository code search. Existing deals.json, deal-review-queue.json and Buffer posting history were reviewed; neither item found in those records. Research archive search index may be incomplete.",
+  "instagram_status": "Not posted; publication prerequisites unmet.",
+  "website_status": "No public listing added.",
+  "queue_cleanup": "It Takes Two (Best Buy SKU 6444455) expired 2026-10-12 and currently displays $39.99; attempted queue correction on 2026-10-14 was blocked by safety checks."
+}

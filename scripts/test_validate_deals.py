@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from validate_deals import validate, validate_feed, deal_status, RULES
+from validate_deals import validate, validate_feed, deal_status, feed_counts, price_verified, RULES
 from refresh_deals import merge
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -148,7 +148,8 @@ class DealValidationTests(unittest.TestCase):
 
 
 class ArchiveTests(unittest.TestCase):
-    """Archive policy (#1): expired deals stay published as Past Deals; never deleted or refreshed."""
+    """Listing policy: deals stay listed until their own offer ends; never deleted or refreshed.
+    A price check older than max_verification_age_days only labels the price as unverified."""
 
     def stale(self, **changes):
         d = sample()
@@ -159,17 +160,32 @@ class ArchiveTests(unittest.TestCase):
     def test_status_rules(self):
         today = date(2026, 10, 12)
         self.assertEqual(deal_status({"verified_date": "2026-10-10"}, today), "active")
-        self.assertEqual(deal_status({"verified_date": "2026-10-09"}, today), "archived")
+        self.assertEqual(deal_status({"verified_date": "2026-10-01"}, today), "active")  # old check: still listed
+        self.assertEqual(deal_status({"verified_date": "2026-10-01", "expires_date": "2026-10-12"}, today), "active")
         self.assertEqual(deal_status({"verified_date": "2026-10-12", "expires_date": "2026-10-11"}, today), "archived")
         self.assertEqual(deal_status({"verified_date": "2026-10-12", "status": "archived"}, today), "archived")
         self.assertEqual(deal_status({}, today), "archived")
 
-    def test_feed_keeps_archived_deals(self):
+    def test_price_verified_window(self):
+        today = date(2026, 10, 12)
+        limit = RULES["max_verification_age_days"]
+        self.assertTrue(price_verified({"verified_date": (today - timedelta(days=limit)).isoformat()}, today))
+        self.assertFalse(price_verified({"verified_date": (today - timedelta(days=limit + 1)).isoformat()}, today))
+        self.assertFalse(price_verified({}, today))
+
+    def test_old_check_keeps_deal_listed_but_strict_check_rejects_it(self):
         fresh = sample()
         old = self.stale(url="https://www.ebay.com/itm/old")
-        self.assertEqual(validate_feed([fresh, old]), (1, 1))
+        self.assertEqual(validate_feed([fresh, old]), (2, 0))
+        self.assertEqual(feed_counts([fresh, old]), (1, 1, 0))
         with self.assertRaises(ValueError):
-            validate([fresh, old])  # strict check (approvals, cards, posts) still rejects it
+            validate([fresh, old])  # approvals, cards and Instagram posts still need a fresh check
+
+    def test_ended_offer_is_archived_never_deleted(self):
+        ended = self.stale(url="https://www.ebay.com/itm/ended", expires_date=(date.today() - timedelta(days=1)).isoformat())
+        self.assertEqual(validate_feed([sample(), ended]), (1, 1))
+        with self.assertRaises(ValueError):
+            validate([ended])
 
     def test_archived_deals_still_need_structure_and_evidence(self):
         for change in ({"price_evidence": ""}, {"price": 99}, {"store": "Unknown"}, {"url": "http://x.com"},
@@ -182,12 +198,17 @@ class ArchiveTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_feed([dict(sample(), verified_date=(date.today() + timedelta(days=1)).isoformat())])
 
-    def test_live_feed_passes_after_it_goes_stale(self):
+    def test_live_feed_stays_listed_when_checks_age(self):
         deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
         later = date.today() + timedelta(days=30)
-        if all(date.fromisoformat(d["verified_date"]) <= later for d in deals):
-            active, archived = validate_feed(deals, today=later)
-            self.assertEqual((active, archived), (0, len(deals)))
+        ended = sum(1 for d in deals if d.get("status") == "archived" or (d.get("expires_date") or "9999") < later.isoformat())
+        self.assertEqual(validate_feed(deals, today=later), (len(deals) - ended, ended))
+        self.assertEqual(len(json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))), len(deals))  # nothing removed
+
+    def test_all_five_published_deals_preserved(self):
+        deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
+        titles = {d["title"].split(" ")[0] for d in deals}
+        self.assertTrue({"Delsey", "KitchenAid", "Hanes", "Bose", "Insignia"} <= titles, titles)
 
 
 class ConsistencyTests(unittest.TestCase):
@@ -206,7 +227,8 @@ class ConsistencyTests(unittest.TestCase):
         deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
         if deals:
             newest = max(date.fromisoformat(d["verified_date"]) for d in deals)
-            self.assertEqual(validate(deals, today=newest), len(deals))
+            active, archived = validate_feed(deals, today=newest)  # older deals may be stale or archived
+            self.assertEqual(active + archived, len(deals))
 
     def test_queued_categories_are_known(self):
         pending = json.loads((ROOT / "pending_deals.json").read_text(encoding="utf-8"))
@@ -214,21 +236,22 @@ class ConsistencyTests(unittest.TestCase):
             self.assertIn(d.get("category"), RULES["categories"])
 
 
-PHOTO = "images/IMG_4236.jpeg"  # an existing repository image
+def evidenced(**changes):
+    """A refresh-source entry carrying verification evidence (required by refresh_deals.valid)."""
+    return dict(sample(), evidence_method="retailer_api", **changes)
 
 
 class RefreshTests(unittest.TestCase):
+    def test_refresh_never_lists_or_reprices_without_verification_evidence(self):
+        old = sample()
+        merged, updates = merge([old], [sample(), dict(sample(), url="https://www.ebay.com/itm/other")])
+        self.assertEqual((merged, updates), ([old], 0))
+
     def test_refresh_accepts_macys(self):
-        d = sample()
-        d["store"], d["url"], d["image"] = "Macy's", "https://www.macys.com/shop/product/x?ID=1", PHOTO
+        d = evidenced()
+        d["store"], d["url"] = "Macy's", "https://www.macys.com/shop/product/x?ID=1"
         merged, updates = merge([], [d])
         self.assertEqual((len(merged), updates), (1, 1))
-
-    def test_refresh_never_lists_a_new_deal_without_an_image(self):
-        for image in (None, "images/does-not-exist.jpg", "https://example.com/a.jpg"):
-            with self.subTest(image=image):
-                d = dict(sample(), image=image) if image else sample()
-                self.assertEqual(merge([], [d]), ([], 0))
 
     def test_refresh_rejects_invalid_and_keeps_existing(self):
         existing = [sample()]
@@ -242,8 +265,7 @@ class RefreshTests(unittest.TestCase):
         # The hourly validator and the maintenance monitor flag them instead.
         old = sample()
         old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
-        fresh = sample()
-        fresh["url"], fresh["image"] = "https://www.ebay.com/itm/other", PHOTO
+        fresh = evidenced(url="https://www.ebay.com/itm/other")
         merged, updates = merge([old], [fresh])
         self.assertEqual((len(merged), updates), (2, 1))
         self.assertEqual(merged[0]["verified_date"], old["verified_date"])
@@ -253,36 +275,106 @@ class RefreshTests(unittest.TestCase):
     def test_refresh_ignores_stale_update_for_existing_deal(self):
         old = sample()
         old["verified_date"] = (date.today() - timedelta(days=5)).isoformat()
-        stale_update = dict(old, price=40)
+        stale_update = dict(old, price=40, evidence_method="retailer_api")
         merged, updates = merge([old], [stale_update])
         self.assertEqual((merged, updates), ([old], 0))
 
-    def test_refresh_reverifies_same_price_and_keeps_image(self):
-        old = dict(sample(), image=PHOTO, verified_date=(date.today() - timedelta(days=1)).isoformat())
-        merged, updates = merge([old], [sample()])
-        self.assertEqual((merged[0]["image"], merged[0]["verified_date"], updates), (PHOTO, date.today().isoformat(), 1))
-
-    def test_refresh_refuses_a_price_change_that_would_leave_a_stale_card(self):
-        # The existing image prints the old price; a price update must bring its own new image.
-        old = dict(sample(), image=PHOTO)
-        merged, updates = merge([old], [dict(sample(), price=40)])
-        self.assertEqual((merged[0]["price"], updates), (50, 0))
-        merged, updates = merge([old], [dict(sample(), price=40, image="images/IMG_4266.jpeg")])
-        self.assertEqual((merged[0]["price"], merged[0]["image"], updates), (40, "images/IMG_4266.jpeg", 1))
-
-class RefreshNeverFakesVerificationTests(unittest.TestCase):
-    def test_empty_source_leaves_verification_dates_unchanged(self):
-        old = dict(sample(), verified_date=(date.today() - timedelta(days=5)).isoformat())
-        merged, updates = merge([old], [])
-        self.assertEqual((merged, updates), ([old], 0))
-
-    def test_stale_or_invalid_source_entry_cannot_bump_date(self):
-        old = dict(sample(), verified_date=(date.today() - timedelta(days=5)).isoformat())
-        no_evidence = dict(old, verified_date=date.today().isoformat(), price_evidence="")
-        merged, updates = merge([old], [no_evidence])
-        self.assertEqual(merged[0]["verified_date"], old["verified_date"])
-        self.assertEqual(updates, 0)
-
+    def test_refresh_updates_matching_url_and_keeps_image(self):
+        old = sample()
+        old["image"] = "images/generated/card.jpg"
+        new = evidenced(price=40)
+        merged, updates = merge([old], [new])
+        self.assertEqual((merged[0]["price"], merged[0]["image"], updates), (40, "images/generated/card.jpg", 1))
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ListingPolicyRequirementTests(unittest.TestCase):
+    """One test per requirement in Alpha's review of PR #23."""
+
+    TODAY = date(2026, 10, 13)
+
+    def deal(self, **changes):
+        d = sample()
+        d["verified_date"] = "2026-10-12"  # fixed, relative to TODAY: sample() uses the real date
+        d.update(changes)
+        return d
+
+    def test_five_original_deals_remain_on_main_page(self):
+        deals = json.loads((ROOT / "deals.json").read_text(encoding="utf-8"))
+        # the five hand-published Oct 9 deals (later automatic deals can share a brand, e.g. an eBay Hanes 4-pack)
+        originals = [d for d in deals if d["title"].split(" ")[0] in {"Delsey", "KitchenAid", "Hanes", "Bose", "Insignia"}
+                     and not str(d.get("approved_by", "")).startswith("automatic")]
+        self.assertEqual(len(originals), 5)
+        self.assertTrue(all(deal_status(d, self.TODAY) == "active" for d in originals))
+
+    def test_deal_visible_until_its_actual_expiration_date(self):
+        ends_today = self.deal(verified_date="2026-10-01", expires_date="2026-10-13")
+        self.assertEqual(deal_status(ends_today, self.TODAY), "active")          # last day still shown
+        self.assertEqual(deal_status(ends_today, date(2026, 10, 14)), "archived")  # moves the day after
+
+    def test_deal_without_expiration_date_is_never_auto_archived(self):
+        undated = self.deal(verified_date="2025-01-01")
+        self.assertNotIn("expires_date", undated)
+        self.assertEqual(deal_status(undated, date(2030, 1, 1)), "active")
+
+    def test_expired_deal_moves_to_past_deals(self):
+        ended = self.deal(expires_date="2026-10-12")
+        self.assertEqual(deal_status(ended, self.TODAY), "archived")
+        self.assertEqual(validate_feed([ended], self.TODAY), (0, 1))
+
+    def test_no_history_is_automatically_deleted(self):
+        feed = [self.deal(url=f"https://www.ebay.com/itm/{i}", verified_date="2026-09-01", expires_date=e)
+                for i, e in enumerate([None, "2026-09-05", "2026-12-31"])]
+        before = json.dumps(feed)
+        validate_feed(feed, self.TODAY)
+        feed_counts(feed, self.TODAY)
+        self.assertEqual(json.dumps(feed), before)  # validation never drops or edits entries
+        self.assertEqual(sum(feed_counts(feed, self.TODAY)), 3)
+
+    def test_older_price_needs_reverification(self):
+        old = self.deal(verified_date="2026-10-10")
+        self.assertEqual(deal_status(old, self.TODAY), "active")
+        self.assertFalse(price_verified(old, self.TODAY))   # site shows "Price not re-verified"
+        with self.assertRaises(ValueError):
+            validate([old], self.TODAY)                      # cannot be approved, carded or posted
+        self.assertTrue(price_verified(self.deal(verified_date="2026-10-11"), self.TODAY))
+
+    def test_site_uses_the_same_rules(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn('d.archived=d.status==="archived"||!!(d.expires_date&&new Date(d.expires_date+"T23:59:59")<new Date());', html)
+        self.assertIn("d.unverified=!d.archived&&!(verified>=new Date(today.getTime()-maxVerificationAgeDays*864e5));", html)
+        self.assertIn("Price not re-verified", html)
+
+
+class DealImageTests(unittest.TestCase):
+    """Owner, 2026-10-15: deal images are always shown exactly as made, for current and past deals; ended and
+    unverified deals are told apart by a label outside the image, never by altering the image (replaces PR #24)."""
+
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+
+    def test_images_are_never_filtered_faded_or_covered(self):
+        css = self.html[self.html.index("<style>"):self.html.index("</style>")]
+        for effect in ("filter:", "opacity:", "blur(", "grayscale", "stale-banner", "stale-image"):
+            self.assertNotIn(effect, css)
+        self.assertNotIn("stale-image", self.html)
+
+    def test_past_and_unverified_deals_carry_a_label_outside_the_image(self):
+        self.assertIn("<span class=\"tag past\">Past Deal</span>", self.html.replace("'", '"'))
+        self.assertIn("Price not re-verified", self.html)
+        self.assertIn("Price when posted", self.html)
+        # labels are in the card body, after the image
+        self.assertIn("'+image(d)+'<div class=\"card-body\">'+labels", self.html)
+
+    def test_past_deals_stay_listed_and_newest_come_first(self):
+        self.assertIn('if(section==="archive")return d.archived;', self.html)
+        self.assertIn("const postedAt=d=>d.published_at||d.auto_published_at||d.verified_date||\"\";", self.html)
+        self.assertIn("newest:(a,b)=>postedAt(b).localeCompare(postedAt(a))", self.html)
+
+
+class AssociatesDisclosureTests(unittest.TestCase):
+    def test_site_carries_the_operating_agreement_statement(self):
+        # Operating Agreement: "You must clearly and prominently state the following ... on your Site"
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("As an Amazon Associate I earn from qualifying purchases.", html)

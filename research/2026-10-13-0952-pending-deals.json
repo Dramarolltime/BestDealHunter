@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-13",
+  "source": "BestDealHunter deal hunt",
+  "candidates": [
+    {
+      "checked_at": "2026-10-13T16:52:00Z",
+      "status": "needs_checkout_verification",
+      "publication_eligible": false,
+      "store": "Target",
+      "title": "Cat & Jack Girls' Mid-Rise Denim Straight Jeans — Light Wash, 14 Plus",
+      "variant": "Light Wash / Girls Plus / 14 Plus",
+      "url": "https://www.target.com/p/-/A-90441019",
+      "product_id": "TCIN 90441019",
+      "listed_price": 7.5,
+      "retailer_regular_price": 15,
+      "listed_discount_percent": 50,
+      "promo_code": null,
+      "promo_note": "No promotional code is required for the displayed clearance price. Exact size/color only. Shipping, taxes and location-specific inventory may change the final total.",
+      "availability_evidence": "Target official product page showed In Stock and Add to cart; underlying indexed page snapshot was crawled last month, so live inventory not independently verified.",
+      "reference_price_type": "Target's displayed regular price; historical selling price not independently confirmed",
+      "expiration_date": null,
+      "source": "https://www.target.com/p/-/A-90441019",
+      "blockers": [
+        "Actual cart/checkout total including shipping, tax and location not verified",
+        "Historical reference-price legitimacy not independently verified",
+        "Promotion expiration not provided",
+        "Public GitHub-hosted branded image URL not prepared or tested",
+        "Live real-time inventory not independently confirmed"
+      ],
+      "notes": "New research lead only. Do not publish to public website or Buffer/Instagram until all blockers resolved."
+    }
+  ]
+}

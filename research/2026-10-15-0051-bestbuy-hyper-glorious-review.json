@@ -1,0 +1,66 @@
+{
+  "checked_at_local": "2026-10-15 00:51 America/Los_Angeles",
+  "status": "research_only",
+  "publication_eligible": false,
+  "duplicate_check": {
+    "published_deals_count": 45,
+    "review_queue_count": 13,
+    "buffer_posts_count": 24,
+    "matching_product_ids_or_titles": 0
+  },
+  "candidates": [
+    {
+      "store": "Best Buy",
+      "seller": "Best Buy",
+      "title": "Glorious GMMK 3 PRO 75% Barebones Wired Gaming Keyboard — Black",
+      "sku": "6586726",
+      "model": "GLO-GMMK3-PRO-75-BB-W-BLK-US",
+      "url": "https://www.bestbuy.com/product/glorious-gmmk-3-pro-75-barebones-wired-mechanical-linear-switch-gaming-keyboard-with-hot-swappable-switches-black/J39TGZ83KL/sku/6586726",
+      "listed_price": 96.99,
+      "retailer_comparable_value": 239.99,
+      "listed_discount_percent": 59.59,
+      "reference_price_type": "Best Buy comparable value; Glorious PRO collection currently lists GMMK 3 PRO Barebones from $209.99 (variant not independently price-matched)",
+      "reference_source": "https://www.gloriousgaming.com/collections/pro-series",
+      "availability": "Add to cart shown on Best Buy product page, sold by Best Buy; checkout/ZIP stock unverified",
+      "promo_code": null,
+      "promo_note": "No advertised code required for clearance price. Product is barebones: keycaps and switches NOT included. No coupon tested.",
+      "expiration_date": null,
+      "source": "https://www.bestbuy.com/product/glorious-gmmk-3-pro-75-barebones-wired-mechanical-linear-switch-gaming-keyboard-with-hot-swappable-switches-black/J39TGZ83KL/sku/6586726",
+      "blockers": [
+        "Final checkout price and taxes not verified in a live cart",
+        "Location-specific availability may change and has not been confirmed at checkout",
+        "Clearance promotion expiration date not specified",
+        "No product-specific GitHub-hosted branded promotional image and verified public URL",
+        "Independent historical selling price for exact model/variant not established"
+      ],
+      "status": "research_only",
+      "publication_eligible": false
+    },
+    {
+      "store": "Best Buy",
+      "seller": "Best Buy",
+      "title": "Hyper HyperDrive Next Duo Slim 8-Port USB-C Hub — Space Gray",
+      "sku": "6557661",
+      "model": "HD3002GL",
+      "url": "https://www.bestbuy.com/product/hyper-hyperdrive-next-8-port-usb-c-hub-4k-hdmi-usb4-thunderbolt-4-1-usb-c-2-usb-a-microsd-sd-travel-dock-for-macbook-pc-space-gray/J3L45JHC3L",
+      "listed_price": 39.99,
+      "retailer_comparable_value": 79.99,
+      "listed_discount_percent": 50.01,
+      "reference_price_type": "Best Buy comparable value $79.99 corroborated by manufacturer HyperShop listing of exact model HD3002GL at $79.99",
+      "reference_source": "https://www.hypershop.com/products/hyperdrive-next-duo-slim-usb-c-hub-for-macbook",
+      "availability": "Add to cart shown; free shipping displayed to 55423 and pickup shown, checkout/ZIP stock unverified",
+      "promo_code": null,
+      "promo_note": "No advertised code required for clearance price; no coupon tested. Manufacturer reference is current list price, not proof of historical Best Buy selling price.",
+      "expiration_date": null,
+      "source": "https://www.bestbuy.com/product/hyper-hyperdrive-next-8-port-usb-c-hub-4k-hdmi-usb4-thunderbolt-4-1-usb-c-2-usb-a-microsd-sd-travel-dock-for-macbook-pc-space-gray/J3L45JHC3L",
+      "blockers": [
+        "Final checkout price and taxes not verified in a live cart",
+        "Location-specific availability may change and has not been confirmed at checkout",
+        "Clearance promotion expiration date not specified",
+        "No product-specific GitHub-hosted branded promotional image and verified public URL"
+      ],
+      "status": "research_only",
+      "publication_eligible": false
+    }
+  ]
+}

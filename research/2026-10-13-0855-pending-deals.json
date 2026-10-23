@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-13",
+  "source_checked_at_local": "2026-10-13 08:55-09:10 PDT",
+  "publication_eligible": false,
+  "duplicate_check": "GitHub search found no matches for product TCINs 94972601, 94971741, 95105992; deals.json and review queue checked; Buffer Instagram history checked.",
+  "candidates": [
+    {
+      "status": "needs_checkout_verification",
+      "publication_eligible": false,
+      "store": "Target",
+      "title": "Cat & Jack Baby Girls' Striped Knit Dress — Green, 12M",
+      "tcin": "94972601",
+      "url": "https://www.target.com/p/toddler-girls-striped-dress-cat-jack/-/A-95025512",
+      "listed_price": 6,
+      "retailer_regular_price": 12,
+      "advertised_discount_percent": 50,
+      "variant": "Green, 12M",
+      "reference_price_type": "Target displayed reg price; independent historical sales evidence unavailable",
+      "promo_code": null,
+      "promo_note": "No code needed for Target's displayed clearance price. Cardholder 5% savings are separate and not counted.",
+      "availability_evidence": "Official Target product page fetched Oct 13, 2026: In Stock, Add to cart, Green 12M",
+      "expiration_date": null,
+      "source": "https://www.target.com/p/toddler-girls-striped-dress-cat-jack/-/A-95025512",
+      "blockers": [
+        "Final checkout total, shipping, tax and destination-specific availability not verified",
+        "Historical reference-price legitimacy not independently verified",
+        "Clearance expiration date unknown",
+        "No GitHub-hosted branded promotional image and verified public image URL"
+      ],
+      "notes": "4.77/5 from 55 ratings. Research only; do not publish."
+    },
+    {
+      "status": "needs_checkout_verification",
+      "publication_eligible": false,
+      "store": "Target",
+      "title": "Cat & Jack Baby Girls' Striped Sweater Dress — Cream, 12M",
+      "tcin": "94971741",
+      "url": "https://www.target.com/p/toddler-girls-striped-sweater-dress-cat-jack/-/A-94989486",
+      "listed_price": 10,
+      "retailer_regular_price": 20,
+      "advertised_discount_percent": 50,
+      "variant": "Cream, 12M",
+      "reference_price_type": "Target displayed reg price; independent historical sales evidence unavailable",
+      "promo_code": null,
+      "promo_note": "No code needed for listed clearance price; no extra coupon counted.",
+      "availability_evidence": "Official Target product page fetched Oct 13, 2026: In Stock, Add to cart, Cream 12M",
+      "expiration_date": null,
+      "source": "https://www.target.com/p/toddler-girls-striped-sweater-dress-cat-jack/-/A-94989486",
+      "blockers": [
+        "Final checkout total, shipping, tax and destination-specific availability not verified",
+        "Historical reference-price legitimacy not independently verified",
+        "Clearance expiration date unknown",
+        "No GitHub-hosted branded promotional image and verified public image URL"
+      ],
+      "notes": "4.97/5 from 27 ratings. Research only; do not publish."
+    },
+    {
+      "status": "needs_checkout_verification",
+      "publication_eligible": false,
+      "store": "Target",
+      "title": "Goodfellow & Co x Reyn Spooner Men's Graphic T-Shirt — Black, S",
+      "tcin": "95105992",
+      "url": "https://www.target.com/p/men-s-short-sleeve-graphic-t-shirt-goodfellow-co-x-reyn-spooner-black/-/A-95141272",
+      "listed_price": 10,
+      "retailer_regular_price": 20,
+      "advertised_discount_percent": 50,
+      "variant": "Black, Men's S",
+      "reference_price_type": "Target displayed reg price; independent historical sales evidence unavailable",
+      "promo_code": null,
+      "promo_note": "No promo code needed for listed clearance price.",
+      "availability_evidence": "Official Target product page fetched Oct 13, 2026: In Stock, Add to cart, Black size S",
+      "expiration_date": null,
+      "source": "https://www.target.com/p/men-s-short-sleeve-graphic-t-shirt-goodfellow-co-x-reyn-spooner-black/-/A-95141272",
+      "blockers": [
+        "Final checkout total, shipping, tax and destination-specific availability not verified",
+        "Historical reference-price legitimacy not independently verified",
+        "Clearance expiration date unknown",
+        "No GitHub-hosted branded promotional image and verified public image URL"
+      ],
+      "notes": "4.67/5 from 3 ratings. Research only; do not publish."
+    }
+  ],
+  "excluded": [
+    {
+      "title": "Universal Thread Crafted Scoop Neck Sweater, Blue 4X",
+      "url": "https://www.target.com/p/-/A-94972950",
+      "reason": "Fresh Oct 13 Target page shows size 4X sold out despite stale search result showing In Stock."
+    },
+    {
+      "title": "Lenovo IdeaPad Slim 3 Chromebook 4GB 64GB 2026",
+      "url": "https://www.bestbuy.com/product/lenovo-ideapad-slim-3-chromebook-14-2k-touchscreen-laptop-mediatek-kompanio-540-2025-4gb-memory-64gb-emmc-cosmic-blue/JJGH3QCJKR",
+      "reason": "Official Best Buy product page says Techtober deal ended Oct 12, 2026; not eligible on Oct 13."
+    },
+    {
+      "title": "House of Party Balloon Creation Kit Palm Tree",
+      "url": "https://www.target.com/p/-/A-94918819",
+      "reason": "Editorial exclusion: 2.69/5 from 19 reviews, multiple complaints about poor quality and difficult assembly."
+    }
+  ],
+  "publication": "None. Checkout and reference-price verification and image checks outstanding."
+}

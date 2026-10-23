@@ -1,0 +1,85 @@
+{
+  "checked_at": "2026-10-15T04:56:00-07:00",
+  "run_type": "hourly_deal_research",
+  "publication_status": "research_only",
+  "publication_eligible": false,
+  "source_note": "Web retailer captures and connected GitHub/Buffer checks. No authenticated checkout access. Prices and stock may change.",
+  "candidates": [
+    {
+      "status": "needs_checkout_verification",
+      "publication_eligible": false,
+      "store": "Best Buy",
+      "title": "Acer Nitro Gaming 31.5-inch Curved WQHD 180Hz Gaming Monitor (EDB323QU S3bmiipx)",
+      "sku": "6593333",
+      "url": "https://www.bestbuy.com/product/acer-nitro-gaming-31-5-curved-wqhd-180hz-1ms-freesync-premium-gaming-monitor-displayport-hdmi-x2-black/6593333",
+      "listed_price": 179.99,
+      "retailer_comparable_value": 459.99,
+      "calculated_discount_percent": 60.87,
+      "reference_price_type": "Best Buy comparable value; older direct retailer product capture listed $459.99 (not proof of actual transactions)",
+      "reference_price_evidence_url": "https://www.bestbuy.com/site/acer-nitro-gaming-31-5-curved-wqhd-180hz-1ms-freesync-premium-gaming-monitor-displayport-hdmi-x2-black/6593333.p?skuId=6593333%5C",
+      "promo_code": null,
+      "promo_note": "No code shown or required for advertised price; no checkout promo tested.",
+      "availability": "Add to cart displayed; default retailer store Roseville, MN; customer destination and cart not confirmed",
+      "expiration": "Unknown; retailer displays a relative deal countdown, but no reliable absolute end timestamp was verified",
+      "image_url": null,
+      "blockers": [
+        "Final checkout price and any tax/shipping not independently confirmed",
+        "Availability not checked for intended customer ZIP",
+        "Reference price is retailer comparable value and historical listed price, not proven realized selling price",
+        "No confirmed absolute expiration timestamp",
+        "No product-specific branded GitHub-hosted image and HTTP response validated"
+      ],
+      "source_urls": [
+        "https://www.bestbuy.com/product/acer-nitro-gaming-31-5-curved-wqhd-180hz-1ms-freesync-premium-gaming-monitor-displayport-hdmi-x2-black/6593333",
+        "https://www.bestbuy.com/site/acer-nitro-gaming-31-5-curved-wqhd-180hz-1ms-freesync-premium-gaming-monitor-displayport-hdmi-x2-black/6593333.p?skuId=6593333%5C"
+      ],
+      "duplicate_check": "No matching SKU/title in 65 deals.json entries, 13 review queue entries, 28 Buffer posts, or GitHub code search at check time."
+    }
+  ],
+  "rejected": [
+    {
+      "store": "Best Buy",
+      "title": "Insignia Travel Adapter and Converter Black",
+      "sku": "6375711",
+      "url": "https://www.bestbuy.com/product/insignia-travel-adapter-and-converter-black/6375711",
+      "reason": "Current direct product page says no longer available in new condition despite older search index showing $9.99 vs $29.99.",
+      "publication_eligible": false,
+      "promo_code": null,
+      "promo_note": "No code relevant."
+    },
+    {
+      "store": "Best Buy",
+      "title": "mophie Universal Wireless 3-in-1 Travel Charger Gen 2",
+      "sku": "6669805",
+      "url": "https://www.bestbuy.com/product/mophie-universal-wireless-15w-wireless-charging-pad-3-in-1-portable-travel-charger-with-magsafe-gen-2-black/J39Q4W482Y",
+      "reason": "Direct product page displayed $59.99 versus $99.99 (40%); older category page showed $49.99 (50%). Current direct page does not meet threshold.",
+      "publication_eligible": false,
+      "promo_code": null,
+      "promo_note": "No verified code."
+    },
+    {
+      "store": "Best Buy",
+      "title": "mophie Juice Pack iPhone 15 Pro Max Black",
+      "sku": "6577919",
+      "url": "https://www.bestbuy.com/product/mophie-juice-pack-iphone-15-pro-max-black/6577919",
+      "reason": "More recent direct product result states no longer available in new condition despite stale clearance listing.",
+      "publication_eligible": false,
+      "promo_code": null,
+      "promo_note": "No code."
+    }
+  ],
+  "repository_duplicate_checks": {
+    "published_deals_count": 65,
+    "review_queue_count": 13,
+    "buffer_posts_count": 28,
+    "buffer_sent_count": 27,
+    "buffer_draft_count": 1,
+    "matching_candidates_found": 0
+  },
+  "actions": {
+    "website_published": false,
+    "instagram_published": false,
+    "graphics_created": false,
+    "checkout_verified": false
+  }
+}

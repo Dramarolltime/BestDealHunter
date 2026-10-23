@@ -1,0 +1,28 @@
+{
+  "checked_at_local": "2026-10-14 12:53 America/Los_Angeles",
+  "status": "research_only",
+  "publication_eligible": false,
+  "store": "Macy's",
+  "title": "On 34th Women's Seamed Boat-Neck Sleeveless Mini Dress — Deep Black",
+  "retailer_product_id": "25560835",
+  "url": "https://www.macys.com/shop/product/on-34th-womens-seamed-boat-neck-sleevelss-mini-dress-macys-exclusive?ID=25560835",
+  "listed_price": 29.83,
+  "retailer_previous_price": 99.5,
+  "listed_discount_percent": 70,
+  "reference_price_type": "Retailer-displayed reference price; historical actual selling price not independently verified",
+  "color": "Deep Black",
+  "size": "Not selected; size-specific stock not confirmed",
+  "promo_code": null,
+  "promo_note": "No code advertised or tested. Displayed Last Act clearance price. Final sale, no returns/exchanges/price adjustments. Free shipping only with minimum qualifying purchase; California and Minnesota have special shipping instructions. Taxes and shipping extra where applicable.",
+  "retailer_page_evidence": "Official Macy's product page Web ID 25560835 returned displayed $29.83 vs $99.50, 70% off, sizes 0–16 and Add To Bag/Buy Now. Search snapshot crawled last month; not confirmed at a current live checkout.",
+  "expiration_date": null,
+  "availability": "Add To Bag visible on a product-page snapshot; current size and ZIP-specific stock unverified",
+  "duplicate_check": "GitHub code search for 25560835 returned no results; no similarly named research file among the current research directory; no matching content among 16 Buffer Instagram posts.",
+  "blockers": [
+    "Live size-specific availability and final checkout price not independently verified",
+    "Reference price not independently validated against historical actual selling price",
+    "Sale expiration unknown",
+    "Publicly accessible product-specific branded GitHub-hosted image not prepared and validated"
+  ],
+  "notes": "Research only. Do not publish to website or Instagram until all blockers resolved."
+}

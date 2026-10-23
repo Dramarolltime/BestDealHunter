@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-10-14T08:49:00-07:00",
+  "status": "research_only_not_publishable",
+  "retailer": "Macy's",
+  "candidates": [
+    {
+      "id": "macys-19978861",
+      "name": "Arch Studio Dishcloths Set of 2",
+      "variant": "Black",
+      "url": "https://www.macys.com/shop/product/arch-studio-dishcloths-set-of-2-exclusively-at-macys?ID=19978861",
+      "advertised_price": 9.53,
+      "retailer_reference_price": 32,
+      "advertised_discount_percent": 70,
+      "promo_code": null,
+      "promo_note": "No code; coupon excluded. Last Act final sale. Free shipping subject to order threshold. No expiration stated.",
+      "add_to_bag_visible": true,
+      "retailer_page_capture": "approximately one month old",
+      "checkout_price_verified": false,
+      "reference_price_history_verified": false,
+      "stock_verified_at_checkout": false,
+      "expiration_verified": false,
+      "publication_eligible": false
+    },
+    {
+      "id": "macys-21324799",
+      "name": "Hotel Collection Refraction Duvet Cover Set Full/Queen",
+      "variant": "Dusty Agate",
+      "url": "https://www.macys.com/shop/product/hotel-collection-refraction-duvet-cover-sets-exclusively-at-macys?ID=21324799",
+      "advertised_price": 142.43,
+      "retailer_reference_price": 475,
+      "advertised_discount_percent": 70,
+      "promo_code": null,
+      "promo_note": "No code; coupon excluded. Last Act final sale. Free shipping subject to order threshold. No expiration stated.",
+      "add_to_bag_visible": true,
+      "retailer_page_capture": "approximately one month old",
+      "checkout_price_verified": false,
+      "reference_price_history_verified": false,
+      "stock_verified_at_checkout": false,
+      "expiration_verified": false,
+      "publication_eligible": false
+    }
+  ],
+  "checks": {
+    "github_code_search": "No matching product IDs returned (not exhaustive across unindexed files)",
+    "buffer": "Instagram connected; reviewed history; no matching products found",
+    "graphics": "No new GitHub-hosted image generated or verified",
+    "website_published": false,
+    "instagram_published": false
+  },
+  "blockers": [
+    "Current checkout total inaccessible",
+    "Page captures are stale",
+    "Reference price historical legitimacy unverified",
+    "Location-specific inventory unverified",
+    "Expiration not stated",
+    "Branded public image not verified"
+  ]
+}

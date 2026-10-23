@@ -1,0 +1,111 @@
+name: Submit a deal
+description: A 50%+ deal you saw on a store's own page. It goes to the website and Instagram automatically.
+title: "Deal: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill this in while the store page is open. Only the repository owner and collaborators can publish.
+        The deal needs **50% off or more** against the store's own crossed-out price. Amazon deals can't be posted.
+  - type: dropdown
+    id: store
+    attributes:
+      label: Store
+      options:
+        - Target
+        - Walmart
+        - Home Depot
+        - Dick's Sporting Goods
+        - Macy's
+        - Best Buy
+        - Lowe's
+        - eBay
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Product name
+      description: The exact product name from the page (size or color too, if it matters).
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Product link
+      description: The store's own product page link (no affiliate or shortened links).
+      placeholder: https://www.target.com/p/...
+    validations:
+      required: true
+  - type: input
+    id: price
+    attributes:
+      label: Sale price
+      placeholder: "34.99"
+    validations:
+      required: true
+  - type: input
+    id: original
+    attributes:
+      label: Was price
+      description: The store's own crossed-out / regular price shown on the same page.
+      placeholder: "99.99"
+    validations:
+      required: true
+  - type: dropdown
+    id: label
+    attributes:
+      label: Was price label
+      description: How the store labels the crossed-out price.
+      options:
+        - Was
+        - Reg.
+        - Orig.
+        - List price
+        - Comparable value
+      default: 0
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Electronics
+        - Home
+        - Fashion
+        - Beauty
+        - Sports
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: It is in stock online
+          required: true
+        - label: It is sold by the store itself (not a marketplace seller)
+          required: true
+        - label: I saw this price on the store page within the last hour
+          required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Drag in a screenshot of the store page showing the sale price and the was price.
+    validations:
+      required: true
+  - type: textarea
+    id: card
+    attributes:
+      label: Alpha's image
+      description: Optional. Drag in Alpha's deal image to post it instead of the standard card.
+  - type: checkboxes
+    id: card-check
+    attributes:
+      label: Image check
+      description: Required for Alpha's image to be used.
+      options:
+        - label: The image's numbers match this deal (sale price, was price, % off) and it has no store or brand logos

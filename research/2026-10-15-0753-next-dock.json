@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-15T07:53:00-07:00",
+  "store": "Best Buy",
+  "title": "NEXT Side Dock Charging Station for Xbox Series S - White",
+  "sku": "6600585",
+  "url": "https://www.bestbuy.com/product/next-side-dock-charging-station-for-xbox-series-s-white/J3R4V77R8R",
+  "price": 5.99,
+  "reference_price": 21.99,
+  "reference_note": "Best Buy comparable value, not independently validated as prior selling price",
+  "promo_code": null,
+  "promo_note": "No promo code required",
+  "availability": "Add to cart shown; location-specific stock unverified",
+  "expiration": null,
+  "checkout_verified": false,
+  "publication_eligible": false,
+  "blockers": [
+    "Final checkout total not verified",
+    "Historical reference price not established",
+    "Location-specific stock and expiration unverified",
+    "No validated branded image URL"
+  ]
+}

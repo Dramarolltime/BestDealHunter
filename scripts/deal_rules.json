@@ -1,8 +1,39 @@
 {
-  "stores": ["Amazon", "eBay", "Walmart", "Target", "Best Buy", "Home Depot", "Lowe's", "Macy's"],
-  "categories": ["Electronics", "Home", "Fashion", "Beauty", "Sports", "Other"],
-  "retailer_domains": ["macys.com", "bestbuy.com", "amazon.com", "link.amazon", "walmart.com", "target.com", "ebay.com", "homedepot.com", "lowes.com"],
+  "stores": [
+    "Amazon",
+    "eBay",
+    "Walmart",
+    "Target",
+    "Best Buy",
+    "Home Depot",
+    "Lowe's",
+    "Macy's",
+    "Dick's Sporting Goods"
+  ],
+  "categories": [
+    "Electronics",
+    "Home",
+    "Fashion",
+    "Beauty",
+    "Sports",
+    "Other"
+  ],
+  "retailer_domains": [
+    "macys.com",
+    "bestbuy.com",
+    "amazon.com",
+    "link.amazon",
+    "walmart.com",
+    "target.com",
+    "ebay.com",
+    "homedepot.com",
+    "lowes.com",
+    "dickssportinggoods.com"
+  ],
   "min_discount_percent": 50,
   "min_affiliate_discount_percent": 20,
-  "max_verification_age_days": 2
+  "max_verification_age_days": 2,
+  "page_check_allowed_hosts": [],
+  "ebay_campaign_id": "5339220016",
+  "instagram_roundups": true
 }

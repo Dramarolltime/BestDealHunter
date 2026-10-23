@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-10-13T22:52:00-07:00",
+  "status": "not_eligible",
+  "publication_eligible": false,
+  "checks": [
+    {
+      "store": "Best Buy",
+      "title": "Energizer 3-in-1 Qi charging station WCP309",
+      "sku": "6631374",
+      "url": "https://www.bestbuy.com/product/energizer-3-in-1-15w-qi-certified-fast-15w-universal-charging-station-stand-w-rgb-light-for-phones-airpods-apple-watch-black/J36C4YXZVR/sku/6631374",
+      "older_promotional_price": 14.99,
+      "current_product_page_price": 39.99,
+      "reference_price": 39.99,
+      "promo_code": null,
+      "promo_note": "Earlier Techtober listing displayed $14.99, but fresh product page displays $39.99; do not advertise earlier price.",
+      "reason": "Current price not at least 50% off; checkout and expiration unverified."
+    },
+    {
+      "store": "Best Buy",
+      "title": "Lenovo IdeaPad Slim 3 Chromebook 14-inch 4GB 64GB",
+      "sku": "6673811",
+      "url": "https://www.bestbuy.com/product/lenovo-ideapad-slim-3-chromebook-14-2k-touchscreen-laptop-mediatek-kompanio-540-2026-4gb-memory-64gb-emmc-cosmic-blue/JJGH3QCJKR/sku/6673811",
+      "older_promotional_price": 199,
+      "current_product_page_price": 419,
+      "reference_price": 419,
+      "promo_code": null,
+      "promo_note": "Earlier promotional $199 page is stale; fresh product page displays $419.",
+      "reason": "Current price not at least 50% off; checkout and expiration unverified."
+    }
+  ],
+  "published_to_site": false,
+  "published_to_instagram": false,
+  "branded_image_verified": false
+}

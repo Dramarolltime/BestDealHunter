@@ -1,0 +1,16 @@
+[
+  {
+    "deal_id": "TEST-001",
+    "row": 2,
+    "drive_file_id": "1PwpxPhWOvgqO5oMOrALTHpUkTJ5FFFSP",
+    "test": true,
+    "at": "2026-10-16T07:27:04+00:00",
+    "result": "uploaded",
+    "cloudinary_url": "https://res.cloudinary.com/j9g6uest/image/upload/v1792135626/bestdealhunter/alpha-test/test-001-bd398562c9.png",
+    "sha256": "bd398562c9329329a8bf81ec0d26c6a13823f1c1a045a281d9403ddff669f9d1",
+    "width": 600,
+    "height": 750,
+    "bytes": 325,
+    "mime": "image/png"
+  }
+]

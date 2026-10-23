@@ -1,0 +1,28 @@
+{
+  "checked_at_local": "2026-10-14 13:57 America/Los_Angeles",
+  "status": "research_only",
+  "publication_eligible": false,
+  "store": "Best Buy",
+  "title": "Glorious GMMK Pro Barebone 75% Wired Mechanical Keyboard — Black",
+  "retailer_product_id": "6519207",
+  "model": "GLO-GMMK-P75-RGB-B",
+  "url": "https://www.bestbuy.com/product/glorious-gmmk-pro-barebone-high-profile-gasket-mounted-rgb-75-wired-mechanical-keyboard-black/J3R8Q6T6K5",
+  "listed_price": 79.99,
+  "retailer_comparable_value": 169.99,
+  "calculated_discount_percent": 52.94,
+  "reference_price_type": "Best Buy comparable value, $169.99. Older official product-page capture displayed $169.99 as a selling price, but no independently authenticated price history; do not claim regular/was price.",
+  "promo_code": null,
+  "promo_note": "No promo code advertised or tested. The 15% off Stream Deck offer is an unrelated bundle promotion. Barebone keyboard excludes keycaps and switches; those must be purchased separately.",
+  "availability": "Official Best Buy product page refreshed Oct 14 displayed Add to cart, shipping tomorrow, pickup at Roseville Oct 16; user-ZIP availability and cart checkout not verified.",
+  "expiration_date": "2026-10-15",
+  "expiration_note": "Official product page refreshed Oct 14 said 'Deal ends tomorrow'; exact time and timezone unknown.",
+  "price_evidence": "Best Buy Oct 14 page $79.99, Comp. Value $169.99, Save $90 in main listing. A duplicate panel incorrectly says Save $110; calculated difference is $90.",
+  "duplicate_check": "No matching product SKU in deals.json, pending_deals.json, deal-review-queue.json, or research file names; no Glorious keyboard in the 16 Buffer Instagram posts.",
+  "blockers": [
+    "Final checkout price, tax, shipping and destination-specific availability not independently verified",
+    "Reference price still primarily retailer-comparable-value, not independently audited historical selling price",
+    "No product-specific branded GitHub-hosted image and public URL validated",
+    "Sale end time/timezone unknown"
+  ],
+  "notes": "Do not publish to website or Instagram until all checks pass."
+}

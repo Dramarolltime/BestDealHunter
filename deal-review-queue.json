@@ -7,14 +7,7 @@
     "listed_price": 949.99,
     "retailer_comparable_value": 1999.99,
     "discovered_date": "2026-10-10",
-    "notes": "Retailer listing shows 52%+ difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies bestbuy.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed.",
-      "finding": "Search snapshots of the same Best Buy product page show $848.99 and $997.99, not the queued $949.99: price has moved since discovery; re-check before any use."
-    },
-    "model_number": "65S7SG"
+    "notes": "Retailer listing shows 52%+ difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish."
   },
   {
     "status": "needs_verification",
@@ -24,12 +17,7 @@
     "listed_price": 19.99,
     "retailer_comparable_value": 49.99,
     "discovered_date": "2026-10-10",
-    "notes": "Retailer listing shows 60% difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies bestbuy.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Retailer listing shows 60% difference from comparable value. Checkout, availability, expiration, and hosted image not independently confirmed. Do not publish."
   },
   {
     "status": "needs_checkout_verification",
@@ -51,12 +39,7 @@
       "Promotion expiration not specified",
       "Publicly accessible branded image for this item not prepared or verified"
     ],
-    "notes": "Review candidate only. Do not publish to website or Instagram until all blockers resolved.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Review candidate only. Do not publish to website or Instagram until all blockers resolved."
   },
   {
     "status": "needs_checkout_verification",
@@ -76,12 +59,7 @@
       "Historical reference price and expiration not independently verified",
       "Public branded image not prepared or checked"
     ],
-    "notes": "Do not publish until blockers cleared.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Do not publish until blockers cleared."
   },
   {
     "status": "needs_checkout_verification",
@@ -105,12 +83,7 @@
       "Promotion expiration not specified",
       "No GitHub-hosted branded image prepared and public image URL verified"
     ],
-    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
   },
   {
     "status": "needs_checkout_verification",
@@ -134,12 +107,7 @@
       "Promotion expiration not specified",
       "No GitHub-hosted branded image prepared and public image URL verified"
     ],
-    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
   },
   {
     "status": "needs_checkout_verification",
@@ -163,12 +131,7 @@
       "Promotion expiration not specified",
       "No GitHub-hosted branded image prepared and public image URL verified"
     ],
-    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Research candidate only. Do not publish to public website or Instagram until blockers resolved."
   },
   {
     "status": "needs_checkout_verification",
@@ -191,12 +154,7 @@
       "Historical reference price and promotion expiration not independently verified",
       "No product-specific GitHub-hosted branded image URL verified"
     ],
-    "notes": "Research only. Twin is a 2-piece set despite 3-piece family title; do not advertise 3 pieces for Twin. Do not publish until blockers cleared.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Research only. Twin is a 2-piece set despite 3-piece family title; do not advertise 3 pieces for Twin. Do not publish until blockers cleared."
   },
   {
     "status": "needs_checkout_verification",
@@ -219,16 +177,10 @@
       "No GitHub-hosted product-specific branded image URL verified",
       "Product has approximately 3.0/5 customer rating and reports of breakage; editorial quality review recommended"
     ],
-    "notes": "Research only. Mixed quality reviews, especially damaged pieces; not recommended for publication without editorial review and verification.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed.",
-      "finding": "Still carries the editorial quality concern (about 3.0/5, breakage reports); recommend rejecting even if price verifies."
-    }
+    "notes": "Research only. Mixed quality reviews, especially damaged pieces; not recommended for publication without editorial review and verification."
   },
   {
-    "status": "needs_checkout_verification",
+    "status": "expired",
     "publication_eligible": false,
     "store": "Best Buy",
     "title": "It Takes Two — PlayStation 5 / PlayStation 4 (physical edition)",
@@ -246,15 +198,10 @@
       "Final checkout total including taxes, delivery fees and location-specific availability not verified",
       "Historical legitimacy of $39.99 comparable value not independently established",
       "Exact promotion end time and timezone unverified",
-      "No product-specific branded GitHub-hosted graphic and publicly accessible URL verified"
+      "No product-specific branded GitHub-hosted graphic and publicly accessible URL verified",
+      "Promotion expired 2026-10-12; do not publish"
     ],
-    "notes": "Research candidate only; do not publish to website or Instagram until checkout and image checks pass.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies bestbuy.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed.",
-      "finding": "Best Buy page on Oct 11 said 'Deal ends tomorrow' (expiration_date 2026-10-12). Treat as ended unless the retailer shows the price again; search snapshots show $19.99-$27.99 at different dates."
-    }
+    "notes": "Expired October 12, 2026. Original promotional price no longer current; exclude from all publication workflows. Previously unverified checkout and reference price."
   },
   {
     "status": "needs_checkout_verification",
@@ -277,11 +224,59 @@
       "Historical reference price legitimacy and expiration date unverified",
       "No product-specific branded GitHub-hosted image URL verified"
     ],
-    "notes": "Research only. Six-piece set includes ladle, skimmer, slotted turner, slotted spoon, basting spoon and holder. Do not publish until all blockers cleared.",
-    "last_review": {
-      "date": "2026-10-12",
-      "result": "not_verified",
-      "reason": "Independent re-verification attempted 2026-10-12 from Claude Code cloud session: retailer site unreachable (network policy denies macys.com). Web-search snapshots are not checkout verification. No status, price, verified date or eligibility changed."
-    }
+    "notes": "Research only. Six-piece set includes ladle, skimmer, slotted turner, slotted spoon, basting spoon and holder. Do not publish until all blockers cleared."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Macy's Fingal Reversible Comforter Set — Blue/White, Twin (6 pieces)",
+    "url": "https://www.macys.com/shop/product/macys-fingal-reversible-8-pc.-comforter-sets?ID=24676975",
+    "listed_price": 29.93,
+    "retailer_previous_price": 100,
+    "listed_discount_percent": 70,
+    "variant": "Blue/white, Twin — 6 pieces, NOT 8",
+    "reference_price_type": "Macy's displayed previous price; independently validated historical selling price unavailable",
+    "discovered_date": "2026-10-13",
+    "promo_code": null,
+    "promo_note": "No code required for displayed Last Act price; coupon eligibility not independently confirmed. Final sale. Free shipping only with minimum purchase; California/Minnesota shipping terms vary.",
+    "expiration_date": null,
+    "source": "Official Macy's product page Web ID 24676975 crawled Oct 12, 2026: $29.93, prior $100, Blue/white Twin, Low Stock, Add To Bag and Buy Now displayed.",
+    "blockers": [
+      "Final checkout total, tax and shipping for destination ZIP unverified",
+      "ZIP-specific stock and actual orderability not confirmed; page shows Low Stock",
+      "Legitimate historical reference selling price and expiration not independently confirmed",
+      "No product-specific branded image publicly hosted and validated"
+    ],
+    "notes": "Research only, not eligible for public site or Instagram. Twin contains 6 pieces despite product family 8-piece title."
+  },
+  {
+    "status": "needs_checkout_verification",
+    "publication_eligible": false,
+    "store": "Macy's",
+    "title": "Tommy Bahama Palmette Yarn Dyed Beach Towel, 36\" x 68\" — Pink",
+    "url": "https://www.macys.com/shop/product/tommy-bahama-palmette-yarn-dyed-beach-towel-36-x-68?ID=26403809",
+    "listed_price": 17.43,
+    "retailer_previous_price": 50,
+    "listed_discount_percent": 65,
+    "variant": "Pink, 36 x 68 inch beach towel",
+    "reference_price_type": "Macy's displayed previous price $50; Mall of America retail-directory listing also shows $50, but independent historical selling price remains unproven",
+    "discovered_date": "2026-10-13",
+    "promo_code": null,
+    "promo_note": "No promo code required; Macy's labels this Last Act item 'Coupon excluded'. Final sale. Product page states online purchases must be returned to vendor by mail and not to Macy's stores, but Last Act final-sale restriction takes precedence; clarify conflicting returns wording before publication. CA/MN free-shipping terms require calling Macy's. No verified BOGO promotion should be claimed.",
+    "expiration_date": null,
+    "source": "Macy's official product page Web ID 26403809, retrieved Oct 13, 2026 (page rendered Oct 13 01:26 EDT): $17.43 vs $50, Pink, Add To Bag and Buy Now. Macy's beach-towel listing crawled Oct 10 also shows same price. Mall of America product directory lists $50.",
+    "source_urls": [
+      "https://www.macys.com/shop/product/tommy-bahama-palmette-yarn-dyed-beach-towel-36-x-68?ID=26403809",
+      "https://shop.mallofamerica.com/product/tommy-bahama-palmette-yarn-dyed-beach-towel-36-x-68-macys-9350ed"
+    ],
+    "blockers": [
+      "Final checkout total, tax, shipping and ZIP-specific fulfillment not verified; Add To Bag is not checkout confirmation",
+      "Historical reference selling price legitimacy not established beyond retailer previous price and external retail directory listing",
+      "Promotion expiration unspecified",
+      "No product-specific branded graphic hosted on GitHub and public image URL verified",
+      "Clarify retailer's contradictory Last Act final sale and vendor-mail return instructions"
+    ],
+    "notes": "Research candidate only. Do not publish to website or Instagram until verification and image checks pass. 65% is calculated against the displayed $50 reference, not necessarily an actual prior transaction price."
   }
 ]

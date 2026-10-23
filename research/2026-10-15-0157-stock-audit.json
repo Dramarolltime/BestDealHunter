@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-10-15T01:57:38-07:00",
+  "status": "research_only_unavailable_do_not_publish",
+  "summary": "Four advertised 50%+ candidates failed direct-product availability checks; no checkout or code tests completed.",
+  "items": [
+    {
+      "store": "Best Buy",
+      "product": "bella PRO MultiBrew 12-Cup Drip & Single-Serve Coffee Maker, Oatmilk",
+      "sku": "6612290",
+      "url": "https://www.bestbuy.com/product/bella-pro-multibrew-12-cup-drip-single-serve-coffee-maker-oatmilk/6612290",
+      "advertised_price_from_older_capture": 60.99,
+      "reference_price_from_older_capture": 149.99,
+      "latest_direct_page_status": "no longer available in new condition",
+      "promo_code": null,
+      "promo_note": "No coupon validated; older clearance listing is stale. Exclude from publication.",
+      "source": "Best Buy direct page opened Oct 15 2026; web crawl dated Oct 13",
+      "publication_eligible": false
+    },
+    {
+      "store": "Best Buy",
+      "product": "Imagix Holographic Companion for kids, White",
+      "sku": "6646351",
+      "url": "https://www.bestbuy.com/product/artificial-imagery-magic-crystal-ball-companion-white/J3JLT5K776",
+      "advertised_price": 60.99,
+      "reference_price_label": "comparable value",
+      "reference_price": 199.99,
+      "latest_direct_page_status": "Unavailable",
+      "promo_code": null,
+      "promo_note": "No code verified; direct page unavailable. Exclude.",
+      "source": "Best Buy direct page crawled Oct 14 2026",
+      "publication_eligible": false
+    },
+    {
+      "store": "Macy's",
+      "product": "Ameena Reversible 8-Pc. Comforter Sets",
+      "product_id": "24676970",
+      "url": "https://www.macys.com/shop/product/macys-ameena-reversible-8-pc.-comforter-sets?ID=24676970",
+      "advertised_price_from_older_capture": 29.93,
+      "reference_price_from_older_capture": 100,
+      "latest_direct_page_status": "Unavailable",
+      "promo_code": null,
+      "promo_note": "Coupon excluded in earlier capture; current direct page unavailable. Twin is 6 pieces, not 8.",
+      "source": "Macy's direct page crawled Oct 14 2026",
+      "publication_eligible": false
+    },
+    {
+      "store": "Macy's",
+      "product": "Neutral Damask 8-Pc. Comforter Set",
+      "product_id": "17225234",
+      "url": "https://www.macys.com/shop/product/sunham-neutral-damask-8-pc.-comforter-set?ID=17225234",
+      "advertised_price_from_older_capture": 29.93,
+      "reference_price_from_older_capture": 100,
+      "latest_direct_page_status": "Unavailable",
+      "promo_code": null,
+      "promo_note": "No code verified; current direct page unavailable. Twin is 6 pieces, not 8.",
+      "source": "Macy's direct page crawled Oct 10 2026",
+      "publication_eligible": false
+    }
+  ]
+}

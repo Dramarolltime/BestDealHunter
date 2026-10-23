@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-13",
+  "checked_at": "2026-10-13T05:57:00-07:00",
+  "publication_eligible": false,
+  "source": "Lane Bryant official product pages checked Oct 13 2026",
+  "candidates": [
+    {
+      "retailer": "Lane Bryant",
+      "product": "Houndstooth Scrunchie 3-Pack, Mixed Neutrals",
+      "url": "https://www.lanebryant.com/houndstooth-scrunchie-3-pack/prd-417102.html?dwvar_417102_color=0000105276",
+      "advertised_price": 9.97,
+      "retailer_comparable_value": 19.95,
+      "advertised_discount_percent": 50,
+      "promo_code": null,
+      "promo_note": "No code required; labeled Doorbuster. Item expiration unknown; broader Oct 18 accessories offer excludes doorbusters.",
+      "availability": "Add to Bag shown, final checkout not tested",
+      "blockers": [
+        "Final checkout, shipping, taxes unverified",
+        "Comparable value historical legitimacy unverified",
+        "Specific item expiration unknown",
+        "Public branded image not verified"
+      ]
+    },
+    {
+      "retailer": "Lane Bryant",
+      "product": "Fleece-Lined Legging, Maritime Blue",
+      "url": "https://www.lanebryant.com/fleece-lined-legging/prd-416734.html?dwvar_416734_color=0000028161",
+      "advertised_price": 27.47,
+      "retailer_comparable_value": 54.95,
+      "advertised_discount_percent": 50,
+      "promo_code": null,
+      "promo_note": "No code required; labeled Doorbuster. Item expiration unknown; accessories offer and cart promo exclude doorbusters.",
+      "availability": "Add to Bag shown, size-specific stock not tested",
+      "blockers": [
+        "Final checkout, shipping, taxes unverified",
+        "Reference price historical legitimacy unverified",
+        "Specific item expiration unknown",
+        "Public branded image not verified"
+      ]
+    }
+  ],
+  "recheck": [
+    {
+      "retailer": "Best Buy",
+      "product": "It Takes Two PS4/PS5 SKU 6444455",
+      "url": "https://www.bestbuy.com/product/it-takes-two-playstation-5-playstation-4/J7CYF9YKJ5/sku/6444455",
+      "observed_price": 39.99,
+      "previous_candidate_price": 19.99,
+      "previous_offer_end": "2026-10-12",
+      "status": "no_longer_qualifies",
+      "note": "Oct 13 product page displays $39.99; do not promote expired 50% candidate."
+    }
+  ]
+}

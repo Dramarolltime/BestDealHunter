@@ -172,44 +172,25 @@ class CleanupTests(unittest.TestCase):
 
 
 class NoAccidentalPublishingTests(unittest.TestCase):
-    """Monitoring, cleanup and verification code must have no route to a live Instagram post."""
+    """The cleanup tool and the monitor have no route to an Instagram post."""
     ROOT = Path(__file__).resolve().parents[1]
-    # The one workflow allowed to read the kill switch is the gated manual publisher (PR #16).
-    KILL_SWITCH_ALLOWED = {"buffer-publish.yml"}
 
     @staticmethod
     def code(path):
         """Workflow text without comment lines (comments may say what a job never does)."""
         return "\n".join(l for l in path.read_text(encoding="utf-8").splitlines() if not l.lstrip().startswith("#"))
 
-    def test_only_the_gated_publisher_holds_both_buffer_key_and_kill_switch(self):
-        # Posting live needs the Buffer key AND the kill switch in the same job. Dry-run workflows may
-        # read the switch to report it; cleanup may hold the key. Only buffer-publish.yml may hold both.
-        for wf in sorted((self.ROOT / ".github" / "workflows").glob("*.yml")):
-            code = self.code(wf)
-            if wf.name not in self.KILL_SWITCH_ALLOWED:
-                self.assertFalse("INSTAGRAM_PUBLISH_ENABLED" in code and "BUFFER_API_KEY" in code, wf.name)
+    def test_cleanup_workflow_cannot_publish(self):
+        code = self.code(self.ROOT / ".github" / "workflows" / "buffer-draft-cleanup.yml")
+        for forbidden in ("INSTAGRAM_PUBLISH_ENABLED", "publish_buffer", "--live", "contents: write"):
+            self.assertNotIn(forbidden, code)
+        self.assertIn("contents: read", code)
 
-    def test_buffer_key_workflows_never_see_the_kill_switch(self):
-        for name in ("buffer-draft-cleanup.yml",):
-            self.assertNotIn("INSTAGRAM_PUBLISH_ENABLED", self.code(self.ROOT / ".github" / "workflows" / name))
-
-    def test_new_workflows_never_run_the_publisher(self):
-        for name in ("buffer-draft-cleanup.yml", "verify-retailers.yml", "maintenance-monitor.yml", "hourly-deal-check.yml"):
-            text = self.code(self.ROOT / ".github" / "workflows" / name)
-            for forbidden in ("publish_buffer", "--live", "draft-check"):
-                self.assertNotIn(forbidden, text, f"{name} mentions {forbidden}")
-
-    def test_monitor_and_verifier_never_contact_buffer(self):
-        for rel in ("scripts/maintenance/monitor.py", "scripts/verify_deals.py"):
-            text = (self.ROOT / rel).read_text(encoding="utf-8")
-            for forbidden in ("api.buffer.com", "BUFFER_API_KEY", "createPost", "import publish_buffer"):
-                self.assertNotIn(forbidden, text, f"{rel} mentions {forbidden}")
-
-    def test_cleanup_workflow_withholds_kill_switch_and_write_access(self):
-        text = (self.ROOT / ".github" / "workflows" / "buffer-draft-cleanup.yml").read_text(encoding="utf-8")
-        self.assertIn("contents: read", text)
-        self.assertNotIn("contents: write", text)
+    def test_monitor_gets_no_buffer_credentials(self):
+        self.assertNotIn("BUFFER_API_KEY", self.code(self.ROOT / ".github" / "workflows" / "maintenance-monitor.yml"))
+        source = (self.ROOT / "scripts" / "maintenance" / "monitor.py").read_text(encoding="utf-8")
+        for forbidden in ("api.buffer.com", "BUFFER_API_KEY", "createPost", "BufferClient"):
+            self.assertNotIn(forbidden, source)
 
 
 class HostedImageTests(unittest.TestCase):

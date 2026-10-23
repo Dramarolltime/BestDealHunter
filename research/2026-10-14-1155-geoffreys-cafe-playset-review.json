@@ -1,0 +1,25 @@
+{
+  "checked_at_local": "2026-10-14 11:55 America/Los_Angeles",
+  "status": "research_only",
+  "publication_eligible": false,
+  "store": "Macy's",
+  "title": "Geoffrey's Toy Box Cafe Cake Bakery Coffee Shop Playset",
+  "retailer_product_id": "18890568",
+  "url": "https://www.macys.com/shop/product/geoffreys-toy-box-cafe-cake-bakery-coffee-shop-playset-created-for-macys?ID=18890568",
+  "listed_price": 29.96,
+  "retailer_previous_price": 149.99,
+  "listed_discount_percent": 80,
+  "reference_price_type": "Retailer-displayed previous price, not independently verified as historical selling price",
+  "promo_code": null,
+  "promo_note": "Coupon excluded by Macy's; no promo code needed for displayed Last Act clearance price. Final sale. Shipping free only at qualifying minimum; local restrictions apply.",
+  "retailer_page_evidence": "Macy's official product page and Geoffrey's Toy Box category page retrieved October 14, 2026; $29.96 vs $149.99, Add To Bag and Buy Now displayed.",
+  "expiration_date": null,
+  "duplicate_check": "No matching indexed GitHub file search results for 18890568 or Cafe Cake Bakery; no matching content among 16 Buffer Instagram posts.",
+  "blockers": [
+    "Final checkout total, taxes, shipping and ZIP-specific inventory unverified",
+    "Historical reference selling price not independently validated",
+    "Expiration date or sale end time not specified",
+    "No product-specific branded GitHub image prepared and public URL verified"
+  ],
+  "notes": "Research candidate only. Do not add to public deals feed or publish to Instagram until all blockers are resolved."
+}

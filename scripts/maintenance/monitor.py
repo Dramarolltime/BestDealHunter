@@ -2,8 +2,8 @@
 """BestDealHunter hourly maintenance monitor (phase 1: monitoring and reporting only).
 
 Checks the public website, hosted Cloudinary images, deal freshness, both review
-queues (pending_deals.json and deal-review-queue.json), the Buffer ledgers and recent
-GitHub Actions runs on main. It then:
+queues (pending_deals.json and deal-review-queue.json), whether Instagram posting is
+paused after failed posts, and recent GitHub Actions runs on main. It then:
   * opens one GitHub issue per new problem (label `maintenance`), closes it with a
     comment when the problem clears, and never duplicates an open incident;
   * rewrites the body of a single status issue (label `maintenance-status`);
@@ -22,16 +22,16 @@ from urllib import error, parse, request
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from validate_deals import RULES, deal_status, validate_feed  # noqa: E402
+from validate_deals import RULES, deal_status, price_verified, validate_feed  # noqa: E402
 
 MARKER = "<!-- bdh-maintenance:{key} -->"
 INCIDENT_LABEL = "maintenance"
 STATUS_LABEL = "maintenance-status"
 FAILED = {"failure", "timed_out", "startup_failure"}
 USER_AGENT = "BestDealHunter-maintenance/1.0"
-# Every file that holds deal candidates awaiting human verification, with its check key.
-# pending_deals.json is filled by collect_candidates.py; deal-review-queue.json by research sessions.
+# Files holding deal candidates awaiting review, with their check keys.
 REVIEW_QUEUES = {"pending_deals.json": "pending-queue", "deal-review-queue.json": "review-queue"}
+INSTAGRAM_INCIDENT_STREAK = 3  # failed posts in a row before the pause becomes an incident
 
 
 def check(key, title, ok, details, severity="error"):
@@ -116,12 +116,14 @@ def deal_age_days(deal, today):
 
 
 def check_freshness(deals, today, max_age=RULES["max_verification_age_days"]):
-    """Archive policy (#1): stale or expired deals stay on the site as "Past Deals".
+    """Listing policy: deals stay on the main page until their own expires_date.
 
-    They are reported, not treated as incidents. Warnings: deals that archive within
-    24h, and a site with no active deals left. An invalid feed is an incident.
+    A price check older than `max_age` days does not hide a deal; the site labels its price
+    as not re-verified. Ended offers move to Past Deals and are never deleted. Warnings:
+    unverified prices, price labels that turn unverified within 24h, and no active deals.
+    An invalid feed is an incident.
     """
-    archived, expiring = [], []
+    archived, unverified, expiring = [], [], []
     for deal in deals:
         if not isinstance(deal, dict):
             continue
@@ -129,29 +131,33 @@ def check_freshness(deals, today, max_age=RULES["max_verification_age_days"]):
         if deal_status(deal, today) == "archived":
             expires = deal.get("expires_date")
             archived.append(label + (f", offer ended {expires}" if isinstance(expires, str) and expires < today.isoformat() else ""))
+        elif not price_verified(deal, today):
+            unverified.append(label)
         elif deal_age_days(deal, today) == max_age:
             expiring.append(label)
     active = len(deals) - len(archived)
-    summary = f"{active} active, {len(archived)} archived (shown in Past Deals as expired; never deleted)."
+    summary = (f"{active} active ({len(unverified)} with the price labelled unverified), "
+               f"{len(archived)} archived (offer ended; shown in Past Deals, never deleted).")
     if archived:
-        summary += "\nRe-verify to reactivate, or leave archived:\n" + "\n".join(f"- {s}" for s in archived)
+        summary += "\nArchived:\n" + "\n".join(f"- {s}" for s in archived)
     results = [check("stale-deals", "Published deals are stale or expired", True, summary)]
     try:
         validate_feed(deals, today)
         results.append(check("feed-valid", "Published deals.json fails validation", True, "Feed passes validate_feed."))
     except ValueError as exc:
         results.append(check("feed-valid", "Published deals.json fails validation", False, str(exc)))
+    if unverified:
+        results.append(check("unverified-prices", "Listed deals with prices not re-verified", False,
+                             "Still listed, labelled \"price not re-verified\". Re-check to restore the badge:\n"
+                             + "\n".join(f"- {s}" for s in unverified), severity="warning"))
     if expiring:
-        results.append(check("expiring-deals", "Deals move to Past Deals within 24h", False,
+        results.append(check("expiring-deals", "Price labels turn unverified within 24h", False,
                              "\n".join(f"- {s}" for s in expiring), severity="warning"))
     if not active:
-        # An incident, not a warning: every hourly workflow can pass while the site shows nothing.
-        # Nothing in CI re-checks retailer prices, so only a person re-verifying a deal clears this.
+        # An incident, not a warning: every workflow can be green while the site shows no deals.
         results.append(check("no-active-deals", "No active deals on the site", False,
-                             (f"All {len(deals)} published deal(s) are archived." if deals else "The feed is empty.")
-                             + " Hourly workflows stay green because no workflow re-checks retailer prices;"
-                             " `verified_date` only advances when a person confirms the retailer's current price"
-                             " and availability (reviewed PR or `approve_deal.py`)."))
+                             ("Every published deal's offer has ended." if deals else "The feed is empty.")
+                             + " Check the latest 'Auto-publish page-verified deals' run."))
     return results
 
 
@@ -179,69 +185,36 @@ def check_unhosted(deals, hosted):
                  severity="warning")
 
 
-def check_queues(queues, today):
-    """`queues` maps file name -> parsed JSON (None if missing). One validity check per file plus
-    a backlog summary that counts candidates across ALL review queues, not just pending_deals.json."""
-    results, lines, statuses = [], [], {}
-    total = eligible = expired = 0
+def check_queues(queues):
+    """`queues` maps file name -> parsed JSON (None if missing or unreadable): one validity check
+    per file plus a backlog count across ALL review queues."""
+    results, lines, total = [], [], 0
     for name, key in REVIEW_QUEUES.items():
         queue = queues.get(name)
         ok = isinstance(queue, list) and all(isinstance(d, dict) for d in queue)
         results.append(check(key, f"{name} is malformed", ok,
                              f"{len(queue)} candidate(s) in `{name}`." if ok else "Expected a JSON array of objects."))
-        if not ok:
-            continue
-        total += len(queue)
-        lines.append(f"- `{name}`: {len(queue)}")
-        for item in queue:
-            status = str(item.get("status") or item.get("review_status") or "unknown")
-            statuses[status] = statuses.get(status, 0) + 1
-            eligible += item.get("publication_eligible") is True
-            ends = item.get("expiration_date") or item.get("expires_date")
-            expired += isinstance(ends, str) and ends < today.isoformat()
-    by_status = ", ".join(f"{k}: {v}" for k, v in sorted(statuses.items())) or "none"
-    details = "\n".join([f"**{total} candidate(s) awaiting review** across all queues:", *lines, "",
-                         f"By status: {by_status}.", f"Marked publication-eligible: {eligible}.",
-                         f"Past their offer end date: {expired}."])
-    results.append(check("review-backlog", "Review queue backlog", True, details))
+        if ok:
+            total += len(queue)
+            lines.append(f"- `{name}`: {len(queue)}")
+    results.append(check("review-backlog", "Review queue backlog", True,
+                         "\n".join([f"{total} candidate(s) awaiting review across all queues:", *lines])))
     return results
 
 
-def check_reverification_source(source):
-    """deals-source.json is the only automated input that can advance verified_date. Empty = manual only."""
-    ok = isinstance(source, list) and len(source) > 0
-    return check("reverification-source", "No automated retailer re-verification source", ok,
-                 f"`deals-source.json` has {len(source)} retailer-verified source entries." if ok else
-                 "`deals-source.json` is empty and no authorized retailer feed is connected, so the 6-hourly "
-                 "refresh accepts nothing and published deals age out after "
-                 f"{RULES['max_verification_age_days']} days. Re-verify deals by hand (retailer price, stock "
-                 "and end date) or connect an approved retailer API.", severity="warning")
-
-
-def check_buffer_ledgers(posts, test_drafts):
-    """Buffer error monitoring. `posts` = posts.json (live ledger), `test_drafts` = buffer-test-drafts.json.
-
-    A live row stuck in `reserved` or `error` blocks that deal and may mean a post exists in Buffer
-    that we did not record: an incident. Test drafts not yet deleted from Buffer are a warning.
-    """
-    stuck = [f"- {p.get('title', p.get('key'))}: status `{p.get('status')}`"
-             + (f" ({p.get('error')})" if p.get("error") else "")
-             for p in posts or [] if isinstance(p, dict) and p.get("status") in ("reserved", "error")]
-    failed = [f"- {p.get('title', p.get('key'))}: Buffer reports `{p.get('buffer_status')}`"
-              for p in posts or [] if isinstance(p, dict) and str(p.get("buffer_status", "")).lower() == "error"]
-    problems = stuck + failed
-    if not isinstance(posts, list):  # load_json gives [] for a missing file, None for a corrupt one
-        problems.append("- `posts.json` is unreadable: the duplicate-protection ledger cannot be trusted")
-    results = [check("buffer-ledger", "Buffer posts need attention", not problems,
-                     "\n".join(problems) + "\nCheck Buffer by hand before clearing a row; never retry blindly."
-                     if problems else f"{len(posts or [])} ledger row(s); none stuck or failed.")]
-    leftover = [f"- Buffer post `{d.get('buffer_post_id')}` ({d.get('title', 'test draft')}), created {d.get('created_at', '?')}"
-                for d in test_drafts or [] if isinstance(d, dict) and d.get("status") != "deleted"]
-    if leftover:
-        results.append(check("buffer-test-drafts", "Buffer test drafts not yet deleted", False,
-                             "\n".join(leftover) + "\nDelete in Buffer (or run the *Buffer draft cleanup* workflow), "
-                             "then mark the row `deleted` in `buffer-test-drafts.json`.", severity="warning"))
-    return results
+def check_instagram(posts, now, paused_after_failure):
+    """Instagram posting via Buffer, judged by the publisher's own rule (publish_buffer.paused_after_failure).
+    A pause after failed posts is a warning; INSTAGRAM_INCIDENT_STREAK failures in a row open an incident."""
+    import re
+    reason = paused_after_failure(posts if isinstance(posts, list) else [], now)
+    match = re.search(r"the last (\d+) Instagram post attempt\(s\) failed", reason or "")
+    if not match:
+        return check("instagram-posting", "Instagram posting paused after failures", True,
+                     "Not paused for failures." + (f" ({reason})" if reason else ""))
+    streak = int(match.group(1))
+    return check("instagram-posting", "Instagram posting paused after failures", False,
+                 reason[0].upper() + reason[1:] + ".",
+                 severity="error" if streak >= INSTAGRAM_INCIDENT_STREAK else "warning")
 
 
 def latest_runs(runs):
@@ -338,7 +311,7 @@ def sync_issues(gh, results, status_body, digest, run_url, log=print):
 # ---------------------------------------------------------------- main
 
 def load_json(name, missing=None):
-    """Repository JSON file; `missing` if absent, None if unparseable (reported by its check)."""
+    """Repository JSON file; `missing` if absent, None if unparseable (its check reports it)."""
     try:
         return json.loads((ROOT / name).read_text(encoding="utf-8"))
     except FileNotFoundError:
@@ -360,9 +333,13 @@ def run_checks(site_url, gh, today):
     hosted = json.loads((ROOT / "cloudinary-images.json").read_text(encoding="utf-8"))
     results.append(check_hosted_images(hosted, lambda u: http_get(u, method="HEAD")[:2]))
     results.append(check_unhosted(deals, hosted))
-    results += check_queues({name: load_json(name) for name in REVIEW_QUEUES}, today)
-    results.append(check_reverification_source(load_json("deals-source.json")))
-    results += check_buffer_ledgers(load_json("posts.json", []), load_json("buffer-test-drafts.json", []))
+    results += check_queues({name: load_json(name) for name in REVIEW_QUEUES})
+    try:
+        from publish_buffer import paused_after_failure
+        results.append(check_instagram(load_json("posts.json", []), datetime.now(timezone.utc), paused_after_failure))
+    except ImportError as exc:  # never let the Instagram check take the whole monitor down
+        results.append(check("instagram-posting", "Instagram posting paused after failures", True,
+                             f"Not checked ({exc}).", severity="warning"))
     if gh:
         since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
         runs = gh.call("GET", "/actions/runs", query={"branch": "main", "per_page": 100,
@@ -373,7 +350,7 @@ def run_checks(site_url, gh, today):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--site-url", default=os.environ.get("SITE_URL") or "https://dramarolltime.github.io/BestDealHunter/")
+    parser.add_argument("--site-url", default=os.environ.get("SITE_URL") or "https://bestdealhunters.com/")
     parser.add_argument("--dry-run", action="store_true", help="report only; never write GitHub issues")
     parser.add_argument("--digest", action="store_true", help="also post the daily digest comment")
     args = parser.parse_args(argv)
