@@ -48,10 +48,17 @@ CARD = re.compile(r"images/generated/deal-([0-9a-f]{12})-(?:feed|square)\.jpg")
 # now allows at most 5 hashtags per post, and fewer, spaced-out posts look less automated.
 CAPTION_LIMIT, HASHTAG_LIMIT = 2200, 5
 MAX_POSTS_PER_RUN = 1
-# Pictures that show the real product: the listing photo, or an AI scene built from it / from the page screenshot.
-REAL_PRODUCT_KINDS = ("listing_photo", "ai_scene_from_photo")
-MAX_POSTS_PER_DAY = 4  # at most 4 Instagram posts in any 24 hours
-MIN_HOURS_BETWEEN_POSTS = 4  # and at least 4 hours between two posts
+# Owner, 2026-10-23 (Instagram plan): quality over quantity while the account recovers from the spam flag.
+#   * one post, one verified product; no roundups
+#   * the picture must be the retailer's real listing photo (AI scenes are not product-accurate enough)
+#   * at most one Instagram post in any 24 hours
+#   * a failed post is never retried, and any failure pauses Instagram until the owner clears it (see
+#     paused_after_failure); "instagram_auto_publish" in deal_rules.json must also be true
+#   * a deal from a retailer other than eBay is picked first when one is eligible
+# The website keeps publishing every verified deal; none of this limits deals.json.
+REAL_PRODUCT_KINDS = ("listing_photo",)
+MAX_POSTS_PER_DAY = 1  # at most 1 Instagram post in any 24 hours
+MIN_HOURS_BETWEEN_POSTS = 24  # and at least 24 hours between two posts
 MAX_POST_AGE_HOURS = 3  # an auto-published deal is posted only while its page check is this fresh
 # Amazon Associates Program Policies (read 2026-10-13): "your Site may only show prices and availability if:
 # (a) we serve the link in which that price and availability data are displayed, or (b) you obtain Product
@@ -240,24 +247,26 @@ def checked_at(deal):
 
 
 def caption(deal):
-    """Playbook v1.0 primary caption; '#ad' and the commission statement only for affiliate links."""
+    """One-product caption: what it is, the verified price and discount, when it was checked, where to find it,
+    a few matching hashtags, and the required disclosure. '#ad' only for affiliate links (Amazon adds its
+    Associates statement)."""
     facts = card_facts(deal)
-    opener = OPENERS[int(post_key(deal), 16) % len(OPENERS)]
+    savings = f", you save {facts['savings']}" if facts.get("savings") else ""
     lines = [
-        opener.format(percent=facts["percent"], title=facts["title"]),
-        f"🏬 Store: {facts['store']}",
-        f"💰 Now: {facts['price']}",
-        f"🏷️ {facts['reference_label']}: {facts['reference']}",
-        f"💵 Savings: {facts['savings']}",
-        "🛒 Find the deal at bestdealhunters.com",
-        "🔗 Link in bio",
-        f"⏰ Price as of {checked_at(deal) or 'the verification time'}",
-        f"⚠️ Prices may change. Availability may vary. The price on {facts['store']} at checkout applies.",
+        facts["title"],
+        "",
+        f"{facts['price']} at {facts['store']} ({facts['percent']}% off the {facts['reference_label'].lower()} "
+        f"of {facts['reference']}{savings}).",
+        "",
+        f"Price checked {checked_at(deal) or 'at verification'}. Prices and stock can change, and "
+        f"{facts['store']}'s price at checkout applies.",
+        "",
+        "Link in bio, or find it at bestdealhunters.com",
         "",
     ]
     affiliate = is_affiliate_link(link(deal))
     disclosure_tags = disclosure(deal)[1][0].count("#") if affiliate else 0
-    lines.append(hashtags(deal, HASHTAG_LIMIT - disclosure_tags))
+    lines.append(hashtags(deal, min(3, HASHTAG_LIMIT - disclosure_tags)))
     if affiliate:
         lines += ["", *disclosure(deal)[1]]
     text = "\n".join(lines)
@@ -332,6 +341,8 @@ def plan(deals, mapping, posts, today, now=None, roundups=None):
                         for d in deals if isinstance(d, dict)]
     roundups = roundups_enabled() if roundups is None else roundups
     limit = ROUNDUP_MAX if roundups else MAX_POSTS_PER_RUN
+    if not roundups:  # owner, 2026-10-23: a retailer other than eBay first (stable order otherwise)
+        deals = sorted((d for d in deals if isinstance(d, dict)), key=lambda d: d.get("store") == "eBay")
     for deal in deals:
         if not isinstance(deal, dict):
             continue
@@ -375,6 +386,7 @@ mutation CreatePost($input: CreatePostInput!) {
 }"""
 POST_STATUS = """
 query PostStatus($input: PostInput!) { post(input: $input) { id status sentAt error { message } } }"""
+NO_RETRY = "Never retried automatically (owner, 2026-10-23)."
 
 
 class BufferError(Exception):
@@ -467,7 +479,13 @@ class BufferClient:
         return verify_draft(result, channel_id)
 
     def post_status(self, post_id):
-        return (self._call(POST_STATUS, {"input": {"id": post_id}}).get("post") or {}).get("status")
+        return self.post_info(post_id).get("status")
+
+    def post_info(self, post_id):
+        """{status, error} for one Buffer post; error is Buffer's exact message (e.g. Instagram's spam flag)."""
+        post = self._call(POST_STATUS, {"input": {"id": post_id}}).get("post") or {}
+        error = post.get("error") if isinstance(post.get("error"), dict) else {}
+        return {"status": post.get("status"), "error": error.get("message")}
 
 
 def publish(ready, posts, client, channel_id, now, log=print, lock=lambda key: True):
@@ -563,26 +581,24 @@ def git_tag_lock(key, run=None):
 
 
 STATUS_CHECKS_PER_RUN = 12  # Buffer's API quota is small and shared; each distinct post is asked about once
-PAUSE_AFTER_FAILURE_HOURS = 24  # after a failed post (e.g. Instagram's spam flag), wait a day before trying again
-# ... and longer after failures in a row (1 -> 1 day, 2 -> 3 days, 3 or more -> 7 days): a flagged account is not
-# prodded daily. A post that goes through resets it.
-PAUSE_STEPS_HOURS = (24, 72, 168)
 
 
 def refresh_statuses(posts, client, log=print):
     """Record `sent` only when Buffer itself reports it; a Buffer `error` is final (status "failed", never asked
-    about again). Each Buffer post is asked about once per run, however many deals it carries, and at most
-    STATUS_CHECKS_PER_RUN posts are asked about. Returns False if Buffer refused (e.g. rate limit), else True."""
+    about again or retried) and its exact message is kept in `buffer_error`. Each Buffer post is asked about once per
+    run, however many deals it carries, and at most STATUS_CHECKS_PER_RUN posts are asked about. Returns False if
+    Buffer refused (e.g. rate limit), else True."""
     groups = {}
     for row in posts:
         if row.get("status") == "queued" and row.get("buffer_post_id"):
             groups.setdefault(row["buffer_post_id"], []).append(row)
     for post_id, rows in list(groups.items())[-STATUS_CHECKS_PER_RUN:]:
         try:
-            status = client.post_status(post_id)
+            info = client.post_info(post_id)
         except Exception as exc:  # rate limit or outage: stop asking this run
             log(f"::warning::Could not read Buffer post status ({exc}); trying again next run.")
             return False
+        status = info.get("status")
         for row in rows:
             if status and status != row.get("buffer_status"):
                 row["buffer_status"] = status
@@ -590,15 +606,32 @@ def refresh_statuses(posts, client, log=print):
                 row["status"] = "sent"
             elif str(status).lower() == "error":
                 row["status"] = "failed"
+                if info.get("error"):
+                    row["buffer_error"] = info["error"]
+        if str(status).lower() == "error":
+            log(f"::error::Instagram/Buffer rejected post {post_id}: {info.get('error') or 'no message'}. "
+                f"Instagram posting is paused until the owner clears it. {NO_RETRY}")
     return True
 
 
-def paused_after_failure(posts, now):
-    """A reason to skip posting this run, else None:
-      * the latest Instagram attempt failed (Buffer reported an error, e.g. Instagram's spam flag, or Buffer refused
-        the request) less than PAUSE_AFTER_FAILURE_HOURS ago, so a flagged account isn't hit every hour; or
-      * the latest attempt was less than MIN_HOURS_BETWEEN_POSTS ago, so posts are spread out over the day."""
+def failures_cleared_at():
+    """deal_rules.json "instagram_errors_cleared_at": the owner's confirmation (ISO time) that the account can
+    publish again. Failures at or before it no longer pause posting."""
+    from datetime import datetime
+    try:
+        return datetime.fromisoformat(str(RULES.get("instagram_errors_cleared_at")).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def paused_after_failure(posts, now, cleared_at=None):
+    """A reason to skip posting this run, else None.
+      * Any failed Instagram attempt (Buffer reported an error such as Instagram's spam flag, or Buffer refused the
+        request) since the last post that went through, and after the owner's last clearance, pauses Instagram
+        until the owner clears it. There is no timed resume and no retry (owner, 2026-10-23).
+      * Otherwise the last attempt must be at least MIN_HOURS_BETWEEN_POSTS old (one post a day)."""
     from datetime import datetime, timedelta
+    cleared_at = failures_cleared_at() if cleared_at is None else cleared_at
     def stamp(p):
         try:
             return datetime.fromisoformat(str(p.get("reserved_at", "")).replace("Z", "+00:00"))
@@ -610,23 +643,25 @@ def paused_after_failure(posts, now):
         return None
     tried.sort(key=stamp)
     last = tried[-1]
-    since = now - stamp(last)
     attempts, streak = [], 0  # one attempt per Buffer post (a roundup is one), newest first
     for p in reversed(tried):
+        if cleared_at and stamp(p) <= cleared_at:
+            break
         ident = p.get("buffer_post_id") or p.get("reserved_at")
         if ident not in attempts:
             attempts.append(ident)
             if p.get("status") not in ("failed", "error"):
                 break
             streak += 1
-    hours = PAUSE_STEPS_HOURS[min(streak, len(PAUSE_STEPS_HOURS)) - 1] if streak else 0
-    if streak and since < timedelta(hours=hours):
-        what = last.get("buffer_post_id") or (last.get("error") or "")[:80]
-        return (f"the last {streak} Instagram post attempt(s) failed ({what}); posting is paused until "
-                f"{(stamp(last) + timedelta(hours=hours)).isoformat(timespec='minutes')} "
-                "(check the error in Buffer)")
-    if since < timedelta(hours=MIN_HOURS_BETWEEN_POSTS):
-        return f"the last Instagram post was less than {MIN_HOURS_BETWEEN_POSTS} hours ago"
+    if streak:
+        failed = next(p for p in reversed(tried) if p.get("status") in ("failed", "error"))
+        error = failed.get("buffer_error") or failed.get("error") or "Buffer reported an error; see the post in Buffer"
+        return (f"the last {streak} Instagram post attempt(s) failed (latest: Buffer post "
+                f"{failed.get('buffer_post_id') or 'not created'}, {failed.get('reserved_at')}: \"{error}\"); "
+                "Instagram posting is paused until the owner confirms the account can publish and sets "
+                "instagram_errors_cleared_at in scripts/deal_rules.json")
+    if now - stamp(last) < timedelta(hours=MIN_HOURS_BETWEEN_POSTS):
+        return f"the last Instagram post was less than {MIN_HOURS_BETWEEN_POSTS} hours ago (one post a day)"
     return None
 
 
@@ -807,6 +842,10 @@ def main(argv=None):
     if not os.environ.get("BUFFER_API_KEY") or not channel:
         print("Refused: BUFFER_API_KEY secret and BUFFER_CHANNEL_ID variable must both be configured.")
         return 2
+    if RULES.get("instagram_auto_publish") is not True:
+        print("Live posting refused: instagram_auto_publish is not true in scripts/deal_rules.json (owner, "
+              "2026-10-23: Instagram stays off until the account is confirmed to publish normally).")
+        return 0
     client = BufferClient(os.environ["BUFFER_API_KEY"])
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc)

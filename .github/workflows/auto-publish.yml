@@ -112,6 +112,9 @@ jobs:
           for attempt in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep $((attempt * 5)); done
           echo "::error::Could not push"; exit 1
       - name: Instagram via Buffer (live on main, dry run on pull requests)
+        # Owner, 2026-10-23: at most one single-deal post a day, off until deal_rules.json "instagram_auto_publish"
+        # is true, and paused (never retried) after any failure. The website is published above and never waits on this.
+        continue-on-error: true
         env:
           INSTAGRAM_PUBLISH_ENABLED: ${{ vars.INSTAGRAM_PUBLISH_ENABLED }}
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}

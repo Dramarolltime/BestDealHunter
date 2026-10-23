@@ -1040,7 +1040,8 @@
     "status": "failed",
     "reserved_at": "2026-10-16T11:11:08+00:00",
     "buffer_post_id": "6ad2064e60e6a12e6b24f28b",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "3bb25222031e11f6",
@@ -1052,7 +1053,8 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "b6a3f17d9561d0c9",
@@ -1064,7 +1066,8 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "6fa4b4b012c5578c",
@@ -1076,7 +1079,8 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "5340d4a963df2c03",
@@ -1088,7 +1092,8 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "5fad8635763ceff8",
@@ -1100,7 +1105,8 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "f13ef22f7166112e",
@@ -1112,7 +1118,8 @@
     "reserved_at": "2026-10-16T12:11:47+00:00",
     "roundup": "roundup-a988ba5586962eb3",
     "buffer_post_id": "6ad2148cf24c5797a23ae4a0",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "1a6d8dd9c38bf43e",
@@ -1146,7 +1153,8 @@
     "reserved_at": "2026-10-17T04:10:06+00:00",
     "roundup": "roundup-68ca22db015baa96",
     "buffer_post_id": "6ad2f5231694d771d51be90f",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "b3f64cfd2d9921d9",
@@ -1158,7 +1166,8 @@
     "reserved_at": "2026-10-17T04:10:06+00:00",
     "roundup": "roundup-68ca22db015baa96",
     "buffer_post_id": "6ad2f5231694d771d51be90f",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "95e1f47433b32359",
@@ -1225,7 +1234,8 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "0c44db3112dae939",
@@ -1237,7 +1247,8 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "745f69db55b589d5",
@@ -1249,7 +1260,8 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "b8780ec65d74c5f3",
@@ -1272,7 +1284,8 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "103c011a24ff8a4b",
@@ -1295,7 +1308,8 @@
     "reserved_at": "2026-10-17T05:07:06+00:00",
     "roundup": "roundup-6930fbb5e128943b",
     "buffer_post_id": "6ad302831694d771d51e6fcf",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "1c7062075008e97e",
@@ -1307,7 +1321,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "e833f17d728dec79",
@@ -1319,7 +1334,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "7f525ccc73fbc24b",
@@ -1331,7 +1347,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "bb5c35f4006f5f07",
@@ -1343,7 +1360,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "b090719dad4884fe",
@@ -1355,7 +1373,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "15b2dd8041555260",
@@ -1367,7 +1386,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "37125dfc3c61c39d",
@@ -1379,7 +1399,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "d7ebbf06728851da",
@@ -1391,7 +1412,8 @@
     "reserved_at": "2026-10-17T06:04:25+00:00",
     "roundup": "roundup-b43681637084596c",
     "buffer_post_id": "6ad30ff41694d771d52130ff",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "2327010c2cd3d26a",
@@ -1403,7 +1425,8 @@
     "reserved_at": "2026-10-17T07:17:40+00:00",
     "roundup": "roundup-14138762857f564f",
     "buffer_post_id": "6ad3211850252c7767d41e65",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "be91633cd8800a36",
@@ -1415,7 +1438,8 @@
     "reserved_at": "2026-10-17T07:17:40+00:00",
     "roundup": "roundup-14138762857f564f",
     "buffer_post_id": "6ad3211850252c7767d41e65",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "5bd0a0faacc27a8d",
@@ -1427,7 +1451,8 @@
     "reserved_at": "2026-10-17T07:17:40+00:00",
     "roundup": "roundup-14138762857f564f",
     "buffer_post_id": "6ad3211850252c7767d41e65",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "cb9c28e028cf530b",
@@ -1438,7 +1463,8 @@
     "status": "failed",
     "reserved_at": "2026-10-17T08:06:12+00:00",
     "buffer_post_id": "6ad32c750a208cb3230f61d3",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "d3b513aaf3915837",
@@ -1632,7 +1658,8 @@
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
     "buffer_post_id": "6ad570b20a208cb3238bff1c",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "398a4572e56177b6",
@@ -1666,7 +1693,8 @@
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
     "buffer_post_id": "6ad570b20a208cb3238bff1c",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "4239d2609de8e57f",
@@ -1678,7 +1706,8 @@
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
     "buffer_post_id": "6ad570b20a208cb3238bff1c",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "79edb1ce0da78df6",
@@ -1690,7 +1719,8 @@
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
     "buffer_post_id": "6ad570b20a208cb3238bff1c",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "7afc5006559c30d4",
@@ -1702,7 +1732,8 @@
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
     "buffer_post_id": "6ad570b20a208cb3238bff1c",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   },
   {
     "key": "279ab02d98966b59",
@@ -1714,6 +1745,7 @@
     "reserved_at": "2026-10-19T01:21:42+00:00",
     "roundup": "roundup-f72d7767f026c41a",
     "buffer_post_id": "6ad570b20a208cb3238bff1c",
-    "buffer_status": "error"
+    "buffer_status": "error",
+    "buffer_error": "Instagram flagged this post as potential spam. Please edit the content and try again."
   }
 ]

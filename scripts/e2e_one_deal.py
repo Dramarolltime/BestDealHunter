@@ -177,7 +177,7 @@ def step_buffer(deal, deals, mapping, posts, today):
     if post["image_url"] != hosted[feed_card(deal)]:
         raise StepFailed("post would not use the 4:5 Cloudinary card")
     ad = disclosure(deal)[1] if is_affiliate_link(link(deal)) else ()  # #ad only for affiliate links
-    for must in (*ad, "Price as of", "Prices may change", card_facts(deal)["price"]):
+    for must in (*ad, "Price checked", "Prices and stock can change", card_facts(deal)["price"]):
         if must not in post["text"]:
             raise StepFailed(f"caption missing {must!r}")
     # Duplicate protection, using the real publish() against a fake Buffer and a COPY of the ledger.
