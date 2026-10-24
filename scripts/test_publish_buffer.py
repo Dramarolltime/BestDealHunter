@@ -43,8 +43,8 @@ class EligibilityTests(unittest.TestCase):
         text = pb.caption(deal(store="Amazon", url="https://www.amazon.com/dp/X?tag=bestdealhun0b-20",
                                auto_published_at="2026-10-10T18:05:00+00:00"))
         self.assertIn("As an Amazon Associate I earn from qualifying purchases.", text)
-        self.assertIn("Price as of Oct 10, 2026, 11:05 AM PT", text)
-        self.assertIn("The price on Amazon at checkout applies", text)
+        self.assertIn("Price checked Oct 10, 2026, 11:05 AM PT", text)
+        self.assertIn("Amazon's price at checkout applies", text)
 
     def test_each_gate_blocks(self):
         cases = {
@@ -79,12 +79,13 @@ class EligibilityTests(unittest.TestCase):
 class CaptionTests(unittest.TestCase):
     def test_caption_uses_deal_numbers_and_disclosures(self):
         text = pb.caption(deal())
-        for expected in ("57% OFF", "ILLUSTRATIVE TEST TV", "Store: Best Buy", "Now: $299.99",
-                         "Comparable value: $699.99", "Savings: $400", "bestdealhunters.com", "Link in bio",
-                         "Price as of Oct 10, 2026", "Prices may change. Availability may vary.",
-                         "#TechDeals", "#BestDealHunter"):
+        for expected in ("ILLUSTRATIVE TEST TV", "$299.99 at Best Buy", "57% off the comparable value of $699.99",
+                         "you save $400", "bestdealhunters.com", "Link in bio", "Price checked Oct 10, 2026",
+                         "Prices and stock can change", "#TechDeals"):
             self.assertIn(expected, text)
-        self.assertTrue(text.startswith("🔥 "))
+        self.assertTrue(text.startswith("ILLUSTRATIVE TEST TV"))  # owner, 2026-10-23: plain, no emoji headline
+        self.assertNotIn("🔥", text)
+        self.assertLessEqual(text.count("#"), 3)  # a few matching hashtags, not a wall of them
         self.assertNotIn("#ad", text)  # a direct link earns nothing: no ad / commission claim
         self.assertLessEqual(len(text), pb.CAPTION_LIMIT)
 
@@ -118,10 +119,10 @@ class CaptionTests(unittest.TestCase):
             with self.subTest(d.get("url")):
                 self.assertLessEqual(pb.caption(d).count("#"), 5)
 
-    def test_opening_line_varies_but_numbers_do_not(self):
-        texts = {pb.caption(deal(url=f"https://www.bestbuy.com/site/test-{i}")).split("\n")[0] for i in range(12)}
-        self.assertGreater(len(texts), 1)
-        self.assertTrue(all("57% OFF" in t for t in texts))
+    def test_caption_leads_with_the_product_and_its_verified_numbers(self):
+        lines = pb.caption(deal()).split("\n")
+        self.assertEqual(lines[0], "ILLUSTRATIVE TEST TV — NOT A REAL DEAL")
+        self.assertEqual(lines[2], "$299.99 at Best Buy (57% off the comparable value of $699.99, you save $400).")
 
     def test_affiliate_link_gets_the_ad_disclosure(self):
         text = pb.caption(deal(url="https://www.bestbuy.com/site/test?irclickid=abc"))
@@ -147,8 +148,32 @@ class PlanTests(unittest.TestCase):
         check = lambda d: pb.eligibility(d, pb.hosted_urls(HOSTED), set(), TODAY)
         self.assertIn("real listing photo", check(ebay)[1])
         self.assertEqual(check(dict(ebay, image_source_kind="listing_photo")), (True, "eligible"))
-        self.assertEqual(check(dict(ebay, image_source_kind="ai_scene_from_photo")), (True, "eligible"))
+        # owner, 2026-10-23: only the real listing photo is product-accurate enough for Instagram
+        self.assertIn("real listing photo", check(dict(ebay, image_source_kind="ai_scene_from_photo"))[1])
         self.assertIn("real listing photo", check(dict(ebay, image_source_kind="ai_scene"))[1])
+
+    def test_one_post_a_day_and_one_deal_per_post(self):
+        self.assertEqual((pb.MAX_POSTS_PER_DAY, pb.MIN_HOURS_BETWEEN_POSTS), (1, 24))
+        self.assertIs(pb.RULES.get("instagram_roundups"), False)  # owner, 2026-10-23: no Top N roundups
+        deals = [deal(url=f"https://www.bestbuy.com/site/t{i}") for i in range(5)]
+        ready, _ = pb.plan(deals, HOSTED, [], TODAY)
+        self.assertEqual((len(ready), ready[0].get("kind")), (1, None))
+
+    def test_a_retailer_other_than_ebay_is_picked_first(self):
+        ebay = deal(store="eBay", url="https://www.ebay.com/itm/1")
+        ready, _ = pb.plan([ebay, deal()], HOSTED, [], TODAY)
+        self.assertEqual(ready[0]["deal"]["store"], "Best Buy")
+        ready, _ = pb.plan([ebay], HOSTED, [], TODAY)
+        self.assertEqual(ready[0]["deal"]["store"], "eBay")  # eBay is still used when it is the only one
+
+    def test_instagram_stays_off_until_the_owner_turns_it_on(self):
+        self.assertIs(pb.RULES.get("instagram_auto_publish"), False)
+        env = {"INSTAGRAM_PUBLISH_ENABLED": "true", "BUFFER_API_KEY": "x", "BUFFER_CHANNEL_ID": "c"}
+        with mock.patch.dict(os.environ, env), mock.patch.object(pb, "BufferClient") as client, \
+                mock.patch.object(pb.POSTS.__class__, "write_text") as write:
+            self.assertEqual(pb.main(["--live"]), 0)
+        client.assert_not_called()  # Buffer is never contacted
+        write.assert_not_called()
 
     def test_daily_post_limit(self):
         from datetime import datetime, timezone
@@ -236,7 +261,7 @@ class PublishLedgerTests(unittest.TestCase):
         rows = pb.publish(self.ready(), posts, pb.BufferClient("k", fake), "chan1", "now", log=lambda *_: None)
         sent = fake.requests[0]["variables"]["input"]
         self.assertEqual((sent["channelId"], sent["assets"][0]["image"]["url"]), ("chan1", HOSTED[0]["cloudinary_url"]))
-        self.assertIn("Price as of", sent["text"])
+        self.assertIn("Price checked", sent["text"])
         self.assertEqual((rows[0]["status"], rows[0]["buffer_post_id"]), ("queued", "p1"))
 
     def test_same_deal_can_never_be_queued_twice(self):
@@ -295,40 +320,52 @@ class PublishLedgerTests(unittest.TestCase):
             raise OSError("HTTP Error 429: Too Many Requests")
         self.assertFalse(pb.refresh_statuses(posts, pb.BufferClient("k", limited), log=lambda *_: None))
 
-    def test_posting_pauses_a_day_after_a_failed_post_and_spaces_posts_out(self):
+    def test_any_failure_pauses_until_the_owner_clears_it_and_posts_are_a_day_apart(self):
         from datetime import datetime, timedelta, timezone
-        now = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 10, 23, 12, 0, tzinfo=timezone.utc)
         def at(h):
             return (now - timedelta(hours=h)).isoformat()
-        posts = [{"key": "a", "status": "sent", "buffer_post_id": "p1", "reserved_at": at(30)},
-                 {"key": "b", "status": "failed", "buffer_post_id": "p2", "reserved_at": at(20)},
+        spam = "Instagram flagged this post as potential spam. Please edit the content and try again."
+        posts = [{"key": "a", "status": "sent", "buffer_post_id": "p0", "reserved_at": at(400)},
+                 {"key": "b", "status": "failed", "buffer_post_id": "p1", "reserved_at": at(300), "buffer_error": spam},
                  {"key": "c", "status": "locked", "reserved_at": at(1)}]
-        self.assertIn("paused", pb.paused_after_failure(posts, now))
-        posts[1]["reserved_at"] = at(25)
-        self.assertIsNone(pb.paused_after_failure(posts, now))
+        none = datetime(2000, 1, 1, tzinfo=timezone.utc)  # no clearance
+        reason = pb.paused_after_failure(posts, now, cleared_at=none)
+        self.assertIn("the last 1 Instagram post attempt(s) failed", reason)  # weeks later: still paused
+        self.assertIn(spam, reason)  # the exact error is reported
+        self.assertIn("instagram_errors_cleared_at", reason)
+        self.assertIsNone(pb.paused_after_failure(posts, now, cleared_at=now - timedelta(hours=200)))  # owner cleared
         posts.append({"key": "d", "status": "error", "error": "HTTP Error 429: Too Many Requests", "reserved_at": at(2)})
-        self.assertIn("429", pb.paused_after_failure(posts, now))  # a refused create counts as a failure
+        self.assertIn("429", pb.paused_after_failure(posts, now, cleared_at=now - timedelta(hours=200)))
         posts[-1].update(status="sent", buffer_post_id="p4")
-        self.assertIn("4 hours", pb.paused_after_failure(posts, now))  # spacing between posts
-        posts[-1]["reserved_at"] = at(5)
-        self.assertIsNone(pb.paused_after_failure(posts, now))
+        self.assertIn("24 hours", pb.paused_after_failure(posts, now, cleared_at=none))  # one post a day
+        posts[-1]["reserved_at"] = at(25)
+        self.assertIsNone(pb.paused_after_failure(posts, now, cleared_at=none))
 
-    def test_pause_grows_with_failures_in_a_row(self):
+    def test_failures_in_a_row_are_counted_for_the_monitor(self):
         from datetime import datetime, timedelta, timezone
-        now = datetime(2026, 10, 19, 12, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 10, 23, 12, 0, tzinfo=timezone.utc)
         def at(h):
             return (now - timedelta(hours=h)).isoformat()
+        none = datetime(2000, 1, 1, tzinfo=timezone.utc)
         posts = [{"key": "a", "status": "sent", "buffer_post_id": "p0", "reserved_at": at(200)},
                  {"key": "b", "status": "failed", "buffer_post_id": "p1", "reserved_at": at(100)},
                  {"key": "c", "status": "failed", "buffer_post_id": "p2", "reserved_at": at(48)},
                  {"key": "d", "status": "failed", "buffer_post_id": "p2", "reserved_at": at(48)}]  # same roundup
-        self.assertIsNone(pb.paused_after_failure(posts[:2], now))  # 1 failure, 100 hours ago: pause over
-        self.assertIn("2 Instagram", pb.paused_after_failure(posts, now))  # 2 in a row: 3 days
-        posts.append({"key": "e", "status": "failed", "buffer_post_id": "p3", "reserved_at": at(100)})
-        posts[-1]["reserved_at"] = at(40)
-        self.assertIn("3 Instagram", pb.paused_after_failure(posts, now))  # 3 in a row: a week
-        posts.append({"key": "f", "status": "sent", "buffer_post_id": "p4", "reserved_at": at(5)})
-        self.assertIsNone(pb.paused_after_failure(posts, now))  # a post went through: back to normal
+        self.assertIn("the last 2 Instagram", pb.paused_after_failure(posts, now, cleared_at=none))
+
+    def test_failed_post_records_bufferss_exact_error_and_is_never_retried(self):
+        spam = "Instagram flagged this post as potential spam. Please edit the content and try again."
+        posts = [{"key": pb.post_key(deal()), "status": "queued", "buffer_post_id": "p9"}]
+        def transport(payload):
+            return {"data": {"post": {"id": "p9", "status": "error", "error": {"message": spam}}}}
+        logs = []
+        pb.refresh_statuses(posts, pb.BufferClient("k", transport), log=logs.append)
+        self.assertEqual((posts[0]["status"], posts[0]["buffer_error"]), ("failed", spam))
+        self.assertIn(spam, logs[0])
+        ready, skipped = pb.plan([deal()], HOSTED, posts, TODAY)
+        self.assertEqual(ready, [])  # the same deal is not sent again
+        self.assertIn("already queued or posted", skipped[0][1])
 
     def test_graphql_errors_raise(self):
         client = pb.BufferClient("k", lambda payload: {"errors": [{"message": "Unauthorized"}]})
@@ -382,7 +419,7 @@ class DuplicateAndFreshnessTests(unittest.TestCase):
         from datetime import datetime, timezone
         now = datetime(2026, 10, 10, 20, 0, tzinfo=timezone.utc)
         auto = deal(approved_by="automatic: retailer product page check", auto_published_at="2026-10-10T18:30:00+00:00",
-                    image_source_kind="ai_scene_from_photo")
+                    image_source_kind="listing_photo")
         self.assertEqual(pb.eligibility(auto, pb.hosted_urls(HOSTED), set(), TODAY, now), (True, "eligible"))
         stale = dict(auto, auto_published_at="2026-10-10T16:00:00+00:00")
         ok, reason = pb.eligibility(stale, pb.hosted_urls(HOSTED), set(), TODAY, now)
@@ -429,9 +466,10 @@ class RoundupTests(unittest.TestCase):
         ready, _ = pb.plan(deals, hosted, [], TODAY, roundups=True)
         self.assertEqual((len(ready), ready[0].get("kind")), (1, None))
         deals, hosted = self.deals(5)
-        # switched on 2026-10-15 after Buffer accepted an 8-slide draft carousel (buffer-draft-checks.json)
-        self.assertIs(pb.RULES.get("instagram_roundups"), True)
-        self.assertEqual(pb.plan(deals, hosted, [], TODAY)[0][0].get("kind"), "roundup")
+        # switched off 2026-10-23 (owner: one verified product per post while the account recovers)
+        self.assertIs(pb.RULES.get("instagram_roundups"), False)
+        self.assertIsNone(pb.plan(deals, hosted, [], TODAY)[0][0].get("kind"))
+        self.assertEqual(pb.plan(deals, hosted, [], TODAY, roundups=True)[0][0].get("kind"), "roundup")
         self.assertIsNone(pb.plan(deals, hosted, [], TODAY, roundups=False)[0][0].get("kind"))
 
     def test_affiliate_slide_adds_ad_tags(self):
@@ -466,6 +504,11 @@ class RoundupTests(unittest.TestCase):
         deals, hosted = self.deals(4)
         ledger = [{"key": f"k{i}", "roundup": "roundup-1", "reserved_at": "2026-10-10T11:00:00+00:00"}
                   for i in range(pb.MAX_POSTS_PER_DAY + 3)]
+        ready, _ = pb.plan(deals, hosted, ledger, TODAY, now=datetime(2026, 10, 10, 12, tzinfo=timezone.utc),
+                           roundups=True)
+        self.assertEqual(ready, [])  # one roundup = one post, and the limit is now 1 a day (owner, 2026-10-23)
+        ledger = ledger[:1]
+        ledger[0]["reserved_at"] = "2026-10-09T11:00:00+00:00"  # more than 24 hours ago
         ready, _ = pb.plan(deals, hosted, ledger, TODAY, now=datetime(2026, 10, 10, 12, tzinfo=timezone.utc),
                            roundups=True)
         self.assertEqual(len(ready), 1)
